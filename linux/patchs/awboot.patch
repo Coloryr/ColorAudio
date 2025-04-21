@@ -1,0 +1,13 @@
+diff --git a/board.h b/board.h
+index bf29eaa..c2e55ce 100644
+--- a/board.h
++++ b/board.h
+@@ -6,7 +6,7 @@
+ #include "sunxi_usart.h"
+ #include "sunxi_sdhci.h"
+ 
+-#define USART_DBG usart5_dbg
++#define USART_DBG usart0_dbg
+ 
+ #define CONFIG_BOOT_SPINAND
+ #define CONFIG_BOOT_SDCARD

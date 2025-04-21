@@ -1,0 +1,37 @@
+sudo apt install build-essential wget flex bison bc libncurses-dev git -y
+
+# http proxy
+
+export http="http://192.168.201.1:1080"
+export https="http://192.168.201.1:1080"
+export http_proxy="http://192.168.201.1:1080"
+export https_proxy="http://192.168.201.1:1080"
+
+# awboot
+
+wget https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
+tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
+mv arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi arm-none-eabi
+
+git clone https://github.com/szemzoa/awboot
+cd awboot
+cd tools
+gcc mksunxi.c -o mksunxi
+cd ../
+
+git apply ../patchs/awboot.patch
+export PATH=$PATH:../arm-none-eabi/bin
+make -j32
+
+#linux
+wget https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf.tar.xz
+tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf.tar.xz
+mv arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf arm-none-linux-gnueabihf
+
+wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.14.2.tar.xz
+tar -xf linux-6.14.2.tar.xz
+cd linux-6.14.2
+
+export PATH=$PATH:../arm-none-linux-gnueabihf/bin
+make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- sunxi_defconfig
+make -j32 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- zImage dtbs modules
