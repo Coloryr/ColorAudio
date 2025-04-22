@@ -2,6 +2,7 @@
 // Copyright (C) 2022 Arm Ltd.
 
 #include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/gpio/gpio.h>
 
 /dts-v1/;
 
@@ -14,7 +15,7 @@
 	chosen {
 		bootargs = "mem=128M ubi.mtd=3 rootfstype=ubifs root=ubi0:rootfs rw rootwait console=ttyS0,115200";
 		stdout-path = "serial0:115200n8";
-	}
+	};
 
 	aliases {
 		serial0 = &uart0;
@@ -54,8 +55,15 @@
 		regulator-name = "avdd2v8";
 		regulator-min-microvolt = <2800000>;
 		regulator-max-microvolt = <2800000>;
-		vin-supply = <&reg_3v3>;
+		vin-supply = <&reg_vcc_3v3>;
 	};
+
+	// pwm2: pwm2@2000c12 {
+	// 	compatible = "allwinner,sunxi-pwm2";
+	// 	pinctrl-names = "active", "sleep";
+	// 	reg = <0x0 0x02000c12 0x0 0x4>;
+	// 	reg_base = <0x02000c00>;
+	// };
 
 	//dmic_codec: dmic-codec {
 	//	compatible = "dmic-codec";
@@ -89,7 +97,7 @@
 		power {
 			linux,default-trigger = "default-on";
 			label = "power";
-			gpios = <&pio 3 22 GPIO_ACTIVE_LOW>;
+			gpios = <&pio 3 22 GPIO_ACTIVE_HIGH>;
 		};
 	};
 };
@@ -108,51 +116,6 @@
 
 &wdt {
 	status = "okay";
-};
-
-&uart1 {
-	uart-has-rtscts;
-	pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
-	pinctrl-names = "default";
-	status = "okay";
-
-	/* XR829 bluetooth is connected here */
-};
-
-&spi0 {
-	pinctrl-0 = <&spi0_pins>;
-	pinctrl-names = "default";
-	status = "okay";
-
-	spi_nand: spi_nand@0 {
-        #address-cells = <1>;
-        #size-cells = <1>;
-		compatible = "spi-nand";
-		reg = <0>;
-
-		partition@0 {
-				label = "awboot";
-				reg = <0x0 0x40000>;	/* 256K */
-				read-only;
-		};
-
-		partition@40000 {
-				label = "dtb";
-				reg = <0x40000 0x40000>;  /* 256k */
-				read-only;
-		};
-
-		partition@80000 {
-				label = "kernel";
-				reg = <0x80000 0x780000>;  /* 7.5MB */
-				read-only;
-		};
-
-		partition@800000 {
-				label = "rootfs";
-				reg = <0x800000 0x7800000>;
-		};
-	};
 };
 
 &pio {
@@ -223,9 +186,10 @@
 	i2s1_pins_a: i2s1@0 {
 		pins = "PG12","PG13","PG15";
 		function = "i2s1";
+		drive-strength = <20>;       
+        bias-disable; 
 	};
 
-	/* 编码器输入引脚 */
     rotary_pins: rotary-pins {
         pins = "PG11", "PG12";
         function = "gpio_in";
@@ -233,10 +197,60 @@
     };
 };
 
+&uart1 {
+	uart-has-rtscts;
+	pinctrl-0 = <&uart1_pg6_pins>, <&uart1_pg8_rts_cts_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	bluetooth {
+		compatible = "brcm,bcm4345c5";
+		device-wakeup-gpios = <&pio 4 6 GPIO_ACTIVE_HIGH>;
+		host-wakeup-gpios = <&pio 4 7 GPIO_ACTIVE_HIGH>;
+		shutdown-gpios = <&pio 4 5 GPIO_ACTIVE_HIGH>;
+	};
+};
+
+&spi0 {
+	pinctrl-0 = <&spi0_pins>;
+	pinctrl-names = "default";
+	status = "okay";
+
+	spi_nand: spi_nand@0 {
+        #address-cells = <1>;
+        #size-cells = <1>;
+		compatible = "spi-nand";
+		reg = <0>;
+
+		partition@0 {
+				label = "awboot";
+				reg = <0x0 0x40000>;	/* 256K */
+				read-only;
+		};
+
+		partition@40000 {
+				label = "dtb";
+				reg = <0x40000 0x40000>;  /* 256k */
+				read-only;
+		};
+
+		partition@80000 {
+				label = "kernel";
+				reg = <0x80000 0x780000>;  /* 7.5MB */
+				read-only;
+		};
+
+		partition@800000 {
+				label = "rootfs";
+				reg = <0x800000 0x7800000>;
+		};
+	};
+};
+
 &mmc0 {
 	pinctrl-0 = <&mmc0_pins>;
 	pinctrl-names = "default";
-	vmmc-supply = <&reg_3v3>;
+	vmmc-supply = <&reg_vcc_3v3>;
 	vqmmc-supply = <&reg_vcc_3v3>;
 	cd-gpios = <&pio 5 6 GPIO_ACTIVE_LOW>;
 	disable-wp;
@@ -247,35 +261,42 @@
 &mmc1 {
 	pinctrl-0 = <&mmc1_pins>;
 	pinctrl-names = "default";
-	vmmc-supply = <&reg_3v3>;
+	vmmc-supply = <&reg_vcc_3v3>;
 	vqmmc-supply = <&reg_vcc_3v3>;
 	non-removable;
 	bus-width = <4>;
-	mmc-pwrseq = <&wifi_pwrseq>;
 	status = "okay";
 
-	wifi {
-		compatible = "brcm,bcm43456-fmac";
+	brcm: sdio-wifi@1 {
+		reg = <1>;
+		compatible = "brcm,bcm43456-sdio";
 		brcm,drive-strength = <10>;
-		interrupt-parent = <&gpio>;
-		interrupts = <24 IRQ_TYPE_EDGE_RISING>;
-	};
-
-	bluetooth {
-		compatible = "brcm,bcm43456-bt";
-		max-speed = <2000000>;
-		device-wakeup-gpios = <&gpio 25 GPIO_ACTIVE_HIGH>;
-		host-wakeup-gpios = <&gpio 26 GPIO_ACTIVE_HIGH>;
-		shutdown-gpios = <&gpio 27 GPIO_ACTIVE_HIGH>;
+		wifi-reg-on-gpio = <&pio 4 4 GPIO_ACTIVE_HIGH>; 
+        host-wake-gpio = <&pio 3 10 GPIO_ACTIVE_HIGH>;
 	};
 };
 
+&usbphy {
+	usb0_vbus-supply = <&reg_vcc5v>;
+	usb1_vbus-supply = <&reg_vcc5v>;
+	status = "okay";
+};
+
 &usb_otg {
-	dr_mode = "otg";
+	dr_mode = "peripheral";
 	status = "okay";
 };
 
 &dmic {
+	status = "okay";
+};
+
+&ehci0 {
+	status = "okay";
+};
+
+&ehci1 {
+	dr_mode = "host";
 	status = "okay";
 };
 
@@ -284,23 +305,6 @@
 };
 
 &ohci1 {
-	status = "okay";
-};
-
-&ths {
-	status = "okay";
-	vref-supply = <&reg_aldo>;
-};
-
-&usbphy {
-	usb0_vbus-supply = <&reg_usbvbus>;
-	usb1_vbus-supply = <&reg_usbvbus>;
-	status = "okay";
-};
-
-/* The USB-C socket has its CC pins pulled to GND, so is hardwired as a UFP. */
-&usb_otg {
-	dr_mode = "peripheral";
 	status = "okay";
 };
 
@@ -318,7 +322,7 @@
 	status = "okay";
 };
 
-&lcd0 {
+&tcon_lcd0 {
 	
 	/* part 1 */
 	lcd_used            = <1>;
@@ -355,12 +359,12 @@
 	pinctrl-1 = <&rgb24_pins_b>;
 };
 
-&pwm2 {
-	pinctrl-names = "active", "sleep";
-	pinctrl-0 = <&pwm2_pin_a>;
-	pinctrl-1 = <&pwm2_pin_b>;
-	status = "okay";
-};
+// &pwm2 {
+// 	pinctrl-names = "active", "sleep";
+// 	pinctrl-0 = <&pwm2_pin_a>;
+// 	pinctrl-1 = <&pwm2_pin_b>;
+// 	status = "okay";
+// };
 
 &uart0 {
 	pinctrl-names = "default";
@@ -380,13 +384,9 @@
 	status = "okay";
 };
 
-&i2s1_plat {
-	tdm-num		= <1>;
-	tx-pin		= <0>;
-	rx-pin		= <0>;
+&i2s1 {
+	tdm_config = <0x01>;
 	pinctrl-names= "default";
-	pinctrl-0	= <&i2s1_pins_a>;
-	tx-hub-en;
-	rx-sync-en;
-	status		= "okay";
+	pinctrl-0 = <&i2s1_pins_a>;
+	status = "okay";
 };

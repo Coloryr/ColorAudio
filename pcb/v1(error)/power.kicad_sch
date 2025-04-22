@@ -3458,7 +3458,7 @@
 		(uuid 0e44ef36-6829-469f-b260-fd521c970a90)
 	)
 	(rectangle
-		(start 185.42 97.79)
+		(start 207.01 97.79)
 		(end 279.4 162.56)
 		(stroke
 			(width 0)
@@ -3529,7 +3529,7 @@
 	)
 	(text "POWER_SWITCH"
 		(exclude_from_sim no)
-		(at 194.818 100.838 0)
+		(at 224.028 101.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)

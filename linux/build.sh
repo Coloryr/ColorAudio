@@ -14,14 +14,15 @@ tar -xf arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi.tar.xz
 mv arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi arm-none-eabi
 
 git clone https://github.com/szemzoa/awboot
-cd awboot
-cd tools
+cd awboot/tools
 gcc mksunxi.c -o mksunxi
 cd ../
 
 git apply ../patchs/awboot.patch
 export PATH=$PATH:../arm-none-eabi/bin
 make -j32
+
+cd ../
 
 #linux
 wget https://developer.arm.com/-/media/Files/downloads/gnu/14.2.rel1/binrel/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf.tar.xz
@@ -30,8 +31,12 @@ mv arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-linux-gnueabihf arm-none-linux-gn
 
 wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.14.2.tar.xz
 tar -xf linux-6.14.2.tar.xz
-cd linux-6.14.2
 
+cp ./dts/sun8i-t113s-coloraudio-t113-v1.dts ./linux-6.14.2/arch/arm/boot/dts/allwinner
+rm ./linux-6.14.2/arch/arm/boot/dts/allwinner/Makefile
+cp ./patchs/dts/Makefile ./linux-6.14.2/arch/arm/boot/dts/allwinner
+
+cd linux-6.14.2
 export PATH=$PATH:../arm-none-linux-gnueabihf/bin
 make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- sunxi_defconfig
 make -j32 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- zImage dtbs modules

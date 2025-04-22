@@ -1,3 +1,16 @@
+diff --git a/board.c b/board.c
+index 8d1d938..42e33bc 100644
+--- a/board.c
++++ b/board.c
+@@ -60,7 +60,7 @@ static gpio_t led_blue = GPIO_PIN(PORTD, 22);
+ void board_init_led(gpio_t led)
+ {
+ 	sunxi_gpio_init(led, GPIO_OUTPUT);
+-	sunxi_gpio_set_value(led, 0);
++	sunxi_gpio_set_value(led, 1);
+ }
+ 
+ int board_sdhci_init()
 diff --git a/board.h b/board.h
 index bf29eaa..c2e55ce 100644
 --- a/board.h
