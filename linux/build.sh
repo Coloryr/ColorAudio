@@ -40,3 +40,9 @@ cd linux-6.14.2
 export PATH=$PATH:../arm-none-linux-gnueabihf/bin
 make ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- sunxi_defconfig
 make -j32 ARCH=arm CROSS_COMPILE=arm-none-linux-gnueabihf- zImage dtbs modules
+cd ../
+
+wget https://buildroot.org/downloads/buildroot-2025.02.tar.gz
+tar -zxf buildroot-2025.02.tar.gz
+cd buildroot-2025.02
+make menuconfig

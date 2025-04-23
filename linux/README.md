@@ -75,7 +75,7 @@ xfel version
 xfel spinand
 xfel spinand erase 0 0x8000000
 xfel spinand write 0 awboot-boot-spi.bin
-xfel spinand write 0x40000 arch/arm/boot/dts/sun8i-t113-mangopi-dual.dtb
+xfel spinand write 0x40000 arch/arm/boot/dts/sun8i-t113s-coloraudio-t113-v1.dtb
 xfel spinand write 0x80000 arch/arm/boot/zImage
 
 xfel spinand erase 0x800000 0x7800000

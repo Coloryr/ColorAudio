@@ -13,7 +13,7 @@
 	compatible = "coloryr,coloraudio-t113-v1", "allwinner,sun20i-d1", "allwinner,sun8i-t113s";
 
 	chosen {
-		bootargs = "mem=128M ubi.mtd=3 rootfstype=ubifs root=ubi0:rootfs rw rootwait console=ttyS0,115200";
+		bootargs = "mem=128M ubi.mtd=3 rootfstype=ubifs root=ubi0:rootfs rw rootwait console=ttyS0,115200 earlyprintk=sunxi-uart,0x02500000";
 		stdout-path = "serial0:115200n8";
 	};
 
@@ -102,20 +102,12 @@
 	};
 };
 
-&dcxo {
-	clock-frequency = <24000000>;
-};
-
 &cpu0 {
 	cpu-supply = <&reg_vcc_core>;
 };
 
 &cpu1 {
 	cpu-supply = <&reg_vcc_core>;
-};
-
-&wdt {
-	status = "okay";
 };
 
 &pio {
