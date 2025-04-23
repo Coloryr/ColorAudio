@@ -10,10 +10,10 @@
 
 / {
 	model = "ColorAudio V1-T113";
-	compatible = "coloryr,coloraudio-t113-v1", "allwinner,sun20i-d1", "allwinner,sun8i-t113s";
+	compatible = "coloryr,coloraudio-t113-v1", "allwinner,sun8i-t113s";
 
 	chosen {
-		bootargs = "mem=128M ubi.mtd=3 rootfstype=ubifs root=ubi0:rootfs rw rootwait console=ttyS0,115200 earlyprintk=sunxi-uart,0x02500000";
+		bootargs = "mem=128M ubi.mtd=3 rootfstype=ubifs root=ubi0:rootfs rw rootwait console=ttyS0,115200 earlyprintk=sunxi-uart,0x02500000 init=/sbin/init";
 		stdout-path = "serial0:115200n8";
 	};
 
@@ -164,6 +164,23 @@
 		bias-pull-up;
 	};
 
+	uart0_pins_b: uart0_pins@1 {
+		pins = "PE2", "PE3";
+		function = "gpio_in";
+	};
+
+	uart2_pins_a: uart2_pins@0 {
+		pins = "PE2", "PE3";
+		function = "uart2";
+		drive-strength = <10>;
+		bias-pull-up;
+	};
+
+	uart2_pins_b: uart2_pins@1 {
+		pins = "PE2", "PE3";
+		function = "gpio_in";
+	};
+
 	pwm2_pin_a: pwm2@0 {
 		pins = "PE8";
 		function = "pwm2";
@@ -187,6 +204,13 @@
         function = "gpio_in";
         bias-pull-up;
     };
+};
+
+&uart0 {
+	pinctrl-names = "default", "sleep";
+	pinctrl-0 = <&uart0_pins_a>;
+	pinctrl-1 = <&uart0_pins_b>;
+	status = "okay";
 };
 
 &uart1 {
@@ -215,26 +239,26 @@
 		reg = <0>;
 
 		partition@0 {
-				label = "awboot";
-				reg = <0x0 0x40000>;	/* 256K */
-				read-only;
+			label = "awboot";
+			reg = <0x0 0x40000>;	/* 256K */
+			read-only;
 		};
 
 		partition@40000 {
-				label = "dtb";
-				reg = <0x40000 0x40000>;  /* 256k */
-				read-only;
+			label = "dtb";
+			reg = <0x40000 0x40000>;  /* 256k */
+			read-only;
 		};
 
 		partition@80000 {
-				label = "kernel";
-				reg = <0x80000 0x780000>;  /* 7.5MB */
-				read-only;
+			label = "kernel";
+			reg = <0x80000 0x780000>;  /* 7.5MB */
+			read-only;
 		};
 
 		partition@800000 {
-				label = "rootfs";
-				reg = <0x800000 0x7800000>;
+			label = "rootfs";
+			reg = <0x800000 0x7800000>;
 		};
 	};
 };
@@ -357,12 +381,6 @@
 // 	pinctrl-1 = <&pwm2_pin_b>;
 // 	status = "okay";
 // };
-
-&uart0 {
-	pinctrl-names = "default";
-	pinctrl-0 = <&uart0_pins_a>;
-	status = "okay";
-};
 
 &i2c1 {
 	pinctrl-0 = <&i2c1_pins_a>;

@@ -119,22 +119,22 @@
         "window": {
           "display": 0,
           "maximized": false,
-          "pos_x": 9,
-          "pos_y": 2,
-          "size_x": 1022,
-          "size_y": 718
+          "pos_x": -7,
+          "pos_y": 0,
+          "size_x": 1294,
+          "size_y": 1559
         }
       },
       {
         "name": "coloryr.kicad_pcb",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
           "maximized": false,
-          "pos_x": 9,
-          "pos_y": 2,
-          "size_x": 1022,
-          "size_y": 718
+          "pos_x": 1273,
+          "pos_y": 0,
+          "size_x": 1294,
+          "size_y": 1559
         }
       }
     ]

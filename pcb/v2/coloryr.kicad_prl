@@ -115,26 +115,26 @@
     "files": [
       {
         "name": "coloryr.kicad_sch",
-        "open": false,
-        "window": {
-          "display": 0,
-          "maximized": false,
-          "pos_x": -7,
-          "pos_y": 0,
-          "size_x": 974,
-          "size_y": 1039
-        }
-      },
-      {
-        "name": "coloryr.kicad_pcb",
-        "open": false,
+        "open": true,
         "window": {
           "display": 0,
           "maximized": true,
           "pos_x": -8,
           "pos_y": -8,
-          "size_x": 1936,
-          "size_y": 1048
+          "size_x": 2576,
+          "size_y": 1568
+        }
+      },
+      {
+        "name": "coloryr.kicad_pcb",
+        "open": true,
+        "window": {
+          "display": 0,
+          "maximized": false,
+          "pos_x": 1273,
+          "pos_y": 0,
+          "size_x": 1294,
+          "size_y": 1559
         }
       }
     ]
