@@ -1,5 +1,7 @@
 sudo apt install flex bison bc libncurses-dev -y
 
+https://snapshots.linaro.org/gnu-toolchain/14.0-2023.06-1/arm-linux-gnueabihf/gcc-linaro-14.0.0-2023.06-x86_64_arm-linux-gnueabihf.tar.xz
+
 # boot
 
 export PATH=$PATH:~/Desktop/t113/arm-none-eabi/bin
@@ -80,3 +82,4 @@ xfel spinand write 0x80000 arch/arm/boot/zImage
 
 xfel spinand erase 0x800000 0x7800000
 xfel spinand write 0x800000 output/images/rootfs.ubi
+

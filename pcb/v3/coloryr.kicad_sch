@@ -48,48 +48,6 @@
 		)
 	)
 	(sheet
-		(at 40.64 27.94)
-		(size 26.67 26.67)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0.0000)
-		)
-		(uuid "7cd2301a-8437-4673-9160-d28ed0ba6f62")
-		(property "Sheetname" "T113"
-			(at 40.64 27.2284 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "t113.kicad_sch"
-			(at 40.64 55.1946 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-			)
-		)
-		(instances
-			(project "coloryr"
-				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
-					(page "3")
-				)
-			)
-		)
-	)
-	(sheet
 		(at 40.64 66.04)
 		(size 25.4 21.59)
 		(exclude_from_sim no)
@@ -169,6 +127,48 @@
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
 					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 38.1 24.13)
+		(size 26.67 26.67)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "a64ce204-e78e-4a81-b82d-779b06b2e2e4")
+		(property "Sheetname" "rk3506"
+			(at 38.1 23.4184 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "rk3506.kicad_sch"
+			(at 38.1 51.3846 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
+					(page "2")
 				)
 			)
 		)
