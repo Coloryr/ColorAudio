@@ -1,3 +1,8 @@
 /doc
 /pcb/v1(error)
 /pcb/v2(out)/coloryr-backups
+/pcb/v2/coloryr-backups
+linux/update.img
+pcb/v2/~coloryr.kicad_pcb.lck
+pcb/v2/~coloryr.kicad_sch.lck
+linux/MiniLoaderAll.bin

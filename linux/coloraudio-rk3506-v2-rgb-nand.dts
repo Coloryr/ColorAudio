@@ -14,7 +14,7 @@
 	compatible = "rockchip,coloraudio-v2", "rockchip,rk3506";
 
 	chosen {
-		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 console=ttyFIQ0 ubi.mtd=5 root=ubi0:rootfs rw rootfstype=ubifs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1";
+		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 loglevel=7 console=ttyFIQ0 ubi.mtd=5 root=ubi0:rootfs rw rootfstype=ubifs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1";
 	};
 	
 	vcc3v3_lcd_n: vcc3v3-lcd0-n {
@@ -51,7 +51,24 @@
 		//pinctrl-names = "default";
 		//pinctrl-0 = <&vcc5v0_otg1_en>;
     };
-		
+
+	clocks {
+		mclkout_sai3 {
+			status = "okay";
+			clock-frequency = <24576000>;  // 24.576MHz
+		};
+	};
+
+	dummy_codec: dummy-codec {
+		status = "okay";
+        #sound-dai-cells = <0>;
+        compatible = "rockchip,dummy-codec";
+        clocks = <&mclkout_sai3>;
+		clock-names = "mclk";
+		pinctrl-names = "default";
+		pinctrl-0 = <&dac_mclk>;
+    };
+
 	acodec_sound: acodec-sound {
 		status = "okay";
 		compatible = "simple-audio-card";
@@ -64,8 +81,23 @@
 			sound-dai = <&sai3>;
 		};
 		codec_master: simple-audio-card,codec {
-			//sound-dai = <&audio_codec>;
-			sound-dai = <&cs43198_1>;
+			sound-dai = <&audio_codec>;
+		};
+	};
+
+	dac_sound: dac-sound {
+		status = "okay";
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "cirrus,cs43198";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,mclk-fs = <512>;
+		simple-audio-card,bitclock-master = <&dac_master>;
+		simple-audio-card,frame-master = <&dac_master>;
+		simple-audio-card,cpu {
+			sound-dai = <&sai3>;
+		};
+		dac_master: simple-audio-card,codec {
+		    sound-dai = <&dummy_codec>;
 		};
 	};
 
@@ -116,13 +148,13 @@
 
 		work_led: work-led {
 			gpios = <&gpio0 RK_PB3 GPIO_ACTIVE_HIGH>;
-			default-state = "heartbeat";
+			linux,default-trigger = "heartbeat";
 			pinctrl-names = "default";
 			pinctrl-0 = <&leds_gpio>;
 		};
 		power: power {
-			gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_LOW>;
-			default-state = "on";
+			gpios = <&gpio3 RK_PB6 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "default-on";
 			pinctrl-names = "default";
 			pinctrl-0 = <&power_gpio>;
 		};
@@ -137,7 +169,7 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&power_key_io>;
 			gpios = <&gpio3 RK_PB5 GPIO_ACTIVE_LOW>;
-			linux,code = <KEY_POWER>;
+			linux,code = <0x01>;
 			wakeup-source;
 		};
 
@@ -146,7 +178,7 @@
 			pinctrl-names = "default";
 			pinctrl-0 = <&rotary_key_io>;
 			gpios = <&gpio3 RK_PB4 GPIO_ACTIVE_LOW>;
-			// linux,code = <KEY_ROTARY>;
+			linux,code = <0x02>;
 			wakeup-source;
 		};
 	};
@@ -342,7 +374,7 @@
 			rockchip,pins = <0 RK_PB3 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 		power_gpio: power-gpio {
-			rockchip,pins = <0 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
+			rockchip,pins = <3 RK_PB6 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
 
@@ -375,7 +407,10 @@
 
 	dac {
 		dac_gpio: dac-gpio {
-			rockchip,pins = <0 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>, <3 RK_PA7 RK_FUNC_GPIO &pcfg_pull_none>, <2 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
+			rockchip,pins = <0 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>, <3 RK_PA7 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+		dac_mclk: dac-mclk {
+			rockchip,pins = <2 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
 
@@ -483,20 +518,16 @@
 		reg = <0x33>;
 		clocks = <&mclkout_sai3>;
 		clock-names = "mclk";
-		assigned-clocks = <&mclkout_sai3>;
-		assigned-clock-rates = <24576000>;
 		reset-gpios = <&gpio3 RK_PA7 GPIO_ACTIVE_LOW>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&dac_gpio>;
 		interrupt-parent = <&gpio0>;
    		interrupts = <RK_PB4 IRQ_TYPE_EDGE_FALLING>;
-		cirrus,ac-freq = /bits/ 32 <24 43 93 200 431 928 2000 4309 9283 20000>;
 	};
 
 	cs43198_2: audio-codec@30 {
 		compatible = "cirrus,cs43198";
 		reg = <0x30>;
-		cirrus,ac-freq = /bits/ 32 <24 43 93 200 431 928 2000 4309 9283 20000>;
 	};
 };
 
@@ -565,13 +596,13 @@
 };
 
 &u2phy_otg0 {
-        vbus-supply = <&vcc5v0_otg0>;
-        status = "okay";
+	vbus-supply = <&vcc5v0_otg0>;
+	status = "okay";
 };
 
 &u2phy_otg1 {
-        phy-supply = <&vcc5v0_otg1>;
-        status = "okay";
+	phy-supply = <&vcc5v0_otg1>;
+	status = "okay";
 };
 
 
@@ -594,9 +625,9 @@
 };
 
 &pwm0_4ch_2 {
-        pinctrl-names = "active";
-        pinctrl-0 = <&rm_io4_pwm0_ch2>;
-        status = "okay";
+	pinctrl-names = "active";
+	pinctrl-0 = <&rm_io13_pwm0_ch2>;
+	status = "okay";
 };
 
 &rgb {
