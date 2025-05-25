@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 5,
+    "active_layer": 0,
     "active_layer_preset": "",
     "auto_track_width": false,
     "hidden_netclasses": [],
@@ -115,7 +115,7 @@
     "files": [
       {
         "name": "coloryr.kicad_pcb",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
           "maximized": true,
@@ -123,30 +123,6 @@
           "pos_y": -8,
           "size_x": 2576,
           "size_y": 1568
-        }
-      },
-      {
-        "name": "coloryr.kicad_sch",
-        "open": true,
-        "window": {
-          "display": 0,
-          "maximized": false,
-          "pos_x": 1273,
-          "pos_y": 0,
-          "size_x": 1294,
-          "size_y": 1559
-        }
-      },
-      {
-        "name": "coloryr.kicad_pro",
-        "open": false,
-        "window": {
-          "display": 0,
-          "maximized": false,
-          "pos_x": 126,
-          "pos_y": 393,
-          "size_x": 954,
-          "size_y": 654
         }
       }
     ]
