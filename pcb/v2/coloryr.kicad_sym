@@ -8478,7 +8478,7 @@
 		(symbol "TFT_1_1"
 			(rectangle
 				(start 0 0)
-				(end 10.16 -101.6)
+				(end 10.16 -104.14)
 				(stroke
 					(width 0)
 					(type solid)
@@ -8497,7 +8497,7 @@
 						)
 					)
 				)
-				(number "1"
+				(number "40"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8515,7 +8515,7 @@
 						)
 					)
 				)
-				(number "2"
+				(number "39"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8533,7 +8533,7 @@
 						)
 					)
 				)
-				(number "3"
+				(number "38"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8551,7 +8551,7 @@
 						)
 					)
 				)
-				(number "4"
+				(number "37"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8569,7 +8569,7 @@
 						)
 					)
 				)
-				(number "5"
+				(number "36"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8587,7 +8587,7 @@
 						)
 					)
 				)
-				(number "6"
+				(number "35"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8605,7 +8605,7 @@
 						)
 					)
 				)
-				(number "7"
+				(number "34"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8623,7 +8623,7 @@
 						)
 					)
 				)
-				(number "8"
+				(number "33"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8641,7 +8641,7 @@
 						)
 					)
 				)
-				(number "9"
+				(number "32"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8659,7 +8659,7 @@
 						)
 					)
 				)
-				(number "10"
+				(number "31"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8677,7 +8677,7 @@
 						)
 					)
 				)
-				(number "11"
+				(number "30"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8695,7 +8695,7 @@
 						)
 					)
 				)
-				(number "12"
+				(number "29"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8713,7 +8713,7 @@
 						)
 					)
 				)
-				(number "13"
+				(number "28"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8731,7 +8731,7 @@
 						)
 					)
 				)
-				(number "14"
+				(number "27"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8749,7 +8749,7 @@
 						)
 					)
 				)
-				(number "15"
+				(number "26"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8767,7 +8767,7 @@
 						)
 					)
 				)
-				(number "16"
+				(number "25"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8785,7 +8785,7 @@
 						)
 					)
 				)
-				(number "17"
+				(number "24"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8803,7 +8803,7 @@
 						)
 					)
 				)
-				(number "18"
+				(number "23"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8821,7 +8821,7 @@
 						)
 					)
 				)
-				(number "19"
+				(number "22"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8839,7 +8839,7 @@
 						)
 					)
 				)
-				(number "20"
+				(number "21"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8857,7 +8857,7 @@
 						)
 					)
 				)
-				(number "21"
+				(number "20"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8875,7 +8875,7 @@
 						)
 					)
 				)
-				(number "22"
+				(number "19"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8893,7 +8893,7 @@
 						)
 					)
 				)
-				(number "23"
+				(number "18"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8911,7 +8911,7 @@
 						)
 					)
 				)
-				(number "24"
+				(number "17"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8929,7 +8929,7 @@
 						)
 					)
 				)
-				(number "25"
+				(number "16"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8947,7 +8947,7 @@
 						)
 					)
 				)
-				(number "26"
+				(number "15"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8965,7 +8965,7 @@
 						)
 					)
 				)
-				(number "27"
+				(number "14"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -8983,7 +8983,7 @@
 						)
 					)
 				)
-				(number "28"
+				(number "13"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9001,7 +9001,7 @@
 						)
 					)
 				)
-				(number "29"
+				(number "12"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9019,7 +9019,7 @@
 						)
 					)
 				)
-				(number "30"
+				(number "11"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9037,7 +9037,7 @@
 						)
 					)
 				)
-				(number "31"
+				(number "10"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9055,7 +9055,7 @@
 						)
 					)
 				)
-				(number "32"
+				(number "9"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9073,7 +9073,7 @@
 						)
 					)
 				)
-				(number "33"
+				(number "8"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9091,7 +9091,25 @@
 						)
 					)
 				)
-				(number "34"
+				(number "7"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin free line
+				(at -5.08 -88.9 0)
+				(length 5.08)
+				(name "NC"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "6"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9100,7 +9118,7 @@
 				)
 			)
 			(pin power_in line
-				(at -5.08 -88.9 0)
+				(at -5.08 -91.44 0)
 				(length 5.08)
 				(name "GND"
 					(effects
@@ -9109,25 +9127,7 @@
 						)
 					)
 				)
-				(number "36"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin bidirectional line
-				(at -5.08 -91.44 0)
-				(length 5.08)
-				(name "X1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "37"
+				(number "5"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9138,14 +9138,14 @@
 			(pin bidirectional line
 				(at -5.08 -93.98 0)
 				(length 5.08)
-				(name "Y1"
+				(name "X1"
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number "38"
+				(number "4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9156,14 +9156,14 @@
 			(pin bidirectional line
 				(at -5.08 -96.52 0)
 				(length 5.08)
-				(name "X2"
+				(name "Y1"
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number "39"
+				(number "3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -9174,6 +9174,24 @@
 			(pin bidirectional line
 				(at -5.08 -99.06 0)
 				(length 5.08)
+				(name "X2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin bidirectional line
+				(at -5.08 -101.6 0)
+				(length 5.08)
 				(name "Y2"
 					(effects
 						(font
@@ -9181,7 +9199,7 @@
 						)
 					)
 				)
-				(number "40"
+				(number "1"
 					(effects
 						(font
 							(size 1.27 1.27)
