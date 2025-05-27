@@ -17,3 +17,5 @@ config BT_AICBTUSB
 kernel/drivers/bluetooth/Makefile
 
 obj-$(CONFIG_BT_AICBTUSB) += aic_btusb.o
+
+mv wireless-regdb buildroot/package/wireless-regdb
