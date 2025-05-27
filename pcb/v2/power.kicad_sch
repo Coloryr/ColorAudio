@@ -13131,15 +13131,15 @@
 		(dnp no)
 		(uuid "99142564-e667-4bdd-b902-0708915096b1")
 		(property "Reference" "R25"
-			(at 246.634 112.522 90)
+			(at 246.38 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "100K"
-			(at 246.634 107.696 90)
+		(property "Value" "100K/NC"
+			(at 254.762 113.792 0)
 			(effects
 				(font
 					(size 1.27 1.27)
