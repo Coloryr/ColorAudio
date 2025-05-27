@@ -572,6 +572,7 @@
 
 &u2phy_otg0 {
 	vbus-supply = <&vcc5v0_otg0>;
+	rockchip,vbus-always-on;
 	status = "okay";
 };
 
@@ -630,10 +631,6 @@
 &route_rgb {
 	status = "okay";
 	connect = <&vop_out_rgb>;
-};
-
-&u2phy_otg0 {
-	rockchip,vbus-always-on;
 };
 
 &vop {
