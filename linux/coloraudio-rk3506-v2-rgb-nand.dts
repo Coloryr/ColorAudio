@@ -337,12 +337,12 @@
 			};
 		};
 	};
-};
 
-// &cru {
-// 	assigned-clocks = <&cru MCLK_OUT_SAI3>;
-//     assigned-clock-rates = <24576000>;  
-// };
+	wireless-bluetooth {
+		compatible = "bluetooth-platdata";
+		status = "okay";
+	};
+};
 
 &pinctrl {
 	sdcard {
