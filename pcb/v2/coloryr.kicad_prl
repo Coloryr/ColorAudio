@@ -112,7 +112,20 @@
   },
   "open_jobsets": [],
   "project": {
-    "files": []
+    "files": [
+      {
+        "name": "coloryr.kicad_sch",
+        "open": false,
+        "window": {
+          "display": 0,
+          "maximized": false,
+          "pos_x": -7,
+          "pos_y": 0,
+          "size_x": 974,
+          "size_y": 1039
+        }
+      }
+    ]
   },
   "schematic": {
     "selection_filter": {
