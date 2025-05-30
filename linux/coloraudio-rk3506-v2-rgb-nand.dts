@@ -337,11 +337,6 @@
 			};
 		};
 	};
-
-	wireless-bluetooth {
-		compatible = "bluetooth-platdata";
-		status = "okay";
-	};
 };
 
 &pinctrl {
@@ -482,7 +477,7 @@
 		interrupt-parent = <&gpio0>;
 		interrupts = <RK_PC2 IRQ_TYPE_EDGE_FALLING>;
 		ti,battery-regulation-voltage = <4200000>; /* 4.2V */
-		ti,charge-current = <1000000>; /* 2A */
+		ti,charge-current = <2000000>; /* 2A */
 		ti,termination-current = <66000>;  /* 66mA */
 		ti,precharge-current = <130000>; /* 130mA */
 		ti,minimum-sys-voltage = <3000000>; /* 3V */
@@ -596,6 +591,12 @@
 
 &display_subsystem {
 	logo-memory-region = <&drm_logo>;
+	status = "okay";
+};
+
+&pwm0_4ch_0 {
+	pinctrl-names = "active";
+	pinctrl-0 = <&rm_io21_pwm0_ch0>;
 	status = "okay";
 };
 

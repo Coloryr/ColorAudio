@@ -18,4 +18,9 @@ kernel/drivers/bluetooth/Makefile
 
 obj-$(CONFIG_BT_AICBTUSB) += aic_btusb.o
 
-mv wireless-regdb buildroot/package/wireless-regdb
+kernel/drivers/power/supply/bq25890_charger.c
+
+bq25890_field_write(bq, F_AUTO_DPDM_EN, 0);
+bq25890_field_write(bq, F_EN_ILIM, 0);
+bq25890_field_write(bq, F_IINLIM, bq25890_find_idx(1000000, TBL_IINLIM));
+dev_info(bq->dev, "bq25700 set done\n");
