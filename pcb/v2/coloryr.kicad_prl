@@ -122,7 +122,19 @@
           "pos_x": 1273,
           "pos_y": 0,
           "size_x": 1294,
-          "size_y": 1100
+          "size_y": 1559
+        }
+      },
+      {
+        "name": "coloryr.kicad_sch",
+        "open": true,
+        "window": {
+          "display": 0,
+          "maximized": false,
+          "pos_x": -7,
+          "pos_y": 0,
+          "size_x": 1294,
+          "size_y": 1559
         }
       }
     ]
