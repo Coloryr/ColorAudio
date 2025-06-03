@@ -136,6 +136,18 @@
           "size_x": 1294,
           "size_y": 1559
         }
+      },
+      {
+        "name": "coloryr.kicad_pro",
+        "open": false,
+        "window": {
+          "display": 0,
+          "maximized": false,
+          "pos_x": 173,
+          "pos_y": 152,
+          "size_x": 954,
+          "size_y": 654
+        }
       }
     ]
   },
