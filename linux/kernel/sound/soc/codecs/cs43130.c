@@ -629,25 +629,25 @@ static int cs43130_set_sp_fmt(int dai_id, unsigned int bitwidth_sclk,
 	switch (dai_id) {
 	case CS43130_ASP_PCM_DAI:
 	case CS43130_ASP_DOP_DAI:
-		regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_PERIOD_1,
-			CS43130_SP_LCPR_DATA_MASK, (frm_size - 1) >>
-			CS43130_SP_LCPR_LSB_DATA_SHIFT);
-		regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_PERIOD_2,
-			CS43130_SP_LCPR_DATA_MASK, (frm_size - 1) >>
-			CS43130_SP_LCPR_MSB_DATA_SHIFT);
-		regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_HI_TIME_1,
-			CS43130_SP_LCHI_DATA_MASK, (hi_size - 1) >>
-			CS43130_SP_LCHI_LSB_DATA_SHIFT);
-		regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_HI_TIME_2,
-			CS43130_SP_LCHI_DATA_MASK, (hi_size - 1) >>
-			CS43130_SP_LCHI_MSB_DATA_SHIFT);
-		regmap_write(cs43130->regmap, CS43130_ASP_FRAME_CONF, frm_data);
-		regmap_write(cs43130->regmap, CS43130_ASP_CH_1_LOC, loc_ch1);
-		regmap_write(cs43130->regmap, CS43130_ASP_CH_2_LOC, loc_ch2);
-		regmap_update_bits(cs43130->regmap, CS43130_ASP_CH_1_SZ_EN,
-			CS43130_CH_EN_MASK, 1 << CS43130_CH_EN_SHIFT);
-		regmap_update_bits(cs43130->regmap, CS43130_ASP_CH_2_SZ_EN,
-			CS43130_CH_EN_MASK, 1 << CS43130_CH_EN_SHIFT);
+		// regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_PERIOD_1,
+		// 	CS43130_SP_LCPR_DATA_MASK, (frm_size - 1) >>
+		// 	CS43130_SP_LCPR_LSB_DATA_SHIFT);
+		// regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_PERIOD_2,
+		// 	CS43130_SP_LCPR_DATA_MASK, (frm_size - 1) >>
+		// 	CS43130_SP_LCPR_MSB_DATA_SHIFT);
+		// regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_HI_TIME_1,
+		// 	CS43130_SP_LCHI_DATA_MASK, (hi_size - 1) >>
+		// 	CS43130_SP_LCHI_LSB_DATA_SHIFT);
+		// regmap_update_bits(cs43130->regmap, CS43130_ASP_LRCK_HI_TIME_2,
+		// 	CS43130_SP_LCHI_DATA_MASK, (hi_size - 1) >>
+		// 	CS43130_SP_LCHI_MSB_DATA_SHIFT);
+		// regmap_write(cs43130->regmap, CS43130_ASP_FRAME_CONF, frm_data);
+		// regmap_write(cs43130->regmap, CS43130_ASP_CH_1_LOC, loc_ch1);
+		// regmap_write(cs43130->regmap, CS43130_ASP_CH_2_LOC, loc_ch2);
+		// regmap_update_bits(cs43130->regmap, CS43130_ASP_CH_1_SZ_EN,
+		// 	CS43130_CH_EN_MASK, 1 << CS43130_CH_EN_SHIFT);
+		// regmap_update_bits(cs43130->regmap, CS43130_ASP_CH_2_SZ_EN,
+		// 	CS43130_CH_EN_MASK, 1 << CS43130_CH_EN_SHIFT);
 		regmap_write(cs43130->regmap, CS43130_ASP_CLOCK_CONF, clk_data);
 		break;
 	case CS43130_XSP_DOP_DAI:
@@ -2334,20 +2334,20 @@ static int cs43130_probe(struct snd_soc_component *component)
 			   CS43130_HP_DETECT_CTRL_MASK,
 			   CS43130_HP_DETECT_CTRL_MASK);
 	
-	dev_info(component->dev, "start mclk output\n");
-	/* Setup clocks */
-	cs43130->clk = devm_clk_get(component->dev, NULL);
-	if (IS_ERR(cs43130->clk)) {
-		dev_err(component->dev, "codec clock missing or invalid\n");
-		ret = PTR_ERR(cs43130->clk);
-		return ret;
-	}
+	// dev_info(component->dev, "start mclk output\n");
+	// /* Setup clocks */
+	// cs43130->clk = devm_clk_get(component->dev, NULL);
+	// if (IS_ERR(cs43130->clk)) {
+	// 	dev_err(component->dev, "codec clock missing or invalid\n");
+	// 	ret = PTR_ERR(cs43130->clk);
+	// 	return ret;
+	// }
 
-	ret = clk_prepare_enable(cs43130->clk);
-	if (ret) {
-		dev_err(component->dev, "unable to prepare codec clk\n");
-		return ret;
-	}	
+	// ret = clk_prepare_enable(cs43130->clk);
+	// if (ret) {
+	// 	dev_err(component->dev, "unable to prepare codec clk\n");
+	// 	return ret;
+	// }	
 
 	return 0;
 }
