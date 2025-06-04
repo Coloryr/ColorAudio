@@ -217,6 +217,10 @@ static const struct cs43130_pll_params pll_ratio_table[] = {
 	{26000000, 0x03, 0x3C, 0x7EA940, 0x01, 0x08, 24576000, 121},
 };
 
+static int cs43130_component_set_sysclk(struct snd_soc_component *component,
+				    int clk_id, int source, unsigned int freq,
+				    int dir);
+
 static const struct cs43130_pll_params *cs43130_get_pll_table(
 		unsigned int freq_in, unsigned int freq_out)
 {
@@ -1606,6 +1610,8 @@ static int cs43130_set_sysclk(struct snd_soc_dai *codec_dai,
 	dev_info(cs43130->dev, "dai_id = %d,  sclk = %u\n", codec_dai->id,
 		cs43130->dais[codec_dai->id].sclk);
 
+	cs43130_component_set_sysclk(component, clk_id, CS43130_MCLK_SRC_EXT, freq, dir);
+
 	return 0;
 }
 
@@ -2389,6 +2395,20 @@ static int cs43130_probe(struct snd_soc_component *component)
 			   CS43130_HP_DETECT_CTRL_MASK,
 			   CS43130_HP_DETECT_CTRL_MASK);
 
+	/* Setup clocks */
+	cs43130->clk = devm_clk_get(component->dev, NULL);
+	if (IS_ERR(cs43130->clk)) {
+		dev_err(cs43130->dev, "codec clock missing or invalid\n");
+		ret = PTR_ERR(cs43130->clk);
+		return ret;
+	}
+
+	ret = clk_prepare_enable(cs43130->clk);
+	if (ret) {
+		dev_err(cs43130->dev, "unable to prepare codec clk\n");
+		return ret;
+	}	
+	
 	return 0;
 }
 
@@ -2434,7 +2454,7 @@ static const struct regmap_config cs43130_regmap = {
 	.readable_reg		= cs43130_readable_register,
 	.precious_reg		= cs43130_precious_register,
 	.volatile_reg		= cs43130_volatile_register,
-	.cache_type		= REGCACHE_MAPLE,
+	.cache_type		= REGCACHE_RBTREE,
 	/* needed for regcache_sync */
 	.use_single_read	= true,
 	.use_single_write	= true,

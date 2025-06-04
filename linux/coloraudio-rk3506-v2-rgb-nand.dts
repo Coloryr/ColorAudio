@@ -14,7 +14,7 @@
 	compatible = "rockchip,coloraudio-v2", "rockchip,rk3506";
 
 	chosen {
-		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 loglevel=7 console=ttyFIQ0 ubi.mtd=5 root=ubi0:rootfs rw rootfstype=ubifs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1";
+		bootargs = "earlycon=uart8250,mmio32,0xff0a0000 loglevel=8 console=ttyFIQ0 ubi.mtd=5 root=ubi0:rootfs rw rootfstype=ubifs rootwait snd_aloop.index=7 snd_aloop.use_raw_jiffies=1";
 	};
 	
 	vcc3v3_lcd_n: vcc3v3-lcd0-n {
@@ -129,20 +129,32 @@
 	// 	clock-names = "mclk";
     // };
 
-	dac_sound: dac-sound {
-		status = "okay";
-		compatible = "simple-audio-card";
-		simple-audio-card,name = "cirrus,cs43198";
-		simple-audio-card,format = "i2s";
-		simple-audio-card,mclk-fs = <256>;
-		simple-audio-card,bitclock-master = <&dac_master>;
-		simple-audio-card,frame-master = <&dac_master>;
-		simple-audio-card,cpu {
-			sound-dai = <&sai3>;
-		};
-		dac_master: simple-audio-card,codec {
-		    sound-dai = <&cs43198_1>;
-		};
+	// dac_sound: dac-sound {
+	// 	status = "okay";
+	// 	compatible = "simple-audio-card";
+	// 	simple-audio-card,name = "cirrus,cs43198";
+	// 	simple-audio-card,format = "i2s";
+	// 	simple-audio-card,mclk-fs = <512>;
+	// 	simple-audio-card,bitclock-master = <&dac_master>;
+	// 	simple-audio-card,frame-master = <&dac_master>;
+	// 	simple-audio-card,cpu {
+	// 		sound-dai = <&sai3>;
+	// 	};
+	// 	dac_master: simple-audio-card,codec {
+	// 	    sound-dai = <&cs43198_1>;
+	// 	};
+	// };
+
+	sai3_cs43198_sound: sai3-cs43198-sound {
+		compatible = "rockchip,multicodecs-card";
+		rockchip,card-name = "sai3-cs43198";
+		rockchip,format = "i2s";
+		rockchip,mclk-fs = <512>;
+		rockchip,cpu = <&sai3>;
+		rockchip,codec = <&cs43198_1>;
+		rockchip,audio-routing =
+			"Headphone", "HPOUTA",
+			"Headphone", "HPOUTB";
 	};
 
 	adc_keys: adc-keys {
@@ -370,8 +382,7 @@
 
 	dac {
 		dac_gpio: dac-gpio {
-			rockchip,pins = <0 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>, 
-				<2 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
+			rockchip,pins = <0 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 		dac_reset_gpio: dac-reset-gpio {
 			rockchip,pins = <3 RK_PA7 RK_FUNC_GPIO &pcfg_pull_up>;
@@ -479,6 +490,7 @@
 		     &rm_io16_i2c2_sda>;
 
 	cs43198_1: audio-codec@33 {
+		status = "okay";
 		#sound-dai-cells = <0>;
 		compatible = "cirrus,cs43198";
 		reg = <0x33>;
@@ -487,15 +499,16 @@
 		assigned-clocks = <&mclkout_sai3>;
 		assigned-clock-rates = <24576000>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&dac_gpio>;
-		interrupt-parent = <&gpio0>;
-   		interrupts = <RK_PB4 IRQ_TYPE_EDGE_FALLING>;
+		pinctrl-0 = <&sai3_mclk_pins>;
+		// pinctrl-0 = <&dac_gpio &sai3_mclk_pins>;
+		// interrupt-parent = <&gpio0>;
+   		// interrupts = <RK_PB4 IRQ_TYPE_EDGE_FALLING>;
 	};
 
-	cs43198_2: audio-codec@30 {
-		compatible = "cirrus,cs43198";
-		reg = <0x30>;
-	};
+	// cs43198_2: audio-codec@30 {
+	// 	compatible = "cirrus,cs43198";
+	// 	reg = <0x30>;
+	// };
 };
 
 &mmc {

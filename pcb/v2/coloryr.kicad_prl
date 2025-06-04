@@ -115,7 +115,7 @@
     "files": [
       {
         "name": "coloryr.kicad_pcb",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
           "maximized": false,
@@ -134,7 +134,7 @@
           "pos_x": -7,
           "pos_y": 0,
           "size_x": 1294,
-          "size_y": 1559
+          "size_y": 1100
         }
       },
       {

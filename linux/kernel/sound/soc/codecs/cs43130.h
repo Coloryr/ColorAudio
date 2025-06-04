@@ -11,6 +11,7 @@
 #define __CS43130_H__
 
 #include <linux/math.h>
+#include <linux/clk.h>
 
 /* CS43130 registers addresses */
 /* all reg address is shifted by a byte for control byte to be LSB */
@@ -536,6 +537,7 @@ struct	cs43130_private {
 	struct workqueue_struct		*wq;
 	struct work_struct		work;
 	struct snd_soc_jack		jack;
+	struct clk *clk;
 };
 
 #endif	/* __CS43130_H__ */
