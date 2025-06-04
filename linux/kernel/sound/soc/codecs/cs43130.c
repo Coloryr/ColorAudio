@@ -1631,10 +1631,10 @@ static int cs43130_component_set_sysclk(struct snd_soc_component *component,
 {
 	struct cs43130_private *cs43130 = snd_soc_component_get_drvdata(component);
 
+	freq = CS43130_MCLK_24M;
+
 	dev_info(component->dev, "clk_id = %d, source = %d, freq = %d, dir = %d\n",
 		clk_id, source, freq, dir);
-
-	freq = CS43130_MCLK_24M;
 
 	switch (freq) {
 	case CS43130_MCLK_22M:
@@ -2333,6 +2333,21 @@ static int cs43130_probe(struct snd_soc_component *component)
 	regmap_update_bits(cs43130->regmap, CS43130_HP_DETECT,
 			   CS43130_HP_DETECT_CTRL_MASK,
 			   CS43130_HP_DETECT_CTRL_MASK);
+	
+	dev_info(cs43130->dev, "start mclk output\n");
+	/* Setup clocks */
+	cs43130->clk = devm_clk_get(component->dev, NULL);
+	if (IS_ERR(cs43130->clk)) {
+		dev_err(component->dev, "codec clock missing or invalid\n");
+		ret = PTR_ERR(cs43130->clk);
+		return ret;
+	}
+
+	ret = clk_prepare_enable(cs43130->clk);
+	if (ret) {
+		dev_err(component->dev, "unable to prepare codec clk\n");
+		return ret;
+	}	
 
 	return 0;
 }
@@ -2461,12 +2476,11 @@ static int cs43130_i2c_probe(struct i2c_client *client)
 
 	cs43130->reset_gpio = devm_gpiod_get_optional(&client->dev,
 						      "reset", GPIOD_OUT_LOW);
-	if (IS_ERR(cs43130->reset_gpio)) {
-		ret = PTR_ERR(cs43130->reset_gpio);
-		goto err_supplies;
-	}
 
-	gpiod_set_value_cansleep(cs43130->reset_gpio, 1);
+	if (cs43130->reset_gpio)
+	{
+		gpiod_set_value_cansleep(cs43130->reset_gpio, 1);
+	}
 
 	usleep_range(2000, 2050);
 
@@ -2509,13 +2523,16 @@ static int cs43130_i2c_probe(struct i2c_client *client)
 	init_completion(&cs43130->pll_rdy);
 	init_completion(&cs43130->hpload_evt);
 
-	ret = devm_request_threaded_irq(&client->dev, client->irq,
-					NULL, cs43130_irq_thread,
-					IRQF_ONESHOT | IRQF_TRIGGER_LOW,
-					"cs43130", cs43130);
-	if (ret != 0) {
-		dev_err(&client->dev, "Failed to request IRQ: %d\n", ret);
-		goto err;
+	if (client->irq)
+	{
+		ret = devm_request_threaded_irq(&client->dev, client->irq,
+						NULL, cs43130_irq_thread,
+						IRQF_ONESHOT | IRQF_TRIGGER_LOW,
+						"cs43130", cs43130);
+		if (ret != 0) {
+			dev_err(&client->dev, "Failed to request IRQ: %d\n", ret);
+			goto err;
+		}
 	}
 
 	cs43130->mclk_int_src = CS43130_MCLK_SRC_RCO;
@@ -2576,7 +2593,10 @@ static int cs43130_i2c_probe(struct i2c_client *client)
 	return 0;
 
 err:
-	gpiod_set_value_cansleep(cs43130->reset_gpio, 0);
+	if (cs43130->reset_gpio)
+	{
+		gpiod_set_value_cansleep(cs43130->reset_gpio, 0);
+	}
 err_supplies:
 	// regulator_bulk_disable(ARRAY_SIZE(cs43130->supplies),
 	// 		       cs43130->supplies);
@@ -2607,7 +2627,10 @@ static void cs43130_i2c_remove(struct i2c_client *client)
 		device_remove_file(&client->dev, &dev_attr_hpload_ac_r);
 	}
 
-	gpiod_set_value_cansleep(cs43130->reset_gpio, 0);
+	if (cs43130->reset_gpio)
+	{
+		gpiod_set_value_cansleep(cs43130->reset_gpio, 0);
+	}
 
 	pm_runtime_disable(&client->dev);
 	// regulator_bulk_disable(CS43130_NUM_SUPPLIES, cs43130->supplies);
@@ -2625,7 +2648,10 @@ static int __maybe_unused cs43130_runtime_suspend(struct device *dev)
 	regcache_cache_only(cs43130->regmap, true);
 	regcache_mark_dirty(cs43130->regmap);
 
-	gpiod_set_value_cansleep(cs43130->reset_gpio, 0);
+	if (cs43130->reset_gpio)
+	{
+		gpiod_set_value_cansleep(cs43130->reset_gpio, 0);
+	}
 
 	// regulator_bulk_disable(CS43130_NUM_SUPPLIES, cs43130->supplies);
 
@@ -2637,15 +2663,18 @@ static int __maybe_unused cs43130_runtime_resume(struct device *dev)
 	struct cs43130_private *cs43130 = dev_get_drvdata(dev);
 	int ret;
 
-	ret = regulator_bulk_enable(CS43130_NUM_SUPPLIES, cs43130->supplies);
-	if (ret != 0) {
-		dev_err(dev, "Failed to enable supplies: %d\n", ret);
-		return ret;
-	}
+	// ret = regulator_bulk_enable(CS43130_NUM_SUPPLIES, cs43130->supplies);
+	// if (ret != 0) {
+	// 	dev_err(dev, "Failed to enable supplies: %d\n", ret);
+	// 	return ret;
+	// }
 
 	regcache_cache_only(cs43130->regmap, false);
 
-	gpiod_set_value_cansleep(cs43130->reset_gpio, 1);
+	if (cs43130->reset_gpio)
+	{
+		gpiod_set_value_cansleep(cs43130->reset_gpio, 1);
+	}
 
 	usleep_range(2000, 2050);
 
