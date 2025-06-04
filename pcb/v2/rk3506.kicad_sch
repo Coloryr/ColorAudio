@@ -4021,6 +4021,16 @@
 	)
 	(wire
 		(pts
+			(xy 342.9 74.93) (xy 353.06 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "056401b3-1209-42d6-86d7-390a57df1565")
+	)
+	(wire
+		(pts
 			(xy 152.4 246.38) (xy 154.94 246.38)
 		)
 		(stroke
@@ -4138,6 +4148,16 @@
 			(type default)
 		)
 		(uuid "1a825dbe-2514-43a4-9073-ab1f4dfb68f0")
+	)
+	(wire
+		(pts
+			(xy 68.58 156.21) (xy 83.82 156.21)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1d88984e-7bd1-4098-ad0b-965a89c37752")
 	)
 	(wire
 		(pts
@@ -4998,16 +5018,6 @@
 			(type default)
 		)
 		(uuid "a56f5ee7-82eb-4b29-9372-bfa7e11a0c57")
-	)
-	(wire
-		(pts
-			(xy 68.58 156.21) (xy 83.82 156.21)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a880e743-631a-4399-8205-f2b4149bd89e")
 	)
 	(wire
 		(pts
@@ -6091,6 +6101,28 @@
 			)
 		)
 	)
+	(global_label "DAC_PWM"
+		(shape input)
+		(at 353.06 74.93 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3d7b6bb7-7275-4d84-8162-737bb3651c34")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 364.8142 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "DAC_RESET"
 		(shape input)
 		(at 68.58 179.07 180)
@@ -6126,28 +6158,6 @@
 		(uuid "411cf55c-3ea4-4c96-8d4e-81e6c7f15d07")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 58.5796 102.87 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "DAC_MCLK"
-		(shape input)
-		(at 68.58 156.21 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "428f2ef0-7661-4900-a820-115838f2657d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 55.9791 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6852,6 +6862,28 @@
 		(uuid "c2b41ee6-0c9b-4ff0-a934-2abbf4061c87")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 58.1563 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "DAC_MCLK"
+		(shape input)
+		(at 68.58 156.21 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c83b4c40-d297-4e76-aec2-809c5c7dc4fb")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 55.9791 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
