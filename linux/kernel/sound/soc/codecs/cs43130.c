@@ -2334,7 +2334,7 @@ static int cs43130_probe(struct snd_soc_component *component)
 			   CS43130_HP_DETECT_CTRL_MASK,
 			   CS43130_HP_DETECT_CTRL_MASK);
 	
-	dev_info(cs43130->dev, "start mclk output\n");
+	dev_info(component->dev, "start mclk output\n");
 	/* Setup clocks */
 	cs43130->clk = devm_clk_get(component->dev, NULL);
 	if (IS_ERR(cs43130->clk)) {
