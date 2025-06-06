@@ -1,5 +1,3 @@
 mount /dev/mmcblk0p1   /mnt/sdcard
-aplay -v -D hw:0 --dump-hw-params
-aplay -c 2 -r 96000 -f S24_LE starlog\ -\ ChouCho.flac
 
 export AUDIODEV=hw:0,0

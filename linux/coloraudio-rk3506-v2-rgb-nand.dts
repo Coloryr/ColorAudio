@@ -121,41 +121,84 @@
 		pwm-supply = <&vcc_sys>;
 	};
 
-	// dummy_codec: dummy-codec {
-	// 	status = "okay";
-    //     #sound-dai-cells = <0>;
-    //     compatible = "rockchip,dummy-codec";
-    //     clocks = <&mclkout_sai3>;
-	// 	clock-names = "mclk";
-    // };
+	dummy_codec: dummy-codec {
+		status = "okay";
+        #sound-dai-cells = <0>;
+        compatible = "rockchip,dummy-codec";
+        clocks = <&mclkout_sai1>;
+		clock-names = "mclk";
+		assigned-clocks = <&mclkout_sai1>;
+		assigned-clock-rates = <24576000>;
+    };
 
-	// dac_sound: dac-sound {
+	// dac_sound_link: dac-sound-link {
+	// 	status = "okay";
+	// 	compatible = "rockchip,multicodecs-card";
+	// 	rockchip,card-name = "cirrus,cs43198-link";
+	// 	rockchip,format = "i2s";
+	// 	rockchip,mclk-fs = <256>;
+	// 	rockchip,cpu = <&sai3>;
+	// 	rockchip,codec = <&cs43198_1>, <&cs43198_2>;
+	// 	rockchip,audio-routing =
+	// 		"Headphone", "HPOUTA",
+	// 		"Headphone", "HPOUTB";
+	// };
+
+	// dac_sound_link: dac-sound-link {
 	// 	status = "okay";
 	// 	compatible = "simple-audio-card";
-	// 	simple-audio-card,name = "cirrus,cs43198";
+	// 	simple-audio-card,name = "cirrus,cs43198-1";
 	// 	simple-audio-card,format = "i2s";
-	// 	simple-audio-card,mclk-fs = <512>;
-	// 	simple-audio-card,bitclock-master = <&dac_master>;
-	// 	simple-audio-card,frame-master = <&dac_master>;
+	// 	simple-audio-card,mclk-fs = <256>;
 	// 	simple-audio-card,cpu {
 	// 		sound-dai = <&sai3>;
 	// 	};
-	// 	dac_master: simple-audio-card,codec {
-	// 	    sound-dai = <&cs43198_1>;
+	// 	simple-audio-card,codec {
+	// 	    sound-dai = <&cs43198_1>, <&cs43198_2>;
 	// 	};
 	// };
 
-	sai3_cs43198_sound: sai3-cs43198-sound {
-		compatible = "rockchip,multicodecs-card";
-		rockchip,card-name = "sai3-cs43198";
-		rockchip,format = "i2s";
-		rockchip,mclk-fs = <512>;
-		rockchip,cpu = <&sai3>;
-		rockchip,codec = <&cs43198_1>;
-		rockchip,audio-routing =
-			"Headphone", "HPOUTA",
-			"Headphone", "HPOUTB";
+	dac_sound_1: dac-sound-1 {
+		status = "okay";
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "cirrus,cs43198-1";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,mclk-fs = <256>;
+		simple-audio-card,cpu {
+			sound-dai = <&sai3>;
+		};
+		simple-audio-card,codec {
+		    sound-dai = <&cs43198_1>;
+		};
 	};
+
+	dac_sound_2: dac-sound-2 {
+		status = "okay";
+		compatible = "simple-audio-card";
+		simple-audio-card,name = "cirrus,cs43198-2";
+		simple-audio-card,format = "i2s";
+		simple-audio-card,mclk-fs = <256>;
+		simple-audio-card,cpu {
+			sound-dai = <&sai2>;
+		};
+		simple-audio-card,codec {
+		    sound-dai = <&cs43198_2>;
+		};
+	};
+
+	rk_sound: rk-sound {
+ 		status = "okay";
+ 		compatible = "simple-audio-card";
+ 		simple-audio-card,name = "rockchip,dummycodec";
+ 		simple-audio-card,format = "i2s";
+ 		simple-audio-card,mclk-fs = <256>;
+ 		simple-audio-card,cpu {
+ 			sound-dai = <&sai1>;
+ 		};
+ 		simple-audio-card,codec {
+ 			sound-dai = <&dummy_codec>;
+ 		};
+ 	};
 
 	adc_keys: adc-keys {
 		compatible = "adc-keys";
@@ -300,6 +343,14 @@
 		>;
 		default-brightness-level = <200>;
 	};
+
+	// dac_mclk_out: dac-mclk-out {
+	// 	status = "okay";
+	// 	compatible = "pwm-backlight";
+	// 	pwms = <&pwm1_8ch_0 0 48 0>;
+	// 	brightness-levels = <0 4 8 16 32 64 128 255>;
+    // 	default-brightness-level = <6>;
+	// };
 	
 	panel: panel {
 		status = "okay";
@@ -496,19 +547,20 @@
 		reg = <0x33>;
 		clocks = <&mclkout_sai3>;
 		clock-names = "mclk";
-		assigned-clocks = <&mclkout_sai3>;
-		assigned-clock-rates = <24576000>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&sai3_mclk_pins>;
-		// pinctrl-0 = <&dac_gpio &sai3_mclk_pins>;
-		// interrupt-parent = <&gpio0>;
-   		// interrupts = <RK_PB4 IRQ_TYPE_EDGE_FALLING>;
+		pinctrl-0 = <&dac_gpio>;
+		interrupt-parent = <&gpio0>;
+   		interrupts = <RK_PB4 IRQ_TYPE_EDGE_FALLING>;
 	};
 
-	// cs43198_2: audio-codec@30 {
-	// 	compatible = "cirrus,cs43198";
-	// 	reg = <0x30>;
-	// };
+	cs43198_2: audio-codec@30 {
+		status = "okay";
+		#sound-dai-cells = <0>;
+		compatible = "cirrus,cs43198";
+		reg = <0x30>;
+		clocks = <&mclkout_sai3>;
+		clock-names = "mclk";
+	};
 };
 
 &mmc {
@@ -553,17 +605,30 @@
 	>;
 };
 
+&sai1 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&rm_io8_sai1_mclk>;
+};
+
+&sai2 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <>;
+};
+
 &sai3 {
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&sai3_lrck_pins
 				&sai3_sclk_pins
-				&sai3_sdo_pins>;
+				&sai3_sdo_pins
+				&sai3_mclk_pins>;
 };
 
-&sai4 {
-	status = "okay";
-};
+// &sai4 {
+// 	status = "okay";
+// };
 
 &saradc {
 	vref-supply = <&vcc_1v8>;
@@ -614,6 +679,12 @@
 	pinctrl-0 = <&rm_io13_pwm0_ch2>;
 	status = "okay";
 };
+
+// &pwm1_8ch_0 {
+// 	pinctrl-names = "active";
+// 	pinctrl-0 = <&rm_io10_pwm1_ch0>;
+// 	status = "okay";
+// };
 
 &rgb {
 	status = "okay";

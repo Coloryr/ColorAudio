@@ -19,12 +19,11 @@ kernel/drivers/bluetooth/Makefile
 obj-$(CONFIG_BT_AICBTUSB) += aic_btusb.o
 
 kernel/drivers/power/supply/bq25890_charger.c
-
-bq25890_field_write(bq, F_AUTO_DPDM_EN, 0);
-bq25890_field_write(bq, F_EN_ILIM, 0);
-bq25890_field_write(bq, F_IINLIM, bq25890_find_idx(1000000, TBL_IINLIM));
-dev_info(bq->dev, "bq25700 set done\n");
-
 kernel/sound/soc/codecs/cs43130.c
+kernel/sound/soc/codecs/dummy-codec.c
 
-注释所有bulk_
+buildroot/system/skeleton 添加lib文件夹
+buildroot/configs 添加rockchip_rk3506_coloraudio_buildroot_defconfig
+device/rockchip/rk3506 添加coloraudio-v2-rgb-nand_defconfig
+kernel/arch/arm/configs 添加coloraudio.config
+kernel/arch/arm/boot/dts 添加coloraudio-rk3506-v2-rgb-nand.dts

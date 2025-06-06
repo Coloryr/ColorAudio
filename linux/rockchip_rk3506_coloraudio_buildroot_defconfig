@@ -4,10 +4,11 @@
 #include "wifibt/bt.config"
 #include "wifibt/wireless.config"
 #include "multimedia/audio.config"
-#include "lvgl/v9/lvgl_rkadk.config"
-#include "lvgl/v8/lvgl_rkadk.config"
 #include "fs/ntfs.config"
 BR2_PACKAGE_BLUEZ_TOOLS=y
+BR2_PACKAGE_RKADK=y
+BR2_PACKAGE_RKADK_PLAYER=y
+BR2_PACKAGE_RKADK_DISPLAY=y
 # BR2_PACKAGE_CHRONY is reset to default
 BR2_PACKAGE_CRDA=y
 BR2_PACKAGE_DHRYSTONE=y
@@ -51,7 +52,7 @@ BR2_TARGET_LOCALTIME="Asia/Shanghai"
 BR2_TARGET_ROOTFS_SQUASHFS4_ZSTD=y
 BR2_TARGET_ROOTFS_UBI=y
 BR2_TARGET_ROOTFS_UBIFS_LEBSIZE=0x1F000
-BR2_TARGET_ROOTFS_UBIFS_MAXLEBCNT=1024
+BR2_TARGET_ROOTFS_UBIFS_LZO=y
 BR2_TARGET_ROOTFS_UBIFS_OPTS="-F -v"
 BR2_TARGET_ROOTFS_UBI_SUBSIZE=2048
 BR2_TIME_BITS_64=y
