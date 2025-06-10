@@ -2476,6 +2476,12 @@
 		(uuid "902f5b37-8eb2-4579-a4d8-76eccce9aa91")
 	)
 	(junction
+		(at 181.61 45.72)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9307c8e3-b1c4-45ad-9f35-121e8a400bb6")
+	)
+	(junction
 		(at 156.21 44.45)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2761,7 +2767,7 @@
 	)
 	(wire
 		(pts
-			(xy 181.61 34.29) (xy 181.61 36.83)
+			(xy 181.61 31.75) (xy 181.61 34.29)
 		)
 		(stroke
 			(width 0)
@@ -3131,6 +3137,16 @@
 	)
 	(wire
 		(pts
+			(xy 181.61 45.72) (xy 187.96 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "62e7994b-4d55-4742-b51c-6036ccbe7b1e")
+	)
+	(wire
+		(pts
 			(xy 63.5 46.99) (xy 55.88 46.99)
 		)
 		(stroke
@@ -3451,7 +3467,7 @@
 	)
 	(wire
 		(pts
-			(xy 181.61 44.45) (xy 181.61 48.26)
+			(xy 181.61 41.91) (xy 181.61 45.72)
 		)
 		(stroke
 			(width 0)
@@ -3881,6 +3897,16 @@
 	)
 	(wire
 		(pts
+			(xy 181.61 45.72) (xy 181.61 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f21100dc-8304-4add-bc43-bdf1bbdc8fba")
+	)
+	(wire
+		(pts
 			(xy 134.62 93.98) (xy 134.62 95.25)
 		)
 		(stroke
@@ -4215,6 +4241,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "WIFI_PWR"
+		(shape input)
+		(at 187.96 45.72 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5c94249d-5283-46ac-9f18-06f9b5b93a3c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 199.6538 45.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -4618,7 +4666,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 181.61 34.29 0)
+		(at 181.61 31.75 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4627,7 +4675,7 @@
 		(fields_autoplaced yes)
 		(uuid "0717d56b-e251-4056-a889-fe9f2b8456d6")
 		(property "Reference" "#PWR094"
-			(at 181.61 38.1 0)
+			(at 181.61 35.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4636,7 +4684,7 @@
 			)
 		)
 		(property "Value" "3.3V"
-			(at 181.61 29.21 0)
+			(at 181.61 26.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4644,7 +4692,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 181.61 34.29 0)
+			(at 181.61 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4653,7 +4701,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 181.61 34.29 0)
+			(at 181.61 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4662,7 +4710,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VCC\""
-			(at 181.61 34.29 0)
+			(at 181.61 31.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6170,7 +6218,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 181.61 40.64 0)
+		(at 181.61 38.1 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6178,7 +6226,7 @@
 		(dnp no)
 		(uuid "6d692a26-211d-4885-b333-da7043a1cdd8")
 		(property "Reference" "R57"
-			(at 183.896 38.608 90)
+			(at 183.896 36.068 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6186,7 +6234,7 @@
 			)
 		)
 		(property "Value" "10K"
-			(at 183.896 43.434 90)
+			(at 183.896 40.894 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6194,7 +6242,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0402_1005Metric_Pad0.72x0.64mm_HandSolder"
-			(at 179.832 40.64 90)
+			(at 179.832 38.1 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6203,7 +6251,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 181.61 40.64 0)
+			(at 181.61 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6212,7 +6260,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 181.61 40.64 0)
+			(at 181.61 38.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)

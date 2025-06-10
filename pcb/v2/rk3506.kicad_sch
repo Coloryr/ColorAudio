@@ -5401,6 +5401,16 @@
 	)
 	(wire
 		(pts
+			(xy 342.9 77.47) (xy 353.06 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f2eb1b45-9889-4d72-b094-e3e8294a9c28")
+	)
+	(wire
+		(pts
 			(xy 68.58 87.63) (xy 83.82 87.63)
 		)
 		(stroke
@@ -5767,6 +5777,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "VCC_1V8_OUT"
+		(shape input)
+		(at 360.68 140.97 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1c88e895-9062-49bc-8888-8dd47cf3821f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 376.3652 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -6334,6 +6366,28 @@
 		(uuid "5edb73d5-8ed6-4a75-bf5d-82be3cb7227f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 363.4837 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "WIFI_PWR"
+		(shape input)
+		(at 353.06 77.47 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "613687b9-f43c-498f-a41c-46cb3a472ed1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 364.7538 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7352,73 +7406,6 @@
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/a64ce204-e78e-4a81-b82d-779b06b2e2e4"
 					(reference "R4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 360.68 140.97 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "1acab1ad-3c68-459e-80b2-f698f5d72714")
-		(property "Reference" "#PWR08"
-			(at 367.03 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 364.49 140.9699 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 360.68 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 360.68 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 360.68 140.97 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b8ac9366-ff89-4e32-8a57-708e487210dc")
-		)
-		(instances
-			(project "coloryr"
-				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/a64ce204-e78e-4a81-b82d-779b06b2e2e4"
-					(reference "#PWR08")
 					(unit 1)
 				)
 			)

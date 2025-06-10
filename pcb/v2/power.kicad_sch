@@ -4905,6 +4905,12 @@
 		(uuid "356952c8-adf2-4ca4-ba87-b405cc6c29cb")
 	)
 	(junction
+		(at 259.08 69.85)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "41f80f57-4990-47a1-8dab-5d0d4dee3d27")
+	)
+	(junction
 		(at 193.04 50.8)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6934,6 +6940,16 @@
 	)
 	(wire
 		(pts
+			(xy 260.35 59.69) (xy 259.08 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8a6a1d92-5e7c-4e0f-8df4-ce8f51736a74")
+	)
+	(wire
+		(pts
 			(xy 36.83 69.85) (xy 36.83 71.12)
 		)
 		(stroke
@@ -7474,7 +7490,7 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 69.85) (xy 262.89 69.85)
+			(xy 256.54 69.85) (xy 259.08 69.85)
 		)
 		(stroke
 			(width 0)
@@ -7801,6 +7817,16 @@
 			(type default)
 		)
 		(uuid "d9b6c4ed-ac85-4f10-8775-9d4dd9f8ad84")
+	)
+	(wire
+		(pts
+			(xy 259.08 59.69) (xy 259.08 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dad90c29-2e03-46fd-88bf-321b4a09d7b0")
 	)
 	(wire
 		(pts
@@ -8151,6 +8177,16 @@
 			(type default)
 		)
 		(uuid "f78d2bea-b4c4-45f8-911c-fb49d8aa1f46")
+	)
+	(wire
+		(pts
+			(xy 259.08 69.85) (xy 262.89 69.85)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f7d35705-7a74-4a1d-8e10-dfd3f6366d3b")
 	)
 	(wire
 		(pts
@@ -16130,6 +16166,72 @@
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/45b885e8-026d-42f0-9271-c60672108a75"
 					(reference "L3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x01")
+		(at 265.43 59.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f40b7ddf-d9c9-4376-abbb-aa5f680e6f60")
+		(property "Reference" "J14"
+			(at 275.082 62.484 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 278.13 60.198 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
+			(at 265.43 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 265.43 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x01, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 265.43 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9c387388-ed07-4506-801d-ccaa9fea4369")
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/45b885e8-026d-42f0-9271-c60672108a75"
+					(reference "J14")
 					(unit 1)
 				)
 			)
