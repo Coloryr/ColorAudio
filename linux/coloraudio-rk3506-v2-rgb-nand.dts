@@ -131,33 +131,6 @@
 		assigned-clock-rates = <24576000>;
     };
 
-	// dac_sound_link: dac-sound-link {
-	// 	status = "okay";
-	// 	compatible = "rockchip,multicodecs-card";
-	// 	rockchip,card-name = "cirrus,cs43198-link";
-	// 	rockchip,format = "i2s";
-	// 	rockchip,mclk-fs = <256>;
-	// 	rockchip,cpu = <&sai3>;
-	// 	rockchip,codec = <&cs43198_1>, <&cs43198_2>;
-	// 	rockchip,audio-routing =
-	// 		"Headphone", "HPOUTA",
-	// 		"Headphone", "HPOUTB";
-	// };
-
-	// dac_sound_link: dac-sound-link {
-	// 	status = "okay";
-	// 	compatible = "simple-audio-card";
-	// 	simple-audio-card,name = "cirrus,cs43198-1";
-	// 	simple-audio-card,format = "i2s";
-	// 	simple-audio-card,mclk-fs = <256>;
-	// 	simple-audio-card,cpu {
-	// 		sound-dai = <&sai3>;
-	// 	};
-	// 	simple-audio-card,codec {
-	// 	    sound-dai = <&cs43198_1>, <&cs43198_2>;
-	// 	};
-	// };
-
 	dac_sound_1: dac-sound-1 {
 		status = "okay";
 		compatible = "simple-audio-card";
@@ -263,6 +236,13 @@
 			linux,default-trigger = "default-off";
 			pinctrl-names = "default";
 			pinctrl-0 = <&dac_reset_gpio>;
+			default-state = "on";
+		};
+		wifi_power: wifi-power {
+			gpios = <&gpio0 RK_PB1 GPIO_ACTIVE_HIGH>;
+			linux,default-trigger = "default-off";
+			pinctrl-names = "default";
+			pinctrl-0 = <&wifi_power_gpio>;
 			default-state = "on";
 		};
     };
@@ -401,6 +381,12 @@
 		};
     };
 
+	wifi {
+		wifi_power_gpio: wifi-power-gpio {
+			rockchip,pins = <0 RK_PB1 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+    };
+
 	led {
 		leds_gpio: leds-gpio {
 			rockchip,pins = <0 RK_PB3 RK_FUNC_GPIO &pcfg_pull_none>;
@@ -502,11 +488,11 @@
 		reg = <0x14>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&touch_gpio>;
-		touch-gpio = <&gpio3 RK_PB1 IRQ_TYPE_LEVEL_LOW>;
+		touch-gpio = <&gpio3 RK_PB1 IRQ_TYPE_LEVEL_HIGH>;
 		reset-gpio = <&gpio3 RK_PB2 GPIO_ACTIVE_HIGH>;
 		max-x = <800>;
 		max-y = <480>;
-	    tp-size = <9110>;
+	    tp-size = <911>;
 		status = "okay";
 	};
 };
@@ -655,7 +641,6 @@
 };
 
 &usb20_otg0 {
-	// dr_mode = "peripheral";
 	status = "okay";
 };
 
@@ -680,12 +665,6 @@
 	pinctrl-0 = <&rm_io13_pwm0_ch2>;
 	status = "okay";
 };
-
-// &pwm1_8ch_0 {
-// 	pinctrl-names = "active";
-// 	pinctrl-0 = <&rm_io10_pwm1_ch0>;
-// 	status = "okay";
-// };
 
 &rgb {
 	status = "okay";
@@ -712,7 +691,6 @@
 
 &route_rgb {
 	status = "okay";
-	connect = <&vop_out_rgb>;
 };
 
 &vop {

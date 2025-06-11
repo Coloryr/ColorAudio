@@ -19,8 +19,11 @@ kernel/drivers/bluetooth/Makefile
 obj-$(CONFIG_BT_AICBTUSB) += aic_btusb.o
 
 kernel/drivers/power/supply/bq25890_charger.c
+kernel/drivers/input/touchscreen/gt9xx/gt9xx.c
 kernel/sound/soc/codecs/cs43130.c
 kernel/sound/soc/codecs/dummy-codec.c
+
+buildroot/system/skeleton/device_table.txt
 
 buildroot/system/skeleton 添加lib文件夹
 buildroot/configs 添加rockchip_rk3506_coloraudio_buildroot_defconfig
