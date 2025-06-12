@@ -114,18 +114,6 @@
   "project": {
     "files": [
       {
-        "name": "coloryr.kicad_pcb",
-        "open": false,
-        "window": {
-          "display": 0,
-          "maximized": false,
-          "pos_x": 4,
-          "pos_y": 394,
-          "size_x": 1294,
-          "size_y": 1100
-        }
-      },
-      {
         "name": "coloryr.kicad_sch",
         "open": true,
         "window": {
@@ -134,19 +122,19 @@
           "pos_x": -7,
           "pos_y": 0,
           "size_x": 1294,
-          "size_y": 1100
+          "size_y": 1559
         }
       },
       {
-        "name": "coloryr.kicad_pro",
-        "open": false,
+        "name": "coloryr.kicad_pcb",
+        "open": true,
         "window": {
           "display": 0,
           "maximized": false,
-          "pos_x": 313,
-          "pos_y": 333,
-          "size_x": 954,
-          "size_y": 654
+          "pos_x": 4,
+          "pos_y": 394,
+          "size_x": 1294,
+          "size_y": 1100
         }
       }
     ]

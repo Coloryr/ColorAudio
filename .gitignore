@@ -7,5 +7,5 @@ pcb/v2/~coloryr.kicad_pcb.lck
 pcb/v2/~coloryr.kicad_sch.lck
 linux/MiniLoaderAll.bin
 /pcb/v2/gb
-/src
 linux/boot.img
+/ui/coloraudio
