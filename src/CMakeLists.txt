@@ -30,12 +30,21 @@ include_directories(./sys)
 include_directories(./common)
 include_directories(./view)
 include_directories(./music)
+include_directories(./melon/include)
 include_directories(./)
+
+#def
+add_definitions(-DMLN_ROOT="/usr/local/melon")
+add_definitions(-DMLN_NULL="/dev/null")
+add_definitions(-DMLN_LANG_LIB="/usr/local/lib/melang")
+add_definitions(-DMLN_LANG_DYLIB="/usr/local/lib/melang_dynamic")
+add_definitions(-DMLN_EPOLL -DMLN_SENDFILE -DMLN_WRITEV -DMLN_USE_UNIX98 -DMLN_MMAP -DMLN_CONSTRUCTOR)
 
 #src
 
 file(GLOB_RECURSE SOURCES 
-"./lvgl/src/*.*" 
+"./melon/src/*.*" 
+"./lvgl/src/*.*"
 "./display/*.*" 
 "./sys/*.*" 
 "./common/*.*"

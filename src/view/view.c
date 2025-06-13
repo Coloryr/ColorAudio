@@ -82,7 +82,7 @@ void load_font()
 
 }
 
-void init_view()
+void view_init()
 {
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);
 

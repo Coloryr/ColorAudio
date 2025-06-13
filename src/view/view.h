@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-void init_view();
+void view_init();
 
 const char * lv_demo_music_get_title(uint32_t track_id);
 const char * lv_demo_music_get_artist(uint32_t track_id);

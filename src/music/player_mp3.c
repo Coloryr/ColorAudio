@@ -141,7 +141,7 @@ void mp3_decode_init(stream *st)
     mp3_read_id3(st);
     if (decoder)
     {
-        mp3_close();
+        mp3_decode_close();
     }
     decoder = malloc(sizeof(struct mad_decoder));
     mad_decoder_init(decoder, st,
@@ -152,7 +152,7 @@ void mp3_decode_init(stream *st)
 int mp3_decode_start(stream *st)
 {
     int res = mad_decoder_run(decoder, MAD_DECODER_MODE_SYNC);
-    mp3_close();
+    mp3_decode_close();
     return res;
 }
 

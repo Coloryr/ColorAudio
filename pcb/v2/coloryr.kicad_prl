@@ -115,14 +115,14 @@
     "files": [
       {
         "name": "coloryr.kicad_sch",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
-          "maximized": false,
-          "pos_x": -7,
-          "pos_y": 0,
-          "size_x": 1294,
-          "size_y": 1559
+          "maximized": true,
+          "pos_x": -8,
+          "pos_y": -8,
+          "size_x": 1936,
+          "size_y": 1048
         }
       },
       {
