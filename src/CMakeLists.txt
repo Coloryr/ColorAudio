@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10.0)
-project(coloraudio VERSION 0.1.0 LANGUAGES C)
+project(coloraudio VERSION 0.1.0)
 
 # build arm32
 # set(BUILD_ARM ON)
@@ -21,6 +21,7 @@ if (DEFINED BUILD_ARM)
 else()
     find_package(SDL2 REQUIRED)
     include_directories(/usr/include/drm)
+    include_directories(/usr/include/freetype2)
 endif()
 
 # includes
@@ -62,7 +63,9 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libid3tag.so"
     "${CMAKE_SOURCE_DIR}/libs/libmad.so"
     "${CMAKE_SOURCE_DIR}/libs/libpng.so"
+    "${CMAKE_SOURCE_DIR}/libs/libfreetype.so.6"
     "${CMAKE_SOURCE_DIR}/libs/libSDL2.so")
 else()
-    target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES} drm asound mad)
+    target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES}
+        drm asound mad freetype m turbojpeg FLAC)
 endif()

@@ -1,5 +1,6 @@
 #include "mp3id3.h"
 #include "stream.h"
+#include "utils.h"
 
 #include <malloc.h>
 #include <string.h>
@@ -56,6 +57,33 @@ static uint32_t id3_skip(stream *st)
     return size;
 }
 
+static void mp3_id3_cov_str(stream *st, mp3id3_tag *tag)
+{
+    uint8_t type = stream_read_byte(st);
+    uint8_t *temp;
+    tag->size -= 1;
+    switch (type)
+    {
+    case 0:
+        // temp = malloc(tag->size);
+        stream_seek(st, tag->size, SEEK_SET);
+        // free(temp);
+        break;
+    case 1:
+        temp = malloc(tag->size);
+        stream_read(st, temp, tag->size);
+        tag->size = utf16_to_utf8((uint16_t *)temp, &tag->data, tag->size);
+        free(temp);
+        break;
+    case 2:
+        tag->data = malloc(tag->size);
+        stream_read(st, tag->data, tag->size);
+        break;
+    default:
+        break;
+    }
+}
+
 mp3id3 *mp3_id3_read(stream *st)
 {
     mp3id3 *id3 = malloc(sizeof(mp3id3));
@@ -87,18 +115,15 @@ mp3id3 *mp3_id3_read(stream *st)
         {
         case ID3_TITLE_TAG:
             id3->title.size = size;
-            id3->title.data = malloc(size);
-            stream_read(st, id3->title.data, size);
+            mp3_id3_cov_str(st, &id3->title);
             break;
         case ID3_AUTHER_TAG:
             id3->auther.size = size;
-            id3->auther.data = malloc(size);
-            stream_read(st, id3->auther.data, size);
+            mp3_id3_cov_str(st, &id3->auther);
             break;
         case ID3_ALBUM_TAG:
             id3->album.size = size;
-            id3->album.data = malloc(size);
-            stream_read(st, id3->album.data, size);
+            mp3_id3_cov_str(st, &id3->album);
             break;
         case ID3_PICTURE_TAG:
             uint8_t encoding = stream_read_byte(st);

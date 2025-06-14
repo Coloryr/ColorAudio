@@ -24,8 +24,6 @@ static void list_delete_event_cb(lv_event_t * e);
  *  STATIC VARIABLES
  **********************/
 static lv_obj_t * list;
-static const lv_font_t * font_small;
-static const lv_font_t * font_medium;
 static lv_style_t style_scrollbar;
 static lv_style_t style_btn;
 static lv_style_t style_button_pr;
@@ -47,12 +45,6 @@ LV_IMAGE_DECLARE(img_lv_demo_music_btn_list_pause);
 
 lv_obj_t * lv_demo_music_list_create(lv_obj_t * parent)
 {
-    font_small = LV_FONT_DEFAULT;
-    font_medium = LV_FONT_DEFAULT;
-
-    font_small = &lv_font_montserrat_16;
-    font_medium = &lv_font_montserrat_22;
-
     lv_style_init(&style_scrollbar);
     lv_style_set_width(&style_scrollbar,  4);
     lv_style_set_bg_opa(&style_scrollbar, LV_OPA_COVER);
@@ -84,15 +76,15 @@ lv_obj_t * lv_demo_music_list_create(lv_obj_t * parent)
     lv_style_set_image_opa(&style_button_dis, LV_OPA_40);
 
     lv_style_init(&style_title);
-    lv_style_set_text_font(&style_title, font_medium);
+    lv_style_set_text_font(&style_title, font_22);
     lv_style_set_text_color(&style_title, lv_color_hex(0xffffff));
 
     lv_style_init(&style_artist);
-    lv_style_set_text_font(&style_artist, font_small);
+    lv_style_set_text_font(&style_artist, font_16);
     lv_style_set_text_color(&style_artist, lv_color_hex(0xb1b0be));
 
     lv_style_init(&style_time);
-    lv_style_set_text_font(&style_time, font_medium);
+    lv_style_set_text_font(&style_time, font_22);
     lv_style_set_text_color(&style_time, lv_color_hex(0xffffff));
 
     /*Create an empty transparent container*/
@@ -104,12 +96,12 @@ lv_obj_t * lv_demo_music_list_create(lv_obj_t * parent)
     lv_obj_add_style(list, &style_scrollbar, LV_PART_SCROLLBAR);
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
 
-    uint32_t track_id;
-    for(track_id = 0; lv_demo_music_get_title(track_id); track_id++) {
-        add_list_button(list,  track_id);
-    }
+    // uint32_t track_id;
+    // for(track_id = 0; lv_demo_music_get_title(track_id); track_id++) {
+    //     add_list_button(list,  track_id);
+    // }
 
-    lv_demo_music_list_button_check(0, true);
+    // lv_demo_music_list_button_check(0, true);
 
     return list;
 }

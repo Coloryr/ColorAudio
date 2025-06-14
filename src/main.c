@@ -52,6 +52,8 @@ int main(int argc, char **argv)
     alsa_init();
     play_init();
 
+    // play_file("/home/coloryr/playlist/be confidence (full ver.) - Duca.mp3");
+
     view_init();
 
 #ifndef BUILD_ARM
@@ -63,18 +65,17 @@ int main(int argc, char **argv)
 #endif
     while (!quit)
     {
+        uint32_t current;
 #ifdef BUILD_ARM
         usleep(500);
         clock_gettime(CLOCK_MONOTONIC, &ts);
-        uint32_t current = ts.tv_sec * 1000 + ts.tv_nsec / 1000000; // 转为毫秒
-        lv_tick_inc(current - lastTick); // Update the tick timer. Tick is new for LVGL 9
-        lastTick = current;
+        current = ts.tv_sec * 1000 + ts.tv_nsec / 1000000; // 转为毫秒
 #else
-        SDL_Delay(5);
-        uint32_t current = SDL_GetTicks();
+        SDL_Delay(1);
+        current = SDL_GetTicks();
+#endif
         lv_tick_inc(current - lastTick); // Update the tick timer. Tick is new for LVGL 9
         lastTick = current;
-#endif
         lv_task_handler();
     }
 

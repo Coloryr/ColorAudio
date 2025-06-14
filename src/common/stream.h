@@ -6,6 +6,7 @@
 
 typedef enum {
     STREAM_TYPE_FILE = 0,
+    STREAM_TYPE_MEM,
     STREAM_TYPE_UNKNOW = -1
 } steam_type;
 
@@ -15,6 +16,14 @@ typedef struct
     uint32_t pos;
     steam_type type;
 } stream;
+
+typedef struct
+{
+    uint32_t size;
+    uint32_t pos;
+    steam_type type;
+    uint8_t* data;
+} stream_mem;
 
 typedef struct 
 {

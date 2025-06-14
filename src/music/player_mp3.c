@@ -54,6 +54,15 @@ static enum mad_flow header_func(void *data, struct mad_header const *header)
 
 static enum mad_flow input(void *data, struct mad_stream *st)
 {
+    if (is_pause)
+    {
+        return MAD_FLOW_IGNORE;
+    }
+
+    if (is_stop)
+    {
+        return MAD_FLOW_STOP;
+    }
     int ret_code;
     int unproc_data_size; /*the unprocessed data's size*/
     int copy_size;
@@ -86,26 +95,47 @@ static enum mad_flow input(void *data, struct mad_stream *st)
 
 static enum mad_flow output(void *data, const struct mad_header *header, struct mad_pcm *pcm)
 {
-    unsigned int nchannels, nsamples;
+    time_now += (float)header->duration.fraction / 352800000UL;
+
+    uint16_t nchannels, nsamples;
     mad_fixed_t const *left_ch, *right_ch;
     nchannels = pcm->channels;
     nsamples = pcm->length;
+    if (last_pcm_bps != 24 || last_pcm_size != pcm->length)
+    {
+        if (buf)
+        {
+            free(buf);
+        }
+        buf = malloc(sizeof(int32_t) * pcm->length * 2);
+        if (buf1)
+        {
+            free(buf1);
+        }
+        buf1 = malloc(sizeof(int32_t) * pcm->length);
+        last_pcm_size = pcm->length;
+        last_pcm_bps = 24;
+    }
     left_ch = pcm->samples[0];
     right_ch = pcm->samples[1];
-    uint32_t buf[nsamples * 2];
-    int i = 0;
+
+    uint16_t i = 0;
+    uint16_t j = 0;
     while (nsamples--)
     {
         signed int sample;
         // output sample(s) in 24-bit signed little-endian PCM
         sample = scale(*left_ch++);
-        buf[i++] = sample & 0xFFFFFF;
+        buf[i++] = sample;
+        buf1[j++] = sample;
         if (nchannels == 2)
         {
             sample = scale(*right_ch++);
-            buf[i++] = sample & 0xFFFFFF;
+            buf[i++] = sample;
         }
     }
+
+    fill_fft(pcm->samplerate, pcm->length, buf1, 0xFFFFFF);
 
     if (alsa_write(buf, pcm->length) < 0)
     {
@@ -117,9 +147,9 @@ static enum mad_flow output(void *data, const struct mad_header *header, struct 
 
 static enum mad_flow error(void *data, struct mad_stream *stream, struct mad_frame *frame)
 {
-    fprintf(stderr, "decoding error 0x%04x (%s) at byte offset %lu\n",
-            stream->error, mad_stream_errorstr(stream),
-            stream->this_frame - mp3_buffer);
+    LV_LOG_ERROR("decoding error 0x%04x (%s) at byte offset %lu\n",
+                 stream->error, mad_stream_errorstr(stream),
+                 stream->this_frame - mp3_buffer);
 
     /* return MAD_FLOW_BREAK here to stop decoding (and propagate an error) */
 
@@ -132,13 +162,34 @@ static void mp3_read_id3(stream *st)
     stream_read(st, buffer, 3);
     if (buffer[0] == 'I' && buffer[1] == 'D' && buffer[2] == '3')
     {
-        mp3_id3_read(st);
+        mp3id3 *id3 = mp3_id3_read(st);
+        play_info_update_id3(id3);
+        mp3_id3_close(id3);
     }
+}
+
+static enum mad_flow scan_func(void *data, struct mad_header const *header)
+{
+    time_all += (float)header->duration.fraction / 352800000UL;
+}
+
+static void mp3_scan(stream *st)
+{
+    time_all = 0;
+    uint32_t mark = st->pos;
+    struct mad_decoder scan_decoder;
+    mad_decoder_init(&scan_decoder, st,
+                     input, scan_func, NULL, NULL,
+                     NULL, NULL);
+    mad_decoder_run(&scan_decoder, MAD_DECODER_MODE_SYNC);
+    mad_decoder_finish(&scan_decoder);
+    stream_seek(st, mark, SEEK_SET);
 }
 
 void mp3_decode_init(stream *st)
 {
     mp3_read_id3(st);
+    mp3_scan(st);
     if (decoder)
     {
         mp3_decode_close();
@@ -151,8 +202,10 @@ void mp3_decode_init(stream *st)
 
 int mp3_decode_start(stream *st)
 {
+    play_set_state(true);
     int res = mad_decoder_run(decoder, MAD_DECODER_MODE_SYNC);
     mp3_decode_close();
+    play_set_state(false);
     return res;
 }
 

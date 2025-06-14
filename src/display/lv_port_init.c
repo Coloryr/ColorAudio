@@ -4,6 +4,7 @@
 
 #include "lvgl.h"
 #include "lv_conf.h"
+#include "view.h"
 
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"
@@ -44,6 +45,7 @@ void lv_port_init(void)
     const char *buf;
 
     lv_init();
+    load_font();
 
     disp = lv_port_disp_init(800, 480, g_disp_rotation);
     lv_port_indev_init(g_indev_rotation);

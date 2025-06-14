@@ -11,15 +11,14 @@ static bool isset = false;
 
 void alsa_init()
 {
-    // 初始化ALSA PCM设备
     int rc = snd_pcm_open(&pcm_handle, ALSA_DEVICE, SND_PCM_STREAM_PLAYBACK, 0);
     if (rc < 0)
     {
-        LV_LOG_ERROR("ALSA open error: %s\n", snd_strerror(rc));
+        LV_LOG_USER("ALSA open error: %s\n", snd_strerror(rc));
         return;
     }
 
-    LV_LOG_INFO("ALSA open");
+    LV_LOG_USER("ALSA open");
 
     pcm_enable = true;
 }
@@ -33,7 +32,7 @@ void alsa_set(snd_pcm_format_t format, uint16_t channels, uint16_t rate)
     int err = snd_pcm_set_params(pcm_handle, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 1, 50000);
     err = snd_pcm_prepare(pcm_handle);
 
-    LV_LOG_INFO("ALSA change, ch:%d, rate:%d, format:%s", channels, rate, snd_pcm_format_name(format));
+    LV_LOG_USER("ALSA change, ch:%d, rate:%d, format:%s", channels, rate, snd_pcm_format_name(format));
     isset = true;
 }
 

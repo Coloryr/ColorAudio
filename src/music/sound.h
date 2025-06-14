@@ -3,6 +3,7 @@
 
 #include <alsa/asoundlib.h>
 
+void alsa_reset();
 void alsa_init();
 void alsa_set(snd_pcm_format_t format, uint16_t channels, uint16_t rate);
 void alsa_reset();
