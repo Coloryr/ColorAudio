@@ -118,11 +118,23 @@
         "open": false,
         "window": {
           "display": 0,
-          "maximized": false,
-          "pos_x": 4,
-          "pos_y": 394,
-          "size_x": 1294,
-          "size_y": 1100
+          "maximized": true,
+          "pos_x": -8,
+          "pos_y": -8,
+          "size_x": 1936,
+          "size_y": 1048
+        }
+      },
+      {
+        "name": "coloryr.kicad_sch",
+        "open": false,
+        "window": {
+          "display": 0,
+          "maximized": true,
+          "pos_x": -8,
+          "pos_y": -8,
+          "size_x": 1936,
+          "size_y": 1048
         }
       }
     ]

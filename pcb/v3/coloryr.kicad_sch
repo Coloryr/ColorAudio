@@ -1,0 +1,224 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b")
+	(paper "A4")
+	(lib_symbols)
+	(sheet
+		(at 88.9 25.4)
+		(size 25.4 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "45b885e8-026d-42f0-9271-c60672108a75")
+		(property "Sheetname" "Power"
+			(at 88.9 24.6884 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "power.kicad_sch"
+			(at 88.9 51.3846 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
+					(page "3")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 91.44 72.39)
+		(size 25.4 21.59)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "8a8efada-1d6d-4bcc-828e-939af60bb626")
+		(property "Sheetname" "DAC"
+			(at 91.44 71.6784 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "dac.kicad_sch"
+			(at 91.44 94.5646 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
+					(page "6")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 59.69 72.39)
+		(size 24.13 21.59)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "948902b6-b2f7-4c71-911b-e81cfbf71b50")
+		(property "Sheetname" "WIFI"
+			(at 59.69 71.6784 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "wifi.kicad_sch"
+			(at 59.69 94.5646 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
+					(page "5")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 38.1 24.13)
+		(size 26.67 26.67)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "a64ce204-e78e-4a81-b82d-779b06b2e2e4")
+		(property "Sheetname" "rk3506"
+			(at 38.1 23.4184 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "rk3506.kicad_sch"
+			(at 38.1 51.3846 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
+					(page "2")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 26.67 68.58)
+		(size 25.4 25.4)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "d9c616e1-2298-455a-b24a-3007b8e9dd7b")
+		(property "Sheetname" "IO"
+			(at 26.67 67.8684 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "io.kicad_sch"
+			(at 26.67 94.5646 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b"
+					(page "4")
+				)
+			)
+		)
+	)
+	(sheet_instances
+		(path "/"
+			(page "1")
+		)
+	)
+	(embedded_fonts no)
+)

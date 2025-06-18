@@ -1,8 +1,3 @@
-/**
- * @file lv_demo_music_main.c
- *
- */
-
 /*********************
  *      INCLUDES
  *********************/
@@ -13,14 +8,10 @@
 
 #include "utils.h"
 #include "player.h"
-
-#include "lvgl/src/misc/lv_types.h"
-#include "lvgl/src/draw/lv_image_decoder_private.h"
+#include "font.h"
 
 #include <malloc.h>
 #include <string.h>
-#include <turbojpeg.h>
-#include <png.h>
 
 /*********************
  *      DEFINES
@@ -35,6 +26,8 @@
 #define BAR_REST_RADIUS 5
 #define BAR_COLOR3_STOP (LV_MAX(LV_HOR_RES, LV_VER_RES) / 3)
 #define BAR_CNT 20
+#define BAR_MAX_VALUE 50
+#define PIC_SIZE 300
 
 /**********************
  *      TYPEDEFS
@@ -50,18 +43,12 @@ static lv_obj_t *create_spectrum_obj(lv_obj_t *parent);
 static lv_obj_t *create_ctrl_box(lv_obj_t *parent);
 static lv_obj_t *create_handle(lv_obj_t *parent);
 static lv_obj_t *create_album_image_obj(lv_obj_t *parent);
-static lv_obj_t *create_album_obj(lv_obj_t *parent);
+static lv_obj_t *create_timer_box(lv_obj_t *parent);
 
 static void spectrum_draw_event_cb(lv_event_t *e);
-static void album_gesture_event_cb(lv_event_t *e);
 static void play_event_click_cb(lv_event_t *e);
 static void prev_click_event_cb(lv_event_t *e);
 static void next_click_event_cb(lv_event_t *e);
-static void track_load(uint32_t id);
-static void spectrum_end_cb(lv_anim_t *a);
-static void album_fade_anim_cb(void *var, int32_t v);
-static int32_t get_cos(int32_t deg, int32_t a);
-static int32_t get_sin(int32_t deg, int32_t a);
 
 /**********************
  *  STATIC VARIABLES
@@ -76,9 +63,7 @@ static lv_obj_t *time_now_obj;
 static lv_obj_t *album_image_obj;
 static lv_obj_t *album_obj;
 static lv_obj_t *slider_obj;
-static uint32_t bar_ofs = 0;
-static uint32_t bar_rot = 0;
-static uint32_t track_id;
+static lv_obj_t *sound_info_obj;
 static bool playing;
 static lv_obj_t *play_obj;
 static uint32_t spectrum[20] = {0};
@@ -92,25 +77,7 @@ static lv_image_dsc_t img_dsc;
  *   GLOBAL FUNCTIONS
  **********************/
 
-/*
- * Callback adapter function to convert parameter types to avoid compile-time
- * warning.
- */
-static void _image_set_scale_anim_cb(void *obj, int32_t scale)
-{
-    lv_image_set_scale((lv_obj_t *)obj, (uint16_t)scale);
-}
-
-/*
- * Callback adapter function to convert parameter types to avoid compile-time
- * warning.
- */
-static void _obj_set_x_anim_cb(void *obj, int32_t x)
-{
-    lv_obj_set_x((lv_obj_t *)obj, (int32_t)x);
-}
-
-lv_obj_t *lv_demo_music_main_create(lv_obj_t *parent)
+lv_obj_t *lv_music_main_create(lv_obj_t *parent)
 {
     /*Create the content of the music player*/
     lv_obj_t *cont = create_cont(parent);
@@ -119,31 +86,55 @@ lv_obj_t *lv_demo_music_main_create(lv_obj_t *parent)
     lv_obj_t *title_box = create_title_box(cont);
     lv_obj_t *ctrl_box = create_ctrl_box(cont);
     spectrum_obj = create_spectrum_obj(cont);
-    lv_obj_set_style_margin_top(spectrum_obj, 100, 0);
     lv_obj_t *handle_box = create_handle(cont);
+    lv_obj_t *time_box = create_timer_box(cont);
 
-    // album_obj = create_album_obj(cont);
+    lv_obj_t *image_bg = lv_obj_create(cont);
+    lv_obj_remove_style_all(image_bg);
+
     album_image_obj = create_album_image_obj(cont);
-    lv_obj_set_style_pad_bottom(album_image_obj, 80, 0);
 
     /*Arrange the content into a grid*/
     static const int32_t grid_cols[] = {LV_GRID_FR(1), LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static const int32_t grid_rows[] = {LV_DEMO_MUSIC_HANDLE_SIZE, /*Spacing*/
-                                        LV_GRID_FR(1),             /*Spacer*/
-                                        LV_GRID_CONTENT,           /*Title box*/
-                                        LV_GRID_FR(1),             /*Spacer*/
-                                        LV_GRID_CONTENT,           /*Handle box*/
-                                        LV_GRID_FR(1),             /*Spacer*/
+                                        LV_GRID_CONTENT,
+                                        LV_GRID_CONTENT,
+                                        LV_GRID_CONTENT,
+                                        LV_GRID_FR(1),
                                         LV_DEMO_MUSIC_HANDLE_SIZE, /*Spacing*/
                                         LV_GRID_TEMPLATE_LAST};
 
     lv_obj_set_grid_dsc_array(cont, grid_cols, grid_rows);
     lv_obj_set_style_grid_row_align(cont, LV_GRID_ALIGN_SPACE_BETWEEN, 0);
-    lv_obj_set_grid_cell(title_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-    lv_obj_set_grid_cell(ctrl_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_END, 4, 1);
-    lv_obj_set_grid_cell(handle_box, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 5, 1);
-    lv_obj_set_grid_cell(album_image_obj, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 5);
-    lv_obj_set_grid_cell(spectrum_obj, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_END, 4, 1);
+
+    // lv_obj_set_style_bg_color(title_box, lv_color_hex(0xFF0000), 0);
+    // lv_obj_set_style_bg_opa(title_box, 100, 0);
+    // lv_obj_set_style_bg_color(ctrl_box, lv_color_hex(0x555500), 0);
+    // lv_obj_set_style_bg_opa(ctrl_box, 100, 0);
+    // lv_obj_set_style_bg_color(time_box, lv_color_hex(0x550055), 0);
+    // lv_obj_set_style_bg_opa(time_box, 100, 0);
+    // lv_obj_set_style_bg_color(album_image_obj, lv_color_hex(0x005500), 0);
+    // lv_obj_set_style_bg_opa(album_image_obj, 100, 0);
+    // lv_obj_set_style_bg_color(spectrum_obj, lv_color_hex(0x000055), 0);
+    // lv_obj_set_style_bg_opa(spectrum_obj, 100, 0);
+
+    lv_obj_set_size(image_bg, PIC_SIZE, PIC_SIZE);
+
+    lv_obj_set_style_bg_color(image_bg, lv_color_hex(0x8199f7), 0);
+    lv_obj_set_style_bg_opa(image_bg, 30, 0);
+
+    lv_obj_set_grid_cell(title_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+    lv_obj_set_grid_cell(ctrl_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
+    lv_obj_set_grid_cell(time_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
+
+    lv_obj_set_grid_cell(album_image_obj, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 1, 2);
+    lv_obj_set_grid_cell(image_bg, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 1, 2);
+    lv_obj_set_grid_cell(spectrum_obj, LV_GRID_ALIGN_STRETCH, 1, 1, LV_GRID_ALIGN_STRETCH, 3, 1);
+
+    lv_obj_set_grid_cell(handle_box, LV_GRID_ALIGN_STRETCH, 0, 2, LV_GRID_ALIGN_CENTER, 4, 1);
+
+    lv_obj_set_style_margin_top(image_bg, 40, 0);
+    lv_obj_set_style_margin_left(image_bg, 20, 0);
 
     lv_obj_fade_in(title_box, 1000, INTRO_TIME);
     lv_obj_fade_in(ctrl_box, 1000, INTRO_TIME);
@@ -160,22 +151,15 @@ void lv_music_album_next(bool next)
 {
     if (next)
     {
-        play_next();
+        play_command(MUSIC_COMMAND_NEXT);
     }
     else
     {
-        play_last();
+        play_command(MUSIC_COMMAND_LAST);
     }
 }
 
-void lv_demo_music_play(uint32_t id)
-{
-    track_load(id);
-
-    lv_music_resume();
-}
-
-void lv_music_set_resume()
+void lv_music_set_play()
 {
     playing = true;
     lv_obj_add_state(play_obj, LV_STATE_CHECKED);
@@ -190,15 +174,15 @@ void lv_music_set_pause()
 
 void lv_music_resume(void)
 {
-    if (play_resume())
+    if (play_command(MUSIC_COMMAND_PLAY))
     {
-        lv_music_set_resume();
+        lv_music_set_play();
     }
 }
 
 void lv_music_pause(void)
 {
-    if (play_pause())
+    if (play_command(MUSIC_COMMAND_PAUSE))
     {
         lv_music_set_pause();
     }
@@ -255,29 +239,10 @@ static lv_obj_t *create_album_image_obj(lv_obj_t *parent)
     lv_obj_t *obj = lv_image_create(parent);
     lv_obj_remove_style_all(obj);
 
-    lv_obj_set_size(obj, 280, 280);
-    lv_obj_align(obj, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_align(obj, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_size(obj, PIC_SIZE, PIC_SIZE);
 
     lv_image_set_inner_align(obj, LV_IMAGE_ALIGN_STRETCH);
-
-    return obj;
-}
-
-static lv_obj_t *create_album_obj(lv_obj_t *parent)
-{
-    lv_obj_t *obj = lv_obj_create(parent);
-    lv_obj_remove_style_all(obj);
-
-    lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_size(obj, 250, 250);
-    lv_obj_set_style_radius(obj, LV_RADIUS_CIRCLE, 0);
-    lv_obj_set_style_clip_corner(obj, true, 0);
-
-    lv_obj_align(obj, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_add_event_cb(obj, album_gesture_event_cb, LV_EVENT_GESTURE, NULL);
-    lv_obj_remove_flag(obj, LV_OBJ_FLAG_GESTURE_BUBBLE);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+    lv_image_set_antialias(obj, true);
 
     return obj;
 }
@@ -318,7 +283,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     /*Create the titles*/
     lv_obj_t *cont = lv_obj_create(parent);
     lv_obj_remove_style_all(cont);
-    lv_obj_set_height(cont, LV_SIZE_CONTENT);
+    lv_obj_set_height(cont, 220);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_refresh_ext_draw_size(cont);
@@ -328,18 +293,16 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     title_label = lv_label_create(cont);
     lv_obj_set_style_text_font(title_label, font_32, 0);
     lv_obj_set_style_text_color(title_label, lv_color_hex(0x504d6d), 0);
-    lv_label_set_text(title_label, lv_demo_music_get_title(track_id));
     lv_obj_set_width(title_label, wid - 40);
     lv_obj_set_style_text_align(title_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(title_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
     lv_obj_set_height(title_label, lv_font_get_line_height(font_32) * 3 / 2);
 
-    lv_obj_set_style_margin_top(title_label, 10, 0);
+    lv_obj_set_style_margin_top(title_label, 40, 0);
 
     artist_label = lv_label_create(cont);
     lv_obj_set_style_text_font(artist_label, font_22, 0);
     lv_obj_set_style_text_color(artist_label, lv_color_hex(0x504d6d), 0);
-    lv_label_set_text(artist_label, lv_demo_music_get_artist(track_id));
     lv_obj_set_width(artist_label, wid - 40);
     lv_obj_set_style_text_align(artist_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(artist_label, LV_LABEL_LONG_MODE_WRAP);
@@ -350,7 +313,6 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_width(genre_label, wid - 40);
     lv_obj_set_style_text_align(genre_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_WRAP);
-    lv_label_set_text(genre_label, lv_demo_music_get_genre(track_id));
 
     return cont;
 }
@@ -360,12 +322,59 @@ static lv_obj_t *create_spectrum_obj(lv_obj_t *parent)
     /*Create the spectrum visualizer*/
     lv_obj_t *obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
-    lv_obj_set_height(obj, 160);
+    lv_obj_set_height(obj, 20);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(obj, spectrum_draw_event_cb, LV_EVENT_ALL, NULL);
     lv_obj_refresh_ext_draw_size(obj);
 
     return obj;
+}
+
+static lv_obj_t *create_timer_box(lv_obj_t *parent)
+{
+    /*Create the control box*/
+    lv_obj_t *cont = lv_obj_create(parent);
+    lv_obj_remove_style_all(cont);
+    lv_obj_set_height(cont, LV_SIZE_CONTENT);
+    lv_obj_remove_flag(cont, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    static const int32_t grid_col[] = {LV_GRID_FR(2), LV_GRID_FR(3), LV_GRID_FR(15), LV_GRID_FR(3), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};
+    static const int32_t grid_row[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
+    lv_obj_set_grid_dsc_array(cont, grid_col, grid_row);
+
+    slider_obj = lv_slider_create(cont);
+    lv_obj_set_style_anim_duration(slider_obj, 100, 0);
+    lv_obj_add_flag(slider_obj, LV_OBJ_FLAG_CLICKABLE); /*No input from the slider*/
+    lv_obj_remove_flag(slider_obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+
+    lv_obj_set_height(slider_obj, 6);
+    lv_obj_set_grid_cell(slider_obj, LV_GRID_ALIGN_STRETCH, 1, 3, LV_GRID_ALIGN_CENTER, 1, 1);
+
+    lv_obj_set_style_bg_opa(slider_obj, LV_OPA_TRANSP, LV_PART_KNOB);
+    lv_obj_set_style_pad_all(slider_obj, 10, LV_PART_KNOB);
+    lv_obj_set_style_bg_grad_dir(slider_obj, LV_GRAD_DIR_HOR, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(slider_obj, lv_color_hex(0x569af8), LV_PART_INDICATOR);
+    lv_obj_set_style_bg_grad_color(slider_obj, lv_color_hex(0xa666f1), LV_PART_INDICATOR);
+    lv_obj_set_style_outline_width(slider_obj, 0, 0);
+
+    time_all_obj = lv_label_create(cont);
+    lv_obj_set_style_text_font(time_all_obj, font_22, 0);
+    lv_obj_set_style_text_color(time_all_obj, lv_color_hex(0x8a86b8), 0);
+    lv_label_set_text(time_all_obj, "/:/");
+    lv_obj_set_grid_cell(time_all_obj, LV_GRID_ALIGN_END, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+
+    time_now_obj = lv_label_create(cont);
+    lv_obj_set_style_text_font(time_now_obj, font_22, 0);
+    lv_obj_set_style_text_color(time_now_obj, lv_color_hex(0x8a86b8), 0);
+    lv_label_set_text(time_now_obj, "0:00");
+    lv_obj_set_grid_cell(time_now_obj, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+
+    sound_info_obj = lv_label_create(cont);
+    lv_obj_set_style_text_font(sound_info_obj, font_16, 0);
+    lv_obj_set_style_text_color(sound_info_obj, lv_color_hex(0x8a86b8), 0);
+    lv_label_set_text(sound_info_obj, "N/A");
+    lv_obj_set_grid_cell(sound_info_obj, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+
+    return cont;
 }
 
 static lv_obj_t *create_ctrl_box(lv_obj_t *parent)
@@ -375,9 +384,8 @@ static lv_obj_t *create_ctrl_box(lv_obj_t *parent)
     lv_obj_remove_style_all(cont);
     lv_obj_set_height(cont, LV_SIZE_CONTENT);
     lv_obj_remove_flag(cont, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-    lv_obj_set_style_pad_bottom(cont, 17, 0);
     static const int32_t grid_col[] = {LV_GRID_FR(2), LV_GRID_FR(3), LV_GRID_FR(5), LV_GRID_FR(5), LV_GRID_FR(5), LV_GRID_FR(3), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};
-    static const int32_t grid_row[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
+    static const int32_t grid_row[] = {LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(cont, grid_col, grid_row);
 
     LV_IMAGE_DECLARE(img_lv_demo_music_btn_loop);
@@ -418,33 +426,6 @@ static lv_obj_t *create_ctrl_box(lv_obj_t *parent)
     lv_obj_add_event_cb(icon, next_click_event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(icon, LV_OBJ_FLAG_CLICKABLE);
 
-    slider_obj = lv_slider_create(cont);
-    lv_obj_set_style_anim_duration(slider_obj, 100, 0);
-    lv_obj_add_flag(slider_obj, LV_OBJ_FLAG_CLICKABLE); /*No input from the slider*/
-    lv_obj_remove_flag(slider_obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
-
-    lv_obj_set_height(slider_obj, 6);
-    lv_obj_set_grid_cell(slider_obj, LV_GRID_ALIGN_STRETCH, 1, 5, LV_GRID_ALIGN_CENTER, 2, 1);
-
-    lv_obj_set_style_bg_opa(slider_obj, LV_OPA_TRANSP, LV_PART_KNOB);
-    lv_obj_set_style_pad_all(slider_obj, 10, LV_PART_KNOB);
-    lv_obj_set_style_bg_grad_dir(slider_obj, LV_GRAD_DIR_HOR, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(slider_obj, lv_color_hex(0x569af8), LV_PART_INDICATOR);
-    lv_obj_set_style_bg_grad_color(slider_obj, lv_color_hex(0xa666f1), LV_PART_INDICATOR);
-    lv_obj_set_style_outline_width(slider_obj, 0, 0);
-
-    time_all_obj = lv_label_create(cont);
-    lv_obj_set_style_text_font(time_all_obj, font_22, 0);
-    lv_obj_set_style_text_color(time_all_obj, lv_color_hex(0x8a86b8), 0);
-    lv_label_set_text(time_all_obj, "/:/");
-    lv_obj_set_grid_cell(time_all_obj, LV_GRID_ALIGN_END, 5, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-
-    time_now_obj = lv_label_create(cont);
-    lv_obj_set_style_text_font(time_now_obj, font_22, 0);
-    lv_obj_set_style_text_color(time_now_obj, lv_color_hex(0x8a86b8), 0);
-    lv_label_set_text(time_now_obj, "0:00");
-    lv_obj_set_grid_cell(time_now_obj, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 1, 1);
-
     return cont;
 }
 
@@ -471,95 +452,6 @@ static lv_obj_t *create_handle(lv_obj_t *parent)
     lv_obj_set_style_border_width(handle_rect, 0, 0);
 
     return cont;
-}
-
-static void track_load(uint32_t id)
-{
-    lv_slider_set_value(slider_obj, 0, LV_ANIM_OFF);
-    lv_label_set_text(time_all_obj, "0:00");
-    lv_label_set_text(time_now_obj, "0:00");
-
-    if (id == track_id)
-        return;
-    bool next = false;
-    if ((track_id + 1) % ACTIVE_TRACK_CNT == id)
-        next = true;
-
-    lv_demo_music_list_button_check(track_id, false);
-
-    track_id = id;
-
-    lv_demo_music_list_button_check(id, true);
-
-    lv_label_set_text(title_label, "No music");
-    lv_label_set_text(artist_label, "");
-    lv_label_set_text(genre_label, "");
-
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, album_image_obj);
-    lv_anim_set_values(&a, lv_obj_get_style_image_opa(album_image_obj, 0), LV_OPA_TRANSP);
-    lv_anim_set_exec_cb(&a, album_fade_anim_cb);
-    lv_anim_set_duration(&a, 500);
-    lv_anim_start(&a);
-
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, album_image_obj);
-    lv_anim_set_duration(&a, 500);
-    lv_anim_set_path_cb(&a, lv_anim_path_ease_out);
-
-    if (next)
-    {
-        lv_anim_set_values(&a, 0, -LV_HOR_RES / 7);
-    }
-    else
-    {
-        lv_anim_set_values(&a, 0, LV_HOR_RES / 7);
-    }
-
-    lv_anim_set_exec_cb(&a, _obj_set_x_anim_cb);
-    lv_anim_set_completed_cb(&a, lv_obj_delete_anim_completed_cb);
-    lv_anim_start(&a);
-
-    lv_anim_set_path_cb(&a, lv_anim_path_linear);
-    lv_anim_set_var(&a, album_image_obj);
-    lv_anim_set_duration(&a, 500);
-    lv_anim_set_values(&a, LV_SCALE_NONE, LV_SCALE_NONE / 2);
-    lv_anim_set_exec_cb(&a, _image_set_scale_anim_cb);
-    lv_anim_set_completed_cb(&a, NULL);
-    lv_anim_start(&a);
-
-    lv_anim_set_path_cb(&a, lv_anim_path_overshoot);
-    lv_anim_set_var(&a, album_image_obj);
-    lv_anim_set_duration(&a, 500);
-    lv_anim_set_delay(&a, 100);
-    lv_anim_set_values(&a, LV_SCALE_NONE / 4, LV_SCALE_NONE);
-    lv_anim_set_exec_cb(&a, _image_set_scale_anim_cb);
-    lv_anim_set_completed_cb(&a, NULL);
-    lv_anim_start(&a);
-
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, album_image_obj);
-    lv_anim_set_values(&a, 0, LV_OPA_COVER);
-    lv_anim_set_exec_cb(&a, album_fade_anim_cb);
-    lv_anim_set_duration(&a, 500);
-    lv_anim_set_delay(&a, 100);
-    lv_anim_start(&a);
-}
-
-int32_t get_cos(int32_t deg, int32_t a)
-{
-    int32_t r = (lv_trigo_cos(deg) * a);
-
-    r += LV_TRIGO_SIN_MAX / 2;
-    return r >> LV_TRIGO_SHIFT;
-}
-
-int32_t get_sin(int32_t deg, int32_t a)
-{
-    int32_t r = lv_trigo_sin(deg) * a;
-
-    return (r + LV_TRIGO_SIN_MAX / 2) >> LV_TRIGO_SHIFT;
 }
 
 static void spectrum_draw_event_cb(lv_event_t *e)
@@ -619,7 +511,7 @@ static void spectrum_draw_event_cb(lv_event_t *e)
             count += pad;
             int16_t temp = item - pad * 2;
 
-            lv_area_t area = {.x1 = center.x + count, .x2 = center.x + temp + count, .y1 = center.y + height - v - 20, .y2 = center.y + height - 20};
+            lv_area_t area = {.x1 = center.x + count, .x2 = center.x + temp + count, .y1 = center.y + height - v, .y2 = center.y + height};
             lv_draw_rect(layer, &draw_dsc, &area);
             count += pad + temp;
         }
@@ -629,15 +521,15 @@ static void spectrum_draw_event_cb(lv_event_t *e)
     }
 }
 
-static void album_gesture_event_cb(lv_event_t *e)
-{
-    LV_UNUSED(e);
-    lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
-    if (dir == LV_DIR_LEFT)
-        lv_music_album_next(true);
-    if (dir == LV_DIR_RIGHT)
-        lv_music_album_next(false);
-}
+// static void album_gesture_event_cb(lv_event_t *e)
+// {
+//     LV_UNUSED(e);
+//     lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_active());
+//     if (dir == LV_DIR_LEFT)
+//         lv_music_album_next(true);
+//     if (dir == LV_DIR_RIGHT)
+//         lv_music_album_next(false);
+// }
 
 static void play_event_click_cb(lv_event_t *e)
 {
@@ -667,17 +559,6 @@ static void next_click_event_cb(lv_event_t *e)
     }
 }
 
-static void spectrum_end_cb(lv_anim_t *a)
-{
-    LV_UNUSED(a);
-    lv_music_album_next(true);
-}
-
-static void album_fade_anim_cb(void *var, int32_t v)
-{
-    lv_obj_set_style_image_opa(var, v, 0);
-}
-
 void view_set_all_time(float time)
 {
     lv_slider_set_range(slider_obj, 0, (uint32_t)time);
@@ -702,38 +583,6 @@ void view_set_auther(uint8_t *data)
     lv_label_set_text(artist_label, data);
 }
 
-const uint8_t jpg_signature[] = {0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46};
-const uint8_t png_signature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
-
-static int is_jpg(uint8_t *raw_data, size_t len)
-{
-    if (len < sizeof(jpg_signature))
-        return false;
-    return memcmp(jpg_signature, raw_data, sizeof(jpg_signature)) == 0;
-}
-
-static int is_png(uint8_t *raw_data, size_t len)
-{
-    if (len < sizeof(png_signature))
-        return false;
-    return memcmp(png_signature, raw_data, sizeof(png_signature)) == 0;
-}
-
-static void istream_png_reader(png_structp png_ptr, png_bytep png_data, png_size_t data_size)
-{
-    stream_mem *st = (stream_mem *)png_get_io_ptr(png_ptr);
-    if (st->pos + data_size > st->size)
-    {
-        return;
-    }
-    memcpy(png_data, st->data + st->pos, data_size);
-    st->pos += data_size;
-};
-
-static size_t read_cb(void *out, size_t size, size_t nmemb, void *userp)
-{
-}
-
 void view_set_image(uint8_t *data, uint32_t size)
 {
     if (img_dsc.data)
@@ -746,127 +595,22 @@ void view_set_image(uint8_t *data, uint32_t size)
         return;
     }
 
-    if (is_jpg(data, size))
+    if (load_image(data, size, &img_dsc))
     {
-        tjhandle handle = tjInitDecompress();
-        if (!handle)
-            return;
-
-        int width = 0, height = 0;
-        int res = tjDecompressHeader(handle, data, size, &width, &height);
-        if (res != 0)
-        {
-            tjDestroy(handle);
-            return;
-        }
-
-        img_dsc.header.w = width;
-        img_dsc.header.h = height;
-        img_dsc.data_size = width * height * 3;
-        img_dsc.header.stride = width * 3;
-        img_dsc.header.cf = LV_COLOR_FORMAT_RGB888;
-        img_dsc.data = (uint8_t *)malloc(img_dsc.data_size); // RGB 24bpp
-        if (!img_dsc.data)
-        {
-            tjDestroy(handle);
-            return;
-        }
-
-        if (tjDecompress2(handle, data, size, (uint8_t *)img_dsc.data, width, 0, height, TJPF_BGR, 0) != 0)
-        {
-            tjDestroy(handle);
-            return;
-        }
-
-        tjDestroy(handle);
-    }
-    else if (png_sig_cmp(data, 0, 8) == 0)
-    {
-        png_structp png_ptr = png_create_read_struct(
-            PNG_LIBPNG_VER_STRING,
-            NULL,
-            NULL,
-            NULL);
-        if (!png_ptr)
-        {
-            return;
-        }
-        png_infop info_ptr = png_create_info_struct(png_ptr);
-        if (!info_ptr)
-        {
-            png_destroy_read_struct(&png_ptr, NULL, NULL); // 释放已经分配的资源
-            return;
-        }
-
-        if (setjmp(png_jmpbuf(png_ptr)))
-        {
-            LV_LOG_ERROR("Png decode error");
-        }
-
-        stream_mem st = {size, 0, STREAM_TYPE_MEM, data};
-        png_set_read_fn(png_ptr, &st, istream_png_reader);
-
-        png_read_info(png_ptr, info_ptr);
-        png_uint_32 width = png_get_image_width(png_ptr, info_ptr);
-        png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
-        png_byte color_type = png_get_color_type(png_ptr, info_ptr);
-        png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
-
-        if (color_type == PNG_COLOR_TYPE_PALETTE)
-            png_set_palette_to_rgb(png_ptr); // 调色板转RGB
-        if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-            png_set_expand_gray_1_2_4_to_8(png_ptr); // 灰度位扩展
-        if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
-            png_set_tRNS_to_alpha(png_ptr); // 透明度通道支持
-        if (bit_depth == 16)
-            png_set_strip_16(png_ptr); // 16位->8位
-        if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
-            png_set_gray_to_rgb(png_ptr); // 灰度转RGB
-        if (!(color_type & PNG_COLOR_MASK_ALPHA))
-            png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER); // 添加不透明Alpha通道
-        // png_set_swap_alpha(png_ptr);                            // RGBA -> ARGB
-        png_set_bgr(png_ptr);
-
-        png_read_update_info(png_ptr, info_ptr); // 更新格式信息
-
-        img_dsc.header.w = width;
-        img_dsc.header.h = height;
-        img_dsc.data_size = width * height * 4;
-        img_dsc.header.stride = width * 4;
-        img_dsc.header.cf = LV_COLOR_FORMAT_ARGB8888;
-        img_dsc.data = (png_bytep)malloc(img_dsc.data_size);
-        if (!img_dsc.data)
-        {
-            LV_LOG_ERROR("Png decode error");
-        }
-
-        png_bytepp row_pointers = malloc(height * sizeof(png_bytep));
-        for (png_uint_32 y = 0; y < height; y++)
-        {
-            row_pointers[y] = (uint8_t *)img_dsc.data + y * width * 4;
-        }
-
-        png_read_image(png_ptr, row_pointers);
-        png_read_end(png_ptr, NULL);
-
-        free(row_pointers);
-        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        lv_image_set_src(album_image_obj, &img_dsc);
     }
     else
     {
         lv_image_set_src(album_image_obj, NULL);
         return;
     }
-
-    lv_image_set_src(album_image_obj, &img_dsc);
-    lv_image_set_antialias(album_image_obj, true);
 }
 
 void view_set_fft_data(uint16_t index, uint16_t value, uint32_t size)
 {
-    if (value > 50)
+    if (value > BAR_MAX_VALUE)
     {
-        value = 50;
+        value = BAR_MAX_VALUE;
     }
     spectrum[index] = value;
 }
@@ -874,4 +618,26 @@ void view_set_fft_data(uint16_t index, uint16_t value, uint32_t size)
 void view_fft_load()
 {
     lv_obj_invalidate(spectrum_obj);
+}
+
+void view_set_sound_info(uint16_t bit, uint32_t rate, uint8_t channel)
+{
+    float temp = (float)rate / 1000;
+
+    if (play_music_type == MUSIC_TYPE_MP3)
+    {
+        lv_label_set_text_fmt(sound_info_obj, "mp3 %dK %dch %02.1fK %dbit", play_mp3_bps / 1000, channel, temp, bit);
+    }
+    else if (play_music_type == MUSIC_TYPE_FLAC)
+    {
+        lv_label_set_text_fmt(sound_info_obj, "flac %dch %02.1fK %dbit", channel, temp, bit);
+    }
+}
+
+void view_fft_clear()
+{
+    for (int i = 0; i < BAR_CNT; i++)
+    {
+        spectrum[i] = 0;
+    }
 }

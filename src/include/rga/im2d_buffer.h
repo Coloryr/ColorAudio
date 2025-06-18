@@ -20,41 +20,41 @@
 
 #include "im2d_type.h"
 
-/**
- * Import external buffers into RGA driver.
- *
- * @param fd/va/pa
- *      Select dma_fd/virtual_address/physical_address by buffer type
- * @param size
- *      Describes the size of the image buffer
- *
- * @return rga_buffer_handle_t
- */
-#ifdef __cplusplus
-IM_API rga_buffer_handle_t importbuffer_fd(int fd, int size);
-IM_API rga_buffer_handle_t importbuffer_virtualaddr(void *va, int size);
-IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int size);
-#endif
+// /**
+//  * Import external buffers into RGA driver.
+//  *
+//  * @param fd/va/pa
+//  *      Select dma_fd/virtual_address/physical_address by buffer type
+//  * @param size
+//  *      Describes the size of the image buffer
+//  *
+//  * @return rga_buffer_handle_t
+//  */
+// #ifdef __cplusplus
+// IM_API rga_buffer_handle_t importbuffer_fd(int fd, int size);
+// IM_API rga_buffer_handle_t importbuffer_virtualaddr(void *va, int size);
+// IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int size);
+// #endif
 
-/**
- * Import external buffers into RGA driver.
- *
- * @param fd/va/pa
- *      Select dma_fd/virtual_address/physical_address by buffer type
- * @param width
- *      Describes the pixel width stride of the image buffer
- * @param height
- *      Describes the pixel height stride of the image buffer
- * @param format
- *      Describes the pixel format of the image buffer
- *
- * @return rga_buffer_handle_t
- */
-#ifdef __cplusplus
-IM_API rga_buffer_handle_t importbuffer_fd(int fd, int width, int height, int format);
-IM_API rga_buffer_handle_t importbuffer_virtualaddr(void *va, int width, int height, int format);
-IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int width, int height, int format);
-#endif
+// /**
+//  * Import external buffers into RGA driver.
+//  *
+//  * @param fd/va/pa
+//  *      Select dma_fd/virtual_address/physical_address by buffer type
+//  * @param width
+//  *      Describes the pixel width stride of the image buffer
+//  * @param height
+//  *      Describes the pixel height stride of the image buffer
+//  * @param format
+//  *      Describes the pixel format of the image buffer
+//  *
+//  * @return rga_buffer_handle_t
+//  */
+// #ifdef __cplusplus
+// IM_API rga_buffer_handle_t importbuffer_fd(int fd, int width, int height, int format);
+// IM_API rga_buffer_handle_t importbuffer_virtualaddr(void *va, int width, int height, int format);
+// IM_API rga_buffer_handle_t importbuffer_physicaladdr(uint64_t pa, int width, int height, int format);
+// #endif
 
 /**
  * Import external buffers into RGA driver.
@@ -167,14 +167,14 @@ IM_C_API rga_buffer_t wrapbuffer_virtualaddr_t(void* vir_addr, int width, int he
 IM_C_API rga_buffer_t wrapbuffer_physicaladdr_t(void* phy_addr, int width, int height, int wstride, int hstride, int format);
 IM_C_API rga_buffer_t wrapbuffer_fd_t(int fd, int width, int height, int wstride, int hstride, int format);
 
-#ifdef __cplusplus
-#undef wrapbuffer_handle
-IM_API rga_buffer_t wrapbuffer_handle(rga_buffer_handle_t  handle,
-                                      int width, int height, int format);
-IM_API rga_buffer_t wrapbuffer_handle(rga_buffer_handle_t  handle,
-                                      int width, int height, int format,
-                                      int wstride, int hstride);
-#endif
+// #ifdef __cplusplus
+// #undef wrapbuffer_handle
+// IM_API rga_buffer_t wrapbuffer_handle(rga_buffer_handle_t  handle,
+//                                       int width, int height, int format);
+// IM_API rga_buffer_t wrapbuffer_handle(rga_buffer_handle_t  handle,
+//                                       int width, int height, int format,
+//                                       int wstride, int hstride);
+// #endif
 
 IM_EXPORT_API void imsetAlphaBit(rga_buffer_t *buf, uint8_t alpha0, uint8_t alpha1);
 IM_EXPORT_API void imsetOpacity(rga_buffer_t *buf, uint8_t alpha);

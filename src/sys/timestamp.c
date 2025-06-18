@@ -25,15 +25,15 @@ void timestamp(char *fmt, int index, int start)
 
     if (start)
     {
-        printf("[%d %s]", index, fmt);
+        // printf("[%d %s]", index, fmt);
         gettimeofday(&t, NULL);
         st[index] = t.tv_sec * 1000000 + t.tv_usec;
     }
     else
     {
         gettimeofday(&t, NULL);
-        printf("[%d # cost %ld us]\n", index,
-               (t.tv_sec * 1000000 + t.tv_usec) - st[index]);
+        // printf("[%d # cost %ld us]\n", index,
+        //        (t.tv_sec * 1000000 + t.tv_usec) - st[index]);
     }
 }
 

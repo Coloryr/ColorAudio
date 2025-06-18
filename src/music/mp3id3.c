@@ -86,10 +86,15 @@ static void mp3_id3_cov_str(stream *st, mp3id3_tag *tag)
 
 mp3id3 *mp3_id3_read(stream *st)
 {
+    uint8_t buffer[16];
+    stream_read(st, buffer, 3);
+    if (buffer[0] != 'I' || buffer[1] != 'D' || buffer[2] != '3')
+    {
+        return NULL;
+    }
     mp3id3 *id3 = malloc(sizeof(mp3id3));
     memset(id3, 0, sizeof(mp3id3));
 
-    uint8_t buffer[16];
     stream_read(st, buffer, 7);
     id3->version = buffer[0];
     id3->r_version = buffer[1];

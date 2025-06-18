@@ -18,6 +18,7 @@ if (DEFINED BUILD_ARM)
     add_definitions(-DBUILD_ARM -DLV_DRM_USE_RGA)
     include_directories(./include)
     include_directories(./include/drm)
+    include_directories(./include/freetype2)
 else()
     find_package(SDL2 REQUIRED)
     include_directories(/usr/include/drm)
@@ -64,6 +65,8 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libmad.so"
     "${CMAKE_SOURCE_DIR}/libs/libpng.so"
     "${CMAKE_SOURCE_DIR}/libs/libfreetype.so.6"
+    "${CMAKE_SOURCE_DIR}/libs/libFLAC.so"
+    "${CMAKE_SOURCE_DIR}/libs/libturbojpeg.so.0.2.0"
     "${CMAKE_SOURCE_DIR}/libs/libSDL2.so")
 else()
     target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES}

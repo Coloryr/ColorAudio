@@ -3,10 +3,18 @@
 
 #include <alsa/asoundlib.h>
 
+extern int32_t *sound_buf;
+
+extern uint16_t pcm_now_format;
+extern uint16_t pcm_now_channels;
+extern uint32_t pcm_now_rate;
+extern uint32_t pcm_now_size;
+
 void alsa_reset();
 void alsa_init();
-void alsa_set(snd_pcm_format_t format, uint16_t channels, uint16_t rate);
+void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate);
+void alsa_check_buffer(uint16_t len);
 void alsa_reset();
-int alsa_write(void *buffer, uint16_t frame_len);
+int alsa_write();
 
 #endif

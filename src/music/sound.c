@@ -1,9 +1,19 @@
 #include "sound.h"
+#include "sound_fft.h"
+
+#include "view.h"
 
 #include "lvgl/src/misc/lv_log.h"
 
 // #define ALSA_DEVICE "hw:0,0"
 #define ALSA_DEVICE "default"
+
+int32_t *sound_buf;
+
+uint16_t pcm_now_format;
+uint32_t pcm_now_size;
+uint16_t pcm_now_channels;
+uint32_t pcm_now_rate;
 
 static snd_pcm_t *pcm_handle;
 static bool pcm_enable;
@@ -23,16 +33,41 @@ void alsa_init()
     pcm_enable = true;
 }
 
-void alsa_set(snd_pcm_format_t format, uint16_t channels, uint16_t rate)
+void alsa_check_buffer(uint16_t len)
+{
+    if (pcm_now_size != len)
+    {
+        if (sound_buf)
+        {
+            free(sound_buf);
+        }
+        sound_buf = malloc(sizeof(int32_t) * len * 2);
+        pcm_now_size = len;
+    }
+}
+
+void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate)
 {
     if (isset)
     {
         return;
     }
-    int err = snd_pcm_set_params(pcm_handle, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 1, 50000);
+#ifdef BUILD_ARM
+    int err = snd_pcm_set_params(pcm_handle, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 1, 1000000);
+#else
+    int err = snd_pcm_set_params(pcm_handle, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 1, 500000);
+#endif
+
     err = snd_pcm_prepare(pcm_handle);
 
+    pcm_now_channels = channels;
+    pcm_now_rate = rate;
+    pcm_now_format = snd_pcm_format_width(format);
+
     LV_LOG_USER("ALSA change, ch:%d, rate:%d, format:%s", channels, rate, snd_pcm_format_name(format));
+
+    view_update_info();
+
     isset = true;
 }
 
@@ -41,9 +76,9 @@ void alsa_reset()
     isset = false;
 }
 
-int alsa_write(void *buffer, uint16_t frame_len)
+int alsa_write()
 {
-    snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle, buffer, frame_len);
+    snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle, sound_buf, pcm_now_size);
     if (frames < 0)
         frames = snd_pcm_recover(pcm_handle, frames, 0);
     if (frames < 0)

@@ -3,6 +3,8 @@
 
 #include <malloc.h>
 #include <string.h>
+#include <turbojpeg.h>
+#include <png.h>
 
 uint32_t get_length(uint8_t *buffer)
 {
@@ -147,4 +149,152 @@ uint32_t utf16_to_utf8(uint16_t *input, uint8_t **output, uint32_t size)
     }
     (*output)[utf8_index++] = '\0';
     return utf8_index;
+}
+
+const uint8_t jpg_signature[] = {0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46};
+const uint8_t png_signature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+
+static int is_jpg(uint8_t *raw_data, size_t len)
+{
+    if (len < sizeof(jpg_signature))
+        return false;
+    return memcmp(jpg_signature, raw_data, sizeof(jpg_signature)) == 0;
+}
+
+static int is_png(uint8_t *raw_data, size_t len)
+{
+    if (len < sizeof(png_signature))
+        return false;
+    return memcmp(png_signature, raw_data, sizeof(png_signature)) == 0;
+}
+
+static void istream_png_reader(png_structp png_ptr, png_bytep png_data, png_size_t data_size)
+{
+    stream *st = (stream *)png_get_io_ptr(png_ptr);
+    if (st->pos + data_size > st->size)
+    {
+        return;
+    }
+    memcpy(png_data, st->buffer + st->pos, data_size);
+    st->pos += data_size;
+};
+
+bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
+{
+    if (is_jpg(data, size))
+    {
+        tjhandle handle = tjInitDecompress();
+        if (!handle)
+        {
+            return false;
+        }
+
+        int width = 0, height = 0;
+        int res = tjDecompressHeader(handle, data, size, &width, &height);
+        if (res != 0)
+        {
+            tjDestroy(handle);
+            return false;
+        }
+
+        img_dsc->header.w = width;
+        img_dsc->header.h = height;
+        img_dsc->data_size = width * height * 3;
+        img_dsc->header.stride = width * 3;
+        img_dsc->header.cf = LV_COLOR_FORMAT_RGB888;
+        img_dsc->data = (uint8_t *)malloc(img_dsc->data_size); // RGB 24bpp
+        if (!img_dsc->data)
+        {
+            tjDestroy(handle);
+            return false;
+        }
+
+        if (tjDecompress2(handle, data, size, (uint8_t *)img_dsc->data, width, 0, height, TJPF_BGR, 0) != 0)
+        {
+            tjDestroy(handle);
+            return false;
+        }
+
+        tjDestroy(handle);
+
+        return true;
+    }
+    else if (png_sig_cmp(data, 0, 8) == 0)
+    {
+        png_structp png_ptr = png_create_read_struct(
+            PNG_LIBPNG_VER_STRING,
+            NULL,
+            NULL,
+            NULL);
+        if (!png_ptr)
+        {
+            return false;
+        }
+        png_infop info_ptr = png_create_info_struct(png_ptr);
+        if (!info_ptr)
+        {
+            png_destroy_read_struct(&png_ptr, NULL, NULL); // 释放已经分配的资源
+            return false;
+        }
+
+        if (setjmp(png_jmpbuf(png_ptr)))
+        {
+            LV_LOG_ERROR("Png decode error");
+        }
+
+        stream st = {size, 0, STREAM_TYPE_MEM, data};
+        png_set_read_fn(png_ptr, &st, istream_png_reader);
+
+        png_read_info(png_ptr, info_ptr);
+        png_uint_32 width = png_get_image_width(png_ptr, info_ptr);
+        png_uint_32 height = png_get_image_height(png_ptr, info_ptr);
+        png_byte color_type = png_get_color_type(png_ptr, info_ptr);
+        png_byte bit_depth = png_get_bit_depth(png_ptr, info_ptr);
+
+        if (color_type == PNG_COLOR_TYPE_PALETTE)
+            png_set_palette_to_rgb(png_ptr); // 调色板转RGB
+        if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
+            png_set_expand_gray_1_2_4_to_8(png_ptr); // 灰度位扩展
+        if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS))
+            png_set_tRNS_to_alpha(png_ptr); // 透明度通道支持
+        if (bit_depth == 16)
+            png_set_strip_16(png_ptr); // 16位->8位
+        if (color_type == PNG_COLOR_TYPE_GRAY || color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+            png_set_gray_to_rgb(png_ptr); // 灰度转RGB
+        if (!(color_type & PNG_COLOR_MASK_ALPHA))
+            png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER); // 添加不透明Alpha通道
+        // png_set_swap_alpha(png_ptr);                            // RGBA -> ARGB
+        png_set_bgr(png_ptr);
+
+        png_read_update_info(png_ptr, info_ptr); // 更新格式信息
+
+        img_dsc->header.w = width;
+        img_dsc->header.h = height;
+        img_dsc->data_size = width * height * 4;
+        img_dsc->header.stride = width * 4;
+        img_dsc->header.cf = LV_COLOR_FORMAT_ARGB8888;
+        img_dsc->data = (png_bytep)malloc(img_dsc->data_size);
+        if (!img_dsc->data)
+        {
+            LV_LOG_ERROR("Png decode error");
+            png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+            return false;
+        }
+
+        png_bytepp row_pointers = malloc(height * sizeof(png_bytep));
+        for (png_uint_32 y = 0; y < height; y++)
+        {
+            row_pointers[y] = (uint8_t *)img_dsc->data + y * width * 4;
+        }
+
+        png_read_image(png_ptr, row_pointers);
+        png_read_end(png_ptr, NULL);
+
+        free(row_pointers);
+        png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+
+        return true;
+    }
+
+    return false;
 }
