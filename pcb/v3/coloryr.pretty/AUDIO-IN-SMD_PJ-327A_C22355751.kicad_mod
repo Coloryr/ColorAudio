@@ -225,16 +225,6 @@
 		(layer "Dwgs.User")
 		(uuid "f39feb96-7ae1-4e99-91f2-f5e052efef91")
 	)
-	(fp_line
-		(start -6.45 -3)
-		(end -6.45 3)
-		(stroke
-			(width 0.254)
-			(type default)
-		)
-		(layer "Edge.Cuts")
-		(uuid "84792f83-443b-4c54-8498-eba8f6bd619c")
-	)
 	(fp_poly
 		(pts
 			(xy -2.954278 -0.065263) (xy -2.98806 -0.191342) (xy -3.053323 -0.304381) (xy -3.145619 -0.396677)
