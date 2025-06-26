@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 0,
+    "active_layer": 2,
     "active_layer_preset": "",
     "auto_track_width": false,
     "hidden_netclasses": [],
@@ -127,14 +127,14 @@
       },
       {
         "name": "coloryr.kicad_pcb",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
-          "maximized": false,
-          "pos_x": 1273,
-          "pos_y": 0,
-          "size_x": 1294,
-          "size_y": 1100
+          "maximized": true,
+          "pos_x": -8,
+          "pos_y": -8,
+          "size_x": 1936,
+          "size_y": 1048
         }
       }
     ]

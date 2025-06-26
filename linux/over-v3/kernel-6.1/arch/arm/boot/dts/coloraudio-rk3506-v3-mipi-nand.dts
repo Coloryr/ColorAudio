@@ -418,18 +418,15 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&rm_io6_i2c0_scl &rm_io5_i2c0_sda>;
 
-	gt911@14 {
-		compatible = "edt,edt-ft5x06";
+	ft5x06@38 {
+		compatible = "ft5x16,touch";
 		reg = <0x38>;
-		interrupt-parent = <&gpio3>;
-		interrupts = <RK_PA7 IRQ_TYPE_EDGE_FALLING>;
-		touchscreen-size-x = <800>;
-		touchscreen-size-y = <480>;
-		// touchscreen-inverted-x;
-		// touchscreen-inverted-y;
-		wakeup-source;
+		tp-size = <89>;
+        max-x = <480>;
+        max-y = <800>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&touch_gpio &touch_reset_gpio>;
+		touch-gpio = <&gpio3 RK_PA7 IRQ_TYPE_LEVEL_LOW>;
 		reset-gpio = <&gpio3 RK_PB1 GPIO_ACTIVE_HIGH>;
 		status = "okay";
 	};
@@ -595,7 +592,7 @@
 
 &dsi {
 	status = "okay";
-	rockchip,lane-rate = <1000>;
+	// rockchip,lane-rate = <1000>;
 	dsi_panel: panel@0 {
 		status = "okay";
 		compatible = "simple-panel-dsi";
@@ -610,6 +607,7 @@
 		unprepare-delay-ms = <20>;
 		disable-delay-ms = <20>;
 		init-delay-ms = <120>;
+
 		dsi,flags = <(MIPI_DSI_MODE_VIDEO | MIPI_DSI_MODE_VIDEO_BURST |
 			      MIPI_DSI_MODE_LPM | MIPI_DSI_MODE_NO_EOT_PACKET)>;
 		dsi,format = <MIPI_DSI_FMT_RGB888>;
