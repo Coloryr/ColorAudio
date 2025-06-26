@@ -2278,6 +2278,8 @@ static irqreturn_t cs43130_irq_thread(int irq, void *data)
 			queue_work(cs43130->wq, &cs43130->work);
 		}
 
+		dev_info(component->dev, "HP plugged\n");
+
 		snd_soc_jack_report(&cs43130->jack, SND_JACK_MECHANICAL,
 				    CS43130_JACK_MASK);
 		return IRQ_HANDLED;
@@ -2333,6 +2335,9 @@ static int cs43130_probe(struct snd_soc_component *component)
 	regmap_update_bits(cs43130->regmap, CS43130_HP_DETECT,
 			   CS43130_HP_DETECT_CTRL_MASK,
 			   CS43130_HP_DETECT_CTRL_MASK);
+	regmap_update_bits(cs43130->regmap, CS43130_HP_DETECT,
+			   CS43130_HP_DETECT_INV_MASK,
+			   CS43130_HP_DETECT_INV_MASK);
 	
 	// dev_info(component->dev, "start mclk output\n");
 	// /* Setup clocks */
