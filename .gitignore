@@ -13,3 +13,4 @@ linux/coloraudio
 /pcb/v3/coloryr-backups
 *.zip
 /pcb/v3/gb
+/ui/edit
