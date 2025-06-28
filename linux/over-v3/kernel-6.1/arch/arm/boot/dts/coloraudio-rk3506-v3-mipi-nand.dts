@@ -417,17 +417,15 @@
 	status = "okay";
 	pinctrl-names = "default";
 	pinctrl-0 = <&rm_io6_i2c0_scl &rm_io5_i2c0_sda>;
+	clock-frequency = <400000>;
 
 	ft5x06@38 {
-		compatible = "ft5x16,touch";
+		compatible = "hyn,cst128a";
 		reg = <0x38>;
-		tp-size = <89>;
-        max-x = <480>;
-        max-y = <800>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&touch_gpio &touch_reset_gpio>;
-		touch-gpio = <&gpio3 RK_PA7 IRQ_TYPE_LEVEL_LOW>;
-		reset-gpio = <&gpio3 RK_PB1 GPIO_ACTIVE_HIGH>;
+		irq-gpios = <&gpio3 RK_PA7 IRQ_TYPE_LEVEL_LOW>;
+		reset-gpios = <&gpio3 RK_PB1 GPIO_ACTIVE_LOW>;
 		status = "okay";
 	};
 };
