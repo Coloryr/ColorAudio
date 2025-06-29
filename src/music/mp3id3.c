@@ -5,6 +5,11 @@
 #include <malloc.h>
 #include <string.h>
 
+/**
+ * 判断MP3ID3帧类型
+ * @param buffer 需要判断的数据
+ * @return id3帧类型
+ */
 static id3_type test_id3_type(uint8_t *buffer)
 {
     if (strncmp(buffer, TITLE_TAG, 4) == 0)
@@ -43,7 +48,10 @@ static id3_type test_id3_type(uint8_t *buffer)
     return ID3_UNKNOW_TAG;
 }
 
-static uint32_t id3_skip(stream *st)
+/**
+ * 一直读取数据，直到是0数据
+ */
+static uint32_t skip_data(stream_t *st)
 {
     uint32_t size = 0;
     uint8_t b;
@@ -57,7 +65,7 @@ static uint32_t id3_skip(stream *st)
     return size;
 }
 
-static void mp3_id3_cov_str(stream *st, mp3id3_tag *tag)
+static void cov_str(stream_t *st, data_item_t *tag)
 {
     uint8_t type = stream_read_byte(st);
     uint8_t *temp;
@@ -84,22 +92,49 @@ static void mp3_id3_cov_str(stream *st, mp3id3_tag *tag)
     }
 }
 
-mp3id3 *mp3_id3_read(stream *st)
+bool mp3id3_have(stream_t *st)
 {
-    uint8_t buffer[16];
-    stream_read(st, buffer, 3);
+    uint8_t buffer[3];
+    stream_peek(st, buffer, 3);
+    // 判断头
     if (buffer[0] != 'I' || buffer[1] != 'D' || buffer[2] != '3')
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void mp3id3_skip(stream_t *st)
+{
+    if (mp3id3_have(st))
+    {
+        uint8_t buffer[16];
+
+        // 读取头
+        stream_read(st, buffer, 10);
+        uint32_t len = (buffer[6] << 21) + (buffer[7] << 14) + (buffer[8] << 7) + buffer[9];
+
+        stream_seek(st, len + 10 - stream_get_pos(st), SEEK_CUR);
+    }
+}
+
+mp3id3 *mp3id3_read(stream_t *st)
+{
+    if (!mp3id3_have(st))
     {
         return NULL;
     }
-    mp3id3 *id3 = malloc(sizeof(mp3id3));
-    memset(id3, 0, sizeof(mp3id3));
+    mp3id3 *id3 = calloc(1, sizeof(mp3id3));
 
-    stream_read(st, buffer, 7);
-    id3->version = buffer[0];
-    id3->r_version = buffer[1];
-    id3->flag = buffer[2];
-    id3->length = (buffer[3] << 21) + (buffer[4] << 14) + (buffer[5] << 7) + buffer[6];
+    uint8_t buffer[16];
+
+    // 读取头
+    stream_read(st, buffer, 10);
+    id3->version = buffer[3];
+    id3->r_version = buffer[4];
+    id3->flag = buffer[5];
+    id3->length = (buffer[6] << 21) + (buffer[7] << 14) + (buffer[8] << 7) + buffer[9];
     uint32_t len = id3->length;
     uint32_t pos = 0;
 
@@ -108,7 +143,7 @@ mp3id3 *mp3_id3_read(stream *st)
         stream_read(st, buffer, 4);
         if (buffer[0] == 0)
         {
-            stream_seek(st, len + 10, SEEK_SET);
+            stream_seek(st, len + 10 - stream_get_pos(st), SEEK_CUR);
             return id3;
         }
         pos += 4;
@@ -120,20 +155,20 @@ mp3id3 *mp3_id3_read(stream *st)
         {
         case ID3_TITLE_TAG:
             id3->title.size = size;
-            mp3_id3_cov_str(st, &id3->title);
+            cov_str(st, &id3->title);
             break;
         case ID3_AUTHER_TAG:
             id3->auther.size = size;
-            mp3_id3_cov_str(st, &id3->auther);
+            cov_str(st, &id3->auther);
             break;
         case ID3_ALBUM_TAG:
             id3->album.size = size;
-            mp3_id3_cov_str(st, &id3->album);
+            cov_str(st, &id3->album);
             break;
         case ID3_PICTURE_TAG:
             uint8_t encoding = stream_read_byte(st);
-            uint32_t mimeType = id3_skip(st);
-            uint32_t description = id3_skip(st);
+            uint32_t mimeType = skip_data(st);
+            uint32_t description = skip_data(st);
             uint32_t imageSize = size - (1 + mimeType + 1 + 1 + description + 1);
             id3->image.size = size;
             id3->image.data = malloc(size);
@@ -149,7 +184,7 @@ mp3id3 *mp3_id3_read(stream *st)
     return id3;
 }
 
-void mp3_id3_close(mp3id3 *id3)
+void mp3id3_close(mp3id3 *id3)
 {
     if (id3 == NULL)
     {

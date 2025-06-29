@@ -5,7 +5,7 @@
  *      INCLUDES
  *********************/
 #include "view.h"
-#include "player.h"
+#include "local_music.h"
 #include "mln_list.h"
 
 /*********************
@@ -32,9 +32,9 @@ typedef struct
 lv_obj_t *lv_music_list_create(lv_obj_t *parent);
 void lv_music_list_button_check(uint32_t track_id, bool state);
 
-void view_add_list_button(play_item *item);
-void view_list_button_reload(play_item *item);
-void view_list_clear();
+void lv_list_add_item(play_item *item);
+void lv_list_button_reload(play_item *item);
+void lv_list_clear();
 
 /**********************
  *      MACROS

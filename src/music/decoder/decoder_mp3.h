@@ -5,8 +5,8 @@
 
 #include <stdbool.h>
 
-bool mp3_decode_init(stream *st);
-bool mp3_decode_start(stream *st);
+bool mp3_decode_init(stream_t *st);
+bool mp3_decode_start(stream_t *st);
 bool mp3_decode_close();
 
 #endif

@@ -3,6 +3,8 @@
 
 #include "stream.h"
 
+#include "data_item.h"
+
 #define TITLE_TAG "TIT2"
 #define AUTHER_TAG "TPE1"
 #define ALBUM_TAG "TALB"
@@ -26,23 +28,21 @@ typedef enum {
 
 typedef struct
 {
-    uint8_t *data;
-    uint32_t size;
-} mp3id3_tag;
-
-typedef struct
-{
     uint8_t version;
     uint8_t r_version;
     uint8_t flag;
     uint32_t length;
-    mp3id3_tag title;
-    mp3id3_tag album;
-    mp3id3_tag auther;
-    mp3id3_tag image;
+    data_item_t title;
+    data_item_t album;
+    data_item_t auther;
+    data_item_t image;
 } mp3id3;
 
-mp3id3* mp3_id3_read(stream *st);
-void mp3_id3_close(mp3id3* id3);
+bool mp3id3_have(stream_t *st);
+
+mp3id3* mp3id3_read(stream_t *st);
+
+void mp3id3_close(mp3id3* id3);
+void mp3id3_skip(stream_t *st);
 
 #endif

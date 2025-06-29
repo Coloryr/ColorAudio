@@ -32,7 +32,11 @@ include_directories(./sys)
 include_directories(./common)
 include_directories(./view)
 include_directories(./music)
+include_directories(./input)
+include_directories(./net)
+include_directories(./stream)
 include_directories(./melon/include)
+include_directories(./lvgl)
 include_directories(./)
 
 #def
@@ -51,9 +55,12 @@ file(GLOB_RECURSE SOURCES
 "./sys/*.*" 
 "./common/*.*"
 "./music/*.*"
-"./view/*.*")
+"./view/*.*"
+"./input/*.*"
+"./stream/*.*"
+"./net/*.*")
 
-add_executable(coloraudio ${SOURCES} main.c)
+add_executable(coloraudio ${SOURCES} main.cpp)
 
 if (DEFINED BUILD_ARM)
     target_link_libraries(coloraudio PRIVATE 
@@ -66,9 +73,13 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libpng.so"
     "${CMAKE_SOURCE_DIR}/libs/libfreetype.so.6"
     "${CMAKE_SOURCE_DIR}/libs/libFLAC.so"
+    "${CMAKE_SOURCE_DIR}/libs/libjson-c.so"
+    "${CMAKE_SOURCE_DIR}/libs/libcurl.so"
+    "${CMAKE_SOURCE_DIR}/libs/librime.so.1.13.1"
     "${CMAKE_SOURCE_DIR}/libs/libturbojpeg.so.0.2.0"
-    "${CMAKE_SOURCE_DIR}/libs/libSDL2.so")
+    "${CMAKE_SOURCE_DIR}/libs/libSDL2.so"
+    )
 else()
     target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES}
-        drm asound mad freetype m turbojpeg FLAC)
+        drm asound mad freetype m turbojpeg FLAC rime curl json-c)
 endif()

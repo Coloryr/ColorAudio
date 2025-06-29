@@ -6,8 +6,16 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 uint32_t get_length(uint8_t *buffer);
 uint32_t utf16_to_utf8(uint16_t *input, uint8_t **output, uint32_t size);
 bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t* img_dsc);
+
+#ifdef __cplusplus
+} /*extern "C"*/
+#endif
 
 #endif

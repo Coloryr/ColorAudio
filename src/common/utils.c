@@ -170,13 +170,14 @@ static int is_png(uint8_t *raw_data, size_t len)
 
 static void istream_png_reader(png_structp png_ptr, png_bytep png_data, png_size_t data_size)
 {
-    stream *st = (stream *)png_get_io_ptr(png_ptr);
-    if (st->pos + data_size > st->size)
+    stream_t *st = (stream_t *)png_get_io_ptr(png_ptr);
+
+    if (stream_test_read_size(st, data_size) == false)
     {
         return;
     }
-    memcpy(png_data, st->buffer + st->pos, data_size);
-    st->pos += data_size;
+
+    stream_read(st, png_data, data_size);
 };
 
 bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
@@ -241,9 +242,8 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
         {
             LV_LOG_ERROR("Png decode error");
         }
-
-        stream st = {size, 0, STREAM_TYPE_MEM, data};
-        png_set_read_fn(png_ptr, &st, istream_png_reader);
+        stream_t *st = stream_create_mem(data, size);
+        png_set_read_fn(png_ptr, st, istream_png_reader);
 
         png_read_info(png_ptr, info_ptr);
         png_uint_32 width = png_get_image_width(png_ptr, info_ptr);
@@ -277,6 +277,7 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
         if (!img_dsc->data)
         {
             LV_LOG_ERROR("Png decode error");
+            stream_close(st);
             png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
             return false;
         }
@@ -292,6 +293,7 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
 
         free(row_pointers);
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+        stream_close(st);
 
         return true;
     }

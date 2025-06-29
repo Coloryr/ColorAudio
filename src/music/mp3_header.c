@@ -5,8 +5,8 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <math.h>
 
-// MP3帧头结构体
 typedef struct
 {
     uint16_t sync : 11;          // 同步字 0x7FF
@@ -24,7 +24,6 @@ typedef struct
     uint8_t emphasis : 2;        // 强调模式
 } MP3FrameHeader;
 
-// VBR头结构体
 typedef struct
 {
     char identifier[5];    // "Xing"或"Info"
@@ -82,7 +81,7 @@ const uint32_t bitrates[4][4][16] = {
         {0, 32000, 64000, 96000, 128000, 160000, 192000, 224000, 256000, 288000, 320000, 352000, 384000, 416000, 448000, 0} // Layer I
     }};
 
-static int parse_frame_header(stream *st, MP3FrameHeader *hdr)
+static int parse_frame_header(stream_t *st, MP3FrameHeader *hdr)
 {
     uint8_t header_bytes[4];
 
@@ -152,9 +151,9 @@ static int calculate_frame_size(MP3FrameHeader *hdr)
     }
 }
 
-static int parse_vbr_header(stream *st, VBRHeader *vbr, const MP3FrameHeader *hdr)
+static int parse_vbr_header(stream_t *st, VBRHeader *vbr, const MP3FrameHeader *hdr)
 {
-    int32_t start_pos = st->pos;
+    int32_t start_pos = stream_get_pos(st);
     uint8_t buffer[16];
 
     stream_read(st, buffer, 16);
@@ -179,16 +178,16 @@ static int parse_vbr_header(stream *st, VBRHeader *vbr, const MP3FrameHeader *hd
     return 1;
 }
 
-float mp3_get_time_len(stream *st)
+float mp3_get_time_len(stream_t *st)
 {
     float scan_time = 0;
-    uint32_t pos = st->pos;
+    uint32_t pos = stream_get_pos(st);
     MP3FrameHeader hdr;
 
     // 尝试检测VBR头
     int is_vbr = 0;
     VBRHeader vbr = {0};
-
+    float temp_time = 0;
     if (parse_frame_header(st, &hdr))
     {
         // 计算第一帧大小
@@ -218,7 +217,9 @@ float mp3_get_time_len(stream *st)
         {
             // CBR模式处理 - 逐帧扫描
             stream_seek(st, pos, SEEK_SET);
-            while (st->pos < st->size)
+            uint32_t size = stream_get_all_size(st) - pos;
+
+            while (stream_can_read(st))
             {
                 if (!parse_frame_header(st, &hdr))
                 {
@@ -226,19 +227,24 @@ float mp3_get_time_len(stream *st)
                     continue;
                 }
 
-                // 计算帧大小
-                int frame_size = calculate_frame_size(&hdr);
-                if (frame_size <= 4)
-                { // 至少大于帧头大小
-                    stream_seek(st, 1, SEEK_CUR);
-                    continue;
-                }
+                // // 计算帧大小
+                // int frame_size = calculate_frame_size(&hdr);
+                // if (frame_size <= 4)
+                // { // 至少大于帧头大小
+                //     stream_seek(st, 1, SEEK_CUR);
+                //     continue;
+                // }
 
-                // 计算帧时长并累加
-                scan_time += ms_per_frame[hdr.layer][hdr.sample_rate_idx];
+                // // 计算帧时长并累加
+                // scan_time += ms_per_frame[hdr.layer][hdr.sample_rate_idx];
 
-                // 跳到下一帧
-                stream_seek(st, frame_size - 4, SEEK_CUR);
+                // // 跳到下一帧
+                // stream_seek(st, frame_size - 4, SEEK_CUR);
+
+                // if (temp_time == 0)
+                // {
+                return (float)size * 8 / bitrates[hdr.version][hdr.layer][hdr.bitrate_index];
+                // }
             }
         }
     }

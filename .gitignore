@@ -14,3 +14,5 @@ linux/coloraudio
 *.zip
 /pcb/v3/gb
 /ui/edit
+/src/out
+/src/.vs

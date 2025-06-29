@@ -2,6 +2,7 @@
 #include "lvgl.h"
 
 const lv_font_t *font_16;
+const lv_font_t *font_18;
 const lv_font_t *font_22;
 const lv_font_t *font_32;
 
@@ -25,6 +26,13 @@ void load_font()
                                           "MiSans",
                                           LV_FREETYPE_FONT_RENDER_MODE_BITMAP,
                                           16,
+                                          LV_FREETYPE_FONT_STYLE_NORMAL,
+                                          LV_FONT_KERNING_NONE);
+    
+    font_18 = lv_font_manager_create_font(g_font_manager,
+                                          "MiSans",
+                                          LV_FREETYPE_FONT_RENDER_MODE_BITMAP,
+                                          18,
                                           LV_FREETYPE_FONT_STYLE_NORMAL,
                                           LV_FONT_KERNING_NONE);
 

@@ -10,7 +10,7 @@
 #include <malloc.h>
 #include <math.h>
 
-#define POINTS 2048
+#define POINTS 4096
 #define OUT_POINTS 20
 #define SQRT2 1.4142135623730951
 
@@ -112,6 +112,6 @@ void fft_fill(uint32_t down)
     for (int i = 0; i < OUT_POINTS; i++)
     {
         int bar_len = (int)(bin_values[i] * 20);
-        view_set_fft_data(i, bar_len, 0);
+        lv_music_set_fft_data(i, bar_len, 0);
     }
 }

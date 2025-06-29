@@ -3,6 +3,7 @@
 
 #include "stream.h"
 
-float mp3_get_time_len(stream *st);
+float mp3_seek_to_time(stream_t *st, float time);
+float mp3_get_time_len(stream_t *st);
 
 #endif

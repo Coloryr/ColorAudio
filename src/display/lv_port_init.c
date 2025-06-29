@@ -47,7 +47,7 @@ void lv_port_init(void)
     lv_init();
     load_font();
 
-    disp = lv_port_disp_init(800, 480, g_disp_rotation);
+    disp = lv_port_disp_init(480, 800, g_disp_rotation);
     lv_port_indev_init(g_indev_rotation);
 }
 

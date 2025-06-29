@@ -4,6 +4,7 @@
 #include "sound.h"
 #include "sound_fft.h"
 #include "stream.h"
+#include "stream_buffer.h"
 #include "mp3id3.h"
 
 #include "lvgl/src/misc/lv_log.h"
@@ -15,7 +16,10 @@
 #define SHIFT 24
 
 static struct mad_decoder *decoder = NULL;
+
 static pthread_t thread;
+
+static stream_buffer_t *buffer_stream;
 
 static inline signed int mp3_sample_scale(mad_fixed_t sample)
 {
@@ -32,7 +36,7 @@ static inline signed int mp3_sample_scale(mad_fixed_t sample)
     return sample >> (MAD_F_FRACBITS + 1 - SHIFT);
 }
 
-static int _get_channels(enum mad_mode mode)
+static int get_channels(enum mad_mode mode)
 {
     if (mode == MAD_MODE_SINGLE_CHANNEL)
     {
@@ -44,11 +48,27 @@ static int _get_channels(enum mad_mode mode)
 
 static enum mad_flow play_mp3_header(void *data, struct mad_header const *header)
 {
+    if (get_play_state() == MUSIC_STATE_STOP)
+    {
+        return MAD_FLOW_STOP;
+    }
+
     uint32_t samplerate = header->samplerate;
 
     play_mp3_bps = header->bitrate;
 
-    alsa_set(SND_PCM_FORMAT_S24, _get_channels(header->mode), samplerate);
+    alsa_set(SND_PCM_FORMAT_S24, get_channels(header->mode), samplerate);
+
+    if (target_time > 0)
+    {
+        target_time -= (float)header->duration.fraction / MAD_TIMER_RESOLUTION;
+        if (target_time < 0.05)
+        {
+            play_jump_end();
+            return MAD_FLOW_CONTINUE;
+        }
+        return MAD_FLOW_IGNORE;
+    }
 
     return MAD_FLOW_CONTINUE;
 }
@@ -68,18 +88,18 @@ static enum mad_flow play_mp3_input(void *data, struct mad_stream *st)
     int unproc_data_size;
     int copy_size;
 
-    stream *stream1 = (stream *)data;
+    stream_buffer_t *stream1 = (stream_buffer_t *)data;
 
-    if (stream1->pos < stream1->size)
+    if (stream_can_read(stream1->stream))
     {
         unproc_data_size = st->bufend - st->next_frame;
         memcpy(stream1->buffer, stream1->buffer + stream1->buffer_pos - unproc_data_size, unproc_data_size);
         copy_size = BUFSIZE - unproc_data_size;
-        if (stream1->pos + copy_size > stream1->size)
+        if (stream_test_read_size(stream1->stream, copy_size) == false)
         {
-            copy_size = stream1->size - stream1->pos;
+            copy_size = stream_get_less_read(stream1->stream);
         }
-        stream_read(stream1, stream1->buffer + unproc_data_size, copy_size);
+        stream_read(stream1->stream, stream1->buffer + unproc_data_size, copy_size);
         stream1->buffer_pos = unproc_data_size + copy_size;
 
         mad_stream_buffer(st, stream1->buffer, stream1->buffer_pos);
@@ -136,91 +156,36 @@ static enum mad_flow play_mp3_output(void *data, const struct mad_header *header
 
 static enum mad_flow play_mp3_error(void *data, struct mad_stream *mad, struct mad_frame *frame)
 {
-    stream *st = (stream *)data;
+    time_now += (float)frame->header.duration.fraction / 352800000UL;
+
+    stream_buffer_t *st = (stream_buffer_t *)data;
     LV_LOG_ERROR("decoding error 0x%04x (%s) at byte offset %lu\n",
                  mad->error, mad_stream_errorstr(mad),
                  mad->this_frame - st->buffer);
 
-    return MAD_FLOW_BREAK;
+    return MAD_FLOW_CONTINUE;
 }
 
-mp3id3 *mp3_test_read_id3(stream *st)
+bool mp3_decode_init(stream_t *st)
 {
-    mp3id3 *id3 = mp3_id3_read(st);
-    if (id3)
-    {
-        play_info_update_id3(id3);
-        mp3_id3_close(id3);
-    }
-    else
-    {
-        stream_seek(st, 0, SEEK_SET);
-    }
-}
-
-// static enum mad_flow play_mp3_scan(void *data, struct mad_header const *header)
-// {
-//     scan_time += (float)header->duration.fraction / 352800000UL;
-// }
-
-// static void *mp3_scan_run(void *arg)
-// {
-//     time_all = 0;
-//     scan_time = 0;
-//     stream *st = (stream *)arg;
-//     struct mad_decoder scan_decoder;
-//     mad_decoder_init(&scan_decoder, st, play_mp3_input, play_mp3_scan, NULL, NULL, NULL, NULL);
-//     mad_decoder_run(&scan_decoder, MAD_DECODER_MODE_SYNC);
-//     mad_decoder_finish(&scan_decoder);
-//     stream_close(st);
-//     if (get_play_state() != MUSIC_STATE_STOP)
-//     {
-//         time_all = scan_time;
-//     }
-// }
-
-static void *mp3_scan_run(void *arg)
-{
-    time_all = 0;
-    float scan_time = mp3_get_time_len((stream *)arg);
-
-    if (get_play_state() != MUSIC_STATE_STOP)
-    {
-        time_all = scan_time / 1000;
-    }
-}
-
-static void mp3_scan_time(stream *st)
-{
-    stream *st1 = stream_copy_file(st);
-    if (st1 == NULL)
-    {
-        LV_LOG_ERROR("Mp3 scan fail");
-        return;
-    }
-    pthread_t rtid;
-    int res = pthread_create(&rtid, NULL, mp3_scan_run, st1);
-    if (res)
-    {
-        LV_LOG_ERROR("Mp3 scan thread run fail: %d", res);
-    }
-}
-
-bool mp3_decode_init(stream *st)
-{
-    mp3_test_read_id3(st);
-    mp3_scan_time(st);
     if (decoder)
     {
         mp3_decode_close();
     }
     decoder = malloc(sizeof(struct mad_decoder));
-    mad_decoder_init(decoder, st, play_mp3_input, play_mp3_header, NULL, play_mp3_output, play_mp3_error, NULL);
+    buffer_stream = stream_create_with_buffer(st);
+    mad_decoder_init(decoder, buffer_stream,
+                     play_mp3_input,
+                     play_mp3_header,
+                     NULL,
+                     play_mp3_output,
+                     play_mp3_error, 
+                     NULL);
 
     return true;
 }
 
-bool mp3_decode_start(stream *st)
+bool mp3_decode_start(stream_t *st)
 {
     return mad_decoder_run(decoder, MAD_DECODER_MODE_SYNC) == 0;
 }
@@ -232,6 +197,11 @@ bool mp3_decode_close()
         mad_decoder_finish(decoder);
         free(decoder);
         decoder = NULL;
+    }
+    if (buffer_stream)
+    {
+        stream_buffer_close(buffer_stream);
+        buffer_stream = NULL;
     }
 
     return true;
