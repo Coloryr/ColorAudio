@@ -2,6 +2,8 @@
 
 #include <malloc.h>
 
+using namespace ColorAudio;
+
 StreamBuffer::StreamBuffer(Stream* st) : stream(st)
 {
     buffer = static_cast<uint8_t*>(malloc(STREAM_BUFFER_SIZE));

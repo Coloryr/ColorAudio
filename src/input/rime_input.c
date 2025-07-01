@@ -1,6 +1,6 @@
 #include "rime_input.h"
 
-#include "lvgl/src/misc/lv_log.h"
+#include "../lvgl/src/misc/lv_log.h"
 
 #include <rime_api.h>
 #include <stdio.h>

@@ -23,21 +23,23 @@ else()
     find_package(SDL2 REQUIRED)
     include_directories(/usr/include/drm)
     include_directories(/usr/include/freetype2)
+    include_directories(${Boost_INCLUDE_DIRS})
 endif()
 
 # includes
 
-include_directories(./display)
-include_directories(./sys)
-include_directories(./common)
-include_directories(./view)
-include_directories(./music)
-include_directories(./input)
-include_directories(./net)
-include_directories(./stream)
-include_directories(./melon/include)
-include_directories(./lvgl)
-include_directories(./)
+# include_directories(./display)
+# include_directories(./sys)
+# include_directories(./common)
+# include_directories(./view)
+# include_directories(./music)
+# include_directories(./input)
+# include_directories(./net)
+# include_directories(./stream)
+# include_directories(./melon/include)
+# include_directories(./lvgl)
+
+include_directories(./lib_src)
 
 #def
 add_definitions(-DMLN_ROOT="/usr/local/melon")
@@ -49,16 +51,18 @@ add_definitions(-DMLN_EPOLL -DMLN_SENDFILE -DMLN_WRITEV -DMLN_USE_UNIX98 -DMLN_M
 #src
 
 file(GLOB_RECURSE SOURCES 
-"./melon/src/*.*" 
 "./lvgl/src/*.*"
 "./display/*.*" 
 "./sys/*.*" 
 "./common/*.*"
 "./music/*.*"
-"./view/*.*"
+"./ui/*.*"
 "./input/*.*"
 "./stream/*.*"
-"./net/*.*")
+"./player/*.*"
+"./net/*.*"
+"./fft/*.*"
+)
 
 add_executable(coloraudio ${SOURCES} main.cpp)
 
@@ -73,13 +77,15 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libpng.so"
     "${CMAKE_SOURCE_DIR}/libs/libfreetype.so.6"
     "${CMAKE_SOURCE_DIR}/libs/libFLAC.so"
-    "${CMAKE_SOURCE_DIR}/libs/libjson-c.so"
-    "${CMAKE_SOURCE_DIR}/libs/libcurl.so"
     "${CMAKE_SOURCE_DIR}/libs/librime.so.1.13.1"
     "${CMAKE_SOURCE_DIR}/libs/libturbojpeg.so.0.2.0"
     "${CMAKE_SOURCE_DIR}/libs/libSDL2.so"
     )
 else()
+    add_library(boost_beast INTERFACE)
+    # target_include_directories(boost_beast SYSTEM PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../beast/include")
     target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES}
-        drm asound mad freetype m turbojpeg FLAC rime curl json-c)
+        drm asound mad freetype m turbojpeg FLAC++ FLAC rime 
+        libboost_system.a libboost_url.a ssl crypto
+    )
 endif()

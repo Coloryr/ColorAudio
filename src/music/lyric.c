@@ -29,7 +29,7 @@ static void insert_sorted(lyric_node_t **head, lyric_node_t *node)
     cur->next = node;
 }
 
-lyric_node_t *parse_memory_lrc(uint8_t *data)
+lyric_node_t *parse_memory_lrc(char *data)
 {
     lyric_node_t *head = NULL;
     char *line = strtok(data, "\n"); // 按换行符分割
@@ -71,7 +71,7 @@ lyric_node_t *parse_memory_lrc(uint8_t *data)
     return head;
 }
 
-uint8_t *lyric_find(lyric_node_t *head, uint32_t current_time)
+char *lyric_find(lyric_node_t *head, uint32_t current_time)
 {
     lyric_node_t *cur = head;
 

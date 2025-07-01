@@ -4,6 +4,8 @@
 #include <pthread.h>
 #include <string.h>
 
+using namespace ColorAudio;
+
 StreamCir::StreamCir() : Stream(STREAM_TYPE_CIR)
 {
     this->buffer = static_cast<uint8_t*>(malloc(STREAM_BUFFER_SIZE));
@@ -44,7 +46,6 @@ uint32_t StreamCir::read(uint8_t* buffer, uint32_t len)
 {
     pthread_mutex_lock(&this->mutex);
 
-    // 无数据时阻塞等待
     while (this->bytes_avail == 0)
     {
         pthread_cond_wait(&this->not_empty, &this->mutex);
@@ -58,7 +59,6 @@ uint32_t StreamCir::read(uint8_t* buffer, uint32_t len)
 
     uint32_t bytes_to_read = (len > this->bytes_avail) ? this->bytes_avail : len;
 
-    // 处理缓冲区回绕
     uint32_t first_chunk = this->capacity - this->read_pos;
     if (bytes_to_read <= first_chunk)
     {
@@ -74,7 +74,6 @@ uint32_t StreamCir::read(uint8_t* buffer, uint32_t len)
 
     this->bytes_avail -= bytes_to_read;
 
-    // 通知写线程
     pthread_cond_signal(&this->not_full);
     pthread_mutex_unlock(&this->mutex);
 
@@ -85,7 +84,6 @@ uint32_t StreamCir::write(uint8_t* buffer, uint32_t len)
 {
     pthread_mutex_lock(&this->mutex);
 
-    // 无空间时阻塞等待
     while (this->capacity - this->bytes_avail < len)
     {
         pthread_cond_wait(&this->not_full, &this->mutex);
@@ -94,7 +92,6 @@ uint32_t StreamCir::write(uint8_t* buffer, uint32_t len)
     uint32_t free_space = this->capacity - this->bytes_avail;
     uint32_t bytes_to_write = (len > free_space) ? free_space : len;
 
-    // 处理缓冲区回绕
     uint32_t first_chunk = this->capacity - this->write_pos;
     if (bytes_to_write <= first_chunk)
     {
@@ -110,7 +107,6 @@ uint32_t StreamCir::write(uint8_t* buffer, uint32_t len)
 
     this->bytes_avail += bytes_to_write;
 
-    // 通知读线程
     pthread_cond_signal(&this->not_empty);
     pthread_mutex_unlock(&this->mutex);
 
@@ -121,7 +117,6 @@ uint32_t StreamCir::peek(uint8_t* buffer, uint32_t len)
 {
     pthread_mutex_lock(&this->mutex);
 
-    // 无数据时阻塞等待
     while (this->bytes_avail == 0)
     {
         pthread_cond_wait(&this->not_empty, &this->mutex);
@@ -134,9 +129,8 @@ uint32_t StreamCir::peek(uint8_t* buffer, uint32_t len)
     }
 
     uint32_t bytes_to_peek = (len > this->bytes_avail) ? this->bytes_avail : len;
-    uint32_t temp_read_pos = this->read_pos; // 临时保存读位置
+    uint32_t temp_read_pos = this->read_pos;
 
-    // 处理缓冲区回绕（不更新实际读位置）
     uint32_t first_chunk = this->capacity - temp_read_pos;
     if (bytes_to_peek <= first_chunk)
     {
@@ -196,14 +190,14 @@ void StreamCir::seek(int32_t pos, uint8_t where)
         }
         else if (pos < 0)
         {
-            // 不支持
+            
         }
         break;
 
     case SEEK_END:
         if (pos <= 0 && (uint32_t)(-pos) <= this->bytes_avail)
         {
-            this->bytes_avail += pos; // offset应为负值
+            this->bytes_avail += pos;
         }
         break;
     }

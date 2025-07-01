@@ -1,6 +1,3 @@
-#include <lvgl.h>
-#include <lv_conf.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -19,21 +16,23 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
-
 #include <time.h>
-#include "lvgl.h"
 
-#include "lv_port_init.h"
-#include "timestamp.h"
+#include "lvgl.h"
+#include "lv_conf.h"
+
+#include "display/lv_port_init.h"
+#include "sys/timestamp.h"
 
 #include "main.h"
-#include "view.h"
-#include "sound.h"
-#include "player.h"
-#include "rime_input.h"
-#include "http_connect.h"
-#include "net_music.h"
-#include "local_music.h"
+#include "ui/view.h"
+#include "ui/ui.h"
+#include "player/sound.h"
+#include "player/player.h"
+#include "input/rime_input.h"
+#include "net/http_connect.h"
+#include "music/net_music.h"
+#include "music/local_music.h"
 
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
@@ -57,12 +56,11 @@ int main(int argc, char **argv)
     play_init();
 
     rime_init();
-    http_init();
 
     view_init();
 
-    local_music_init();
-    // net_music_init();
+    // local_music_init();
+    net_music_init();
 
 #ifdef BUILD_ARM
     struct timespec ts;

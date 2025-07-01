@@ -5,16 +5,20 @@
 
 #include <stdbool.h>
 
-class StreamBuffer
+namespace ColorAudio
 {
-private:
-    Stream* stream;
-    uint8_t* buffer;
-    uint32_t buffer_pos;
-    uint32_t buffer_size;
-public:
-    StreamBuffer(Stream* st);
-    ~StreamBuffer();
-};
+    class StreamBuffer
+    {
+    private:
+        Stream *stream;
+        uint8_t *buffer;
+        uint32_t buffer_pos;
+        uint32_t buffer_size;
+
+    public:
+        StreamBuffer(Stream *st);
+        ~StreamBuffer();
+    };
+}
 
 #endif

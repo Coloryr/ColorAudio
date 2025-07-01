@@ -4,6 +4,10 @@
 #include <rime_api.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void rime_init();
 void rime_start_session();
 bool rime_put_key(uint8_t *key);
@@ -16,5 +20,9 @@ void rime_close_context(RimeContext *context);
 void rime_highlight_candidate(int index);
 void rime_close_session();
 bool rime_change_page(bool backward);
+
+#ifdef __cplusplus
+} /*extern "C"*/
+#endif
 
 #endif

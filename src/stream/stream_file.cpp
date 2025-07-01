@@ -1,13 +1,15 @@
 #include "stream_file.h"
 
-#include "utils.h"
+#include "../common/utils.h"
 
 #include <string.h>
 #include <malloc.h>
 
-#include "lvgl/src/misc/lv_log.h"
+#include "../lvgl/src/misc/lv_log.h"
 
-StreamFile::StreamFile(char *path) : Stream(STREAM_TYPE_FILE), pos(0)
+using namespace ColorAudio;
+
+StreamFile::StreamFile(const char *path) : Stream(STREAM_TYPE_FILE), pos(0)
 {
     if (path == nullptr)
     {
@@ -40,11 +42,13 @@ StreamFile::~StreamFile()
     if (this->file)
     {
         fclose(this->file);
+        this->file = NULL;
     }
 
     if (this->path)
     {
         free(this->path);
+        this->path = NULL;
     }
 }
 

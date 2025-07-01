@@ -1,20 +1,18 @@
 #include "local_music.h"
 
-#include "utils.h"
-#include "player.h"
-#include "mp3_header.h"
-#include "music_main.h"
-#include "music_list.h"
-#include "view.h"
-#include "mp3id3.h"
-#include "player_flac.h"
 #include "music.h"
+#include "mp3_id3.h"
+#include "mp3_header.h"
+#include "flac_metadata.h"
 
-#include "lvgl/src/misc/lv_log.h"
-#include "mln_list.h"
-#include "mln_utils.h"
-#include "mln_stack.h"
+#include "../player/player.h"
+#include "../stream/stream_file.h"
+#include "../ui/ui.h"
+#include "../ui/view.h"
 
+#include "../lvgl/src/misc/lv_log.h"
+
+#include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,113 +23,23 @@
 #include <assert.h>
 #include <pthread.h>
 #include <fcntl.h>
+#include <deque>
+#include <map>
 
-#ifdef BUILD_ARM
-#define READ_DIR "/sdcard"
-#else
-#define READ_DIR "/home/coloryr/playlist"
-// #define READ_DIR "/home/coloryr/playtest"
-#endif
+using namespace ColorAudio;
 
 static uint32_t scan_index = 0;
-static mln_stack_t *play_last_stack;
 
-mln_list_t local_play_list = mln_list_null();
-
-uint32_t play_now_index;
-uint32_t play_list_count;
-
-music_mode play_music_mode = MUSIC_MODE_LOOP;
-
-static uint8_t *play_get_index(uint32_t index)
-{
-    play_item *t;
-    for (t = mln_container_of(mln_list_head(&local_play_list), play_item, node);
-         t != NULL;
-         t = mln_container_of(mln_list_next(&t->node), play_item, node))
-    {
-        if (t->index == index)
-        {
-            return t->path;
-        }
-    }
-
-    return NULL;
-}
+static std::deque<uint32_t> play_last_stack;
 
 static void play_list_close()
 {
-    play_item *t, *fr;
-    for (t = mln_container_of(mln_list_head(&local_play_list), play_item, node); t != NULL;)
+    for (auto it = play_list.begin(); it != play_list.end(); ++it)
     {
-        free(t->path);
-        fr = t;
-        t = mln_container_of(mln_list_next(&t->node), play_item, node);
-        free(fr);
-    }
-}
-
-static void *copy(uint32_t *d, void *data)
-{
-    uint32_t *dup;
-    assert((dup = (uint32_t *)malloc(sizeof(uint32_t))) != NULL);
-    *dup = *d;
-    return dup;
-}
-
-static int play_last_stack_is(void *data, void *value)
-{
-    uint32_t *temp = data;
-    uint32_t *temp1 = value;
-    if (*temp == *temp1)
-    {
-        return -1;
-    }
-    return 0;
-}
-
-static int play_last_stack_count_is(void *data, void *value)
-{
-    uint32_t *temp1 = value;
-    *temp1++;
-    return 0;
-}
-
-static uint32_t play_last_stack_count()
-{
-    uint32_t count = 0;
-    mln_stack_iterate(play_last_stack, play_last_stack_count_is, &count);
-    return count;
-}
-
-static uint32_t play_last_stack_get()
-{
-    uint32_t *d;
-    d = mln_stack_pop(play_last_stack);
-    if (d != NULL)
-    {
-        uint32_t temp = *d;
-        free(d);
-        return temp;
+        delete it->second;
     }
 
-    return UINT32_MAX;
-}
-
-static void play_last_stack_push(uint32_t index)
-{
-    uint32_t *d = (uint32_t *)malloc(sizeof(uint32_t));
-    *d = index;
-    mln_stack_push(play_last_stack, d);
-}
-
-static void play_last_stack_old()
-{
-    if (play_last_stack_count() > play_list_count / 10)
-    {
-        uint32_t *old = mln_stack_pop(play_last_stack);
-        free(old);
-    }
+    play_list.clear();
 }
 
 static uint32_t read_random()
@@ -144,7 +52,7 @@ static uint32_t read_random()
     return temp;
 }
 
-static void play_read_list(char *path)
+static void play_read_list(const char *path)
 {
     DIR *dp;
     struct dirent *entry;
@@ -179,32 +87,22 @@ static void play_read_list(char *path)
         }
         else if (S_ISREG(file_stat.st_mode))
         {
-            stream_t *file = stream_open_file(full_path);
-            if (file == NULL)
-            {
-                return;
-            }
+            Stream *file = new StreamFile(full_path);
             music_type type = play_test_music_type(file);
-            stream_close(file);
+            delete file;
             if (type == MUSIC_TYPE_UNKNOW)
             {
                 continue;
             }
-            uint32_t len = get_length(full_path) + 1;
-            play_item *t;
-            t = (play_item *)calloc(1, sizeof(*t));
-            if (t == NULL)
-            {
-                continue;
-            }
-            mln_list_add(&local_play_list, &t->node);
-            t->path = malloc(len);
-            t->len = len;
+            play_item *t = new play_item();
+            t->path = full_path;
             t->index = scan_index++;
-            t->auther = NULL;
-            t->title = NULL;
+            t->auther = "";
+            t->title = "";
             t->time = 0;
-            memcpy(t->path, full_path, len);
+
+            play_list[t->index] = t;
+
             play_list_count++;
         }
     }
@@ -215,77 +113,55 @@ static void play_read_list(char *path)
 static void *play_list_info_scan(void *arg)
 {
     play_item *t;
-    for (t = mln_container_of(mln_list_head(&local_play_list), play_item, node);
-         t != NULL;
-         t = mln_container_of(mln_list_next(&t->node), play_item, node))
+    for (auto it = play_list.begin(); it != play_list.end(); ++it)
     {
-        stream_t *st = stream_open_file(t->path);
-        if (st == NULL)
-        {
-            continue;
-        }
-
+        t = it->second;
+        Stream *st = new StreamFile(t->path);
         music_type type = play_test_music_type(st);
         if (type == MUSIC_TYPE_UNKNOW)
         {
-            stream_close(st);
+            delete st;
             continue;
         }
 
         switch (type)
         {
         case MUSIC_TYPE_MP3:
+        {
             mp3id3 *id3 = mp3id3_read(st);
             if (id3)
             {
-                if (id3->title.data)
-                {
-                    t->title_len = id3->title.size;
-                    t->title = malloc(t->title_len);
-                    memcpy(t->title, id3->title.data, t->title_len);
-                }
-                if (id3->auther.data)
-                {
-                    t->auther_len = id3->auther.size;
-                    t->auther = malloc(t->auther_len);
-                    memcpy(t->auther, id3->auther.data, t->auther_len);
-                }
-                mp3id3_close(id3);
+                t->title = id3->title;
+                t->auther = id3->auther;
+                delete id3;
             }
             else
             {
-                stream_seek(st, 0, SEEK_SET);
+                st->seek(0, SEEK_SET);
             }
             t->time = mp3_get_time_len(st);
             break;
+        }
         case MUSIC_TYPE_FLAC:
-            flac_data_t *data = flac_read_metadata(st);
-            if (data)
+        {
+            FlacMetadata *data = new FlacMetadata(st);
+            if (data->decode_get_info())
             {
-                if (data->metadata.title.data)
-                {
-                    t->title_len = data->metadata.title.size;
-                    t->title = malloc(t->title_len);
-                    memcpy(t->title, data->metadata.title.data, t->title_len);
-                }
-                if (data->metadata.auther.data)
-                {
-                    t->auther_len = data->metadata.auther.size;
-                    t->auther = malloc(t->auther_len);
-                    memcpy(t->auther, data->metadata.auther.data, t->auther_len);
-                }
-                t->time = data->metadata.time;
+                t->title = data->info.title;
+                t->auther = data->info.auther;
+                t->time = data->info.time;
             }
-            flac_data_close(data);
-            break;
-        default:
+            delete data;
             break;
         }
+        }
 
-        stream_close(st);
+        delete st;
     }
 
     view_update_list();
+
+    return NULL;
 }
 
 static void local_music_run()
@@ -295,9 +171,9 @@ static void local_music_run()
         music_test_run(MUSIC_RUN_LOCAL);
 
         pthread_mutex_lock(&play_mutex);
-        uint8_t *path = play_get_index(play_now_index);
+        play_item *item = play_list[play_now_index];
 
-        stream_t *st = stream_open_file(path);
+        StreamFile *st = new StreamFile(item->path);
         if (st == NULL)
         {
             continue;
@@ -307,7 +183,7 @@ static void local_music_run()
         if (type == MUSIC_TYPE_UNKNOW)
         {
             LV_LOG_ERROR("Unkown music file type");
-            stream_close(st);
+            delete st;
             continue;
         }
 
@@ -316,11 +192,16 @@ static void local_music_run()
             mp3id3 *id3 = mp3id3_read(st);
             if (id3)
             {
-                play_info_update_id3(id3);
-                mp3id3_close(id3);
+                play_update_text(id3->title, MUSIC_INFO_TITLE);
+                play_update_text(id3->auther, MUSIC_INFO_AUTHER);
+                play_update_text(id3->album, MUSIC_INFO_ALBUM);
+                play_update_image(id3->image, MUSIC_INFO_IMAGE);
+
+                view_update_info();
+                view_update_img();
             }
 
-            stream_t *st1 = stream_copy_file(st);
+            Stream *st1 = st->copy();
             play_st = st1;
             pthread_cond_signal(&play_start);
             pthread_mutex_unlock(&play_mutex);
@@ -337,42 +218,56 @@ static void local_music_run()
         }
         else if (type == MUSIC_TYPE_FLAC)
         {
-            stream_t *st1 = stream_copy_file(st);
+            Stream *st1 = st->copy();
             play_st = st1;
             pthread_cond_signal(&play_start);
             pthread_mutex_unlock(&play_mutex);
 
-            flac_data_t *flac = flac_read_metadata(st);
-            if (flac != NULL)
+            FlacMetadata *flac = new FlacMetadata(st);
+            if (flac->decode_get_info())
             {
-                play_info_update_flac(&flac->metadata);
+                play_update_text(flac->info.title, MUSIC_INFO_TITLE);
+                play_update_text(flac->info.auther, MUSIC_INFO_AUTHER);
+                play_update_text(flac->info.album, MUSIC_INFO_ALBUM);
+                play_update_image(flac->info.image, MUSIC_INFO_IMAGE);
 
-                flac_data_close(flac);
-
-                stream_seek(st, 0, SEEK_SET);
+                view_update_info();
+                view_update_img();
             }
         }
+
+        delete st;
 
         usleep(1000);
 
         // 等待播放结束
         pthread_mutex_lock(&play_mutex);
 
-        // 关闭
-        stream_close(st);
-
-        if (get_play_command() == MUSIC_COMMAND_NEXT)
+        if (play_get_command() == MUSIC_COMMAND_NEXT)
         {
             if (play_music_mode == MUSIC_MODE_RND)
             {
-                play_last_stack_push(play_now_index);
+                play_last_stack.push_front(play_now_index);
                 uint32_t next_value;
+                bool is_have = false;
                 do
                 {
+                    is_have = false;
                     next_value = read_random() % play_list_count;
-                } while (mln_stack_iterate(play_last_stack, play_last_stack_is, &next_value) == -1);
-                play_last_stack_old();
+                    for (auto it = play_last_stack.rbegin(); it != play_last_stack.rend(); ++it)
+                    {
+                        if (*it == next_value)
+                        {
+                            is_have = true;
+                            break;
+                        }
+                    }
+                } while (is_have);
                 play_now_index = next_value;
+                if (play_last_stack.size() > play_list_count / 10)
+                {
+                    play_last_stack.pop_front();
+                }
             }
             else if (play_music_mode == MUSIC_MODE_LOOP)
             {
@@ -383,19 +278,18 @@ static void local_music_run()
                 }
             }
         }
-        else if (get_play_command() == MUSIC_COMMAND_LAST)
+        else if (play_get_command() == MUSIC_COMMAND_LAST)
         {
             if (play_music_mode == MUSIC_MODE_RND)
             {
-                if (mln_stack_empty(play_last_stack))
+                if (play_last_stack.size() == 0)
                 {
                     goto last_go;
                 }
                 else
                 {
-                    uint32_t *old = mln_stack_pop(play_last_stack);
-                    play_now_index = *old;
-                    free(old);
+                    play_now_index = play_last_stack.front();
+                    play_last_stack.pop_front();
                 }
             }
             else if (play_music_mode == MUSIC_MODE_LOOP)
@@ -413,7 +307,7 @@ static void local_music_run()
         }
 
         // 清理指令
-        play_command(MUSIC_COMMAND_UNKNOW);
+        play_set_command(MUSIC_COMMAND_UNKNOW);
         pthread_mutex_unlock(&play_mutex);
     }
 }
@@ -435,11 +329,13 @@ static void *play_read_run(void *arg)
     }
 
     local_music_run();
+
+    return NULL;
 }
 
 void local_music_init()
 {
-    play_last_stack = mln_stack_init((stack_free)free, (stack_copy)copy);
+    play_last_stack.clear();
 
     pthread_t rtid;
     int res = pthread_create(&rtid, NULL, play_read_run, NULL);

@@ -3,8 +3,9 @@
 #include <unistd.h>
 
 #include "lvgl.h"
-#include "lv_conf.h"
-#include "font.h"
+
+#include "../lv_conf.h"
+#include "../ui/font.h"
 
 #include "lv_port_disp.h"
 #include "lv_port_indev.h"

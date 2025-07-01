@@ -11,8 +11,9 @@ extern "C" {
 #endif
 
 uint32_t get_length(uint8_t *buffer);
-uint32_t utf16_to_utf8(uint16_t *input, uint8_t **output, uint32_t size);
+uint32_t utf16_to_utf8(uint16_t *input, char **output, uint32_t size);
 bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t* img_dsc);
+uint32_t min(uint32_t a, uint32_t b);
 
 #ifdef __cplusplus
 } /*extern "C"*/

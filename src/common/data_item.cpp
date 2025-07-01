@@ -7,7 +7,7 @@ DataItem::DataItem(uint32_t size)
     this->size = size;
     if (this->size > 0)
     {
-        this->data = (uint8_t *)calloc(1, size);
+        this->data = static_cast<uint8_t *>(calloc(1, size));
     }
     else
     {

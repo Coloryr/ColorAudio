@@ -1,15 +1,19 @@
 #include "stream_http.h"
 
-#include <malloc.h>
+#include "../common/utils.h"
 
-StreamHttp::StreamHttp(IStreamHttp* http) : Stream(STREAM_TYPE_HTTP),
-    http(http)
+#include <malloc.h>
+#include <string.h>
+
+using namespace ColorAudio;
+
+StreamHttp::StreamHttp(IStreamHttp *http) : Stream(STREAM_TYPE_HTTP),
+                                            http(http)
 {
-    cir = new StreamCir();
-    uint8_t* buffer = static_cast<uint8_t*>(malloc(STREAM_BUFFER_SIZE));
+    buffer = static_cast<uint8_t *>(malloc(STREAM_BUFFER_SIZE));
+    buffer_size = STREAM_BUFFER_SIZE;
     if (buffer == nullptr)
     {
-        delete cir;
         return;
     }
 
@@ -19,50 +23,115 @@ StreamHttp::StreamHttp(IStreamHttp* http) : Stream(STREAM_TYPE_HTTP),
 
 StreamHttp::~StreamHttp()
 {
-    if (this->cir)
+    if (buffer)
     {
-        delete this->cir;
+        free(buffer);
+        buffer = nullptr;
     }
 
-    this->http->close();
+    http->close();
 }
 
-uint32_t StreamHttp::read(uint8_t* buffer, uint32_t len)
+void StreamHttp::read_block()
 {
-    if (cir->get_read_pos() >= len)
+    memcpy(buffer, buffer + buffer_pos, buffer_write);
+    buffer_pos = 0;
+
+    uint32_t size = min(buffer_size - buffer_write, buffer_size);
+    uint32_t rsize = http->read(buffer + buffer_write, size);
+    http_pos += rsize;
+    if (rsize == 0 && http_pos != http_size)
     {
-        return cir->read(buffer, len);
+        rsize = http->read(buffer + buffer_pos, size);
+        http_pos += rsize;
     }
-    uint32_t need = len - cir->get_read_pos();
-    uint32_t rsize = http->read(buffer, need);
-    cir->write(buffer, rsize);
-
-    return cir->read(buffer, len);
+    if (size != rsize)
+    {
+        if (http_pos != http_size)
+        {
+            throw "size error";
+        }
+        is_eof = true;
+    }
+    buffer_write += rsize;
 }
 
-uint32_t StreamHttp::write(uint8_t* buffer, uint32_t len)
+uint32_t StreamHttp::buffer_read(uint8_t *buf, uint32_t len)
 {
-    //²»Ö§³Ö
+    if (buffer_write >= len)
+    {
+        memcpy(buf, buffer + buffer_pos, len);
+        buffer_pos += len;
+        buffer_write -= len;
+        return len;
+    }
+    if (is_eof && buffer_write > 0)
+    {
+        memcpy(buf, buffer + buffer_pos, buffer_write);
+        buffer_pos += buffer_write;
+        buffer_write = 0;
+        return len;
+    }
+
     return 0;
 }
 
-uint32_t StreamHttp::peek(uint8_t* buffer, uint32_t len)
+uint32_t StreamHttp::read(uint8_t *buffer, uint32_t len)
 {
-    if (cir->get_read_pos() >= len)
+    if (buffer_write == 0 && get_less_read() == 0)
     {
-        return cir->peek(buffer, len);
+        return 0;
     }
-    uint32_t need = len - cir->get_read_pos();
-    uint32_t rsize = http->read(buffer, need);
-    http_pos += rsize;
-    cir->write(buffer, rsize);
+    uint32_t size = buffer_read(buffer, len);
+    if (size)
+    {
+        return size;
+    }
+    read_block();
 
-    return cir->peek(buffer, len);
+    return buffer_read(buffer, len);
+}
+
+uint32_t StreamHttp::write(uint8_t *buffer, uint32_t len)
+{
+    return 0;
+}
+
+uint32_t StreamHttp::buffer_peek(uint8_t *buf, uint32_t len)
+{
+    if (buffer_write >= len)
+    {
+        memcpy(buf, buffer + buffer_pos, len);
+        return len;
+    }
+    if (is_eof && buffer_write > 0)
+    {
+        memcpy(buf, buffer + buffer_pos, buffer_write);
+        return len;
+    }
+
+    return 0;
+}
+
+uint32_t StreamHttp::peek(uint8_t *buffer, uint32_t len)
+{
+    if (buffer_write == 0 && get_less_read() == 0)
+    {
+        return 0;
+    }
+    uint32_t size = buffer_peek(buffer, len);
+    if (size)
+    {
+        return size;
+    }
+    read_block();
+
+    return buffer_peek(buffer, len);
 }
 
 uint32_t StreamHttp::get_pos()
 {
-    return http_pos - cir->get_read_avail();
+    return http_pos - buffer_write;
 }
 
 uint32_t StreamHttp::get_all_size()
@@ -74,49 +143,112 @@ uint32_t StreamHttp::get_less_read()
 {
     if (http_size > 0)
     {
-        return http_size - http_pos + cir->get_read_avail();
+        return http_size - get_pos();
     }
+
+    return 0;
+}
+
+void StreamHttp::re_connect(uint32_t pos)
+{
+    http_pos = http->re_connect(get_pos() + pos);
+    buffer_pos = 0;
+    buffer_write = 0;
 }
 
 void StreamHttp::seek(int32_t pos, uint8_t where)
 {
     if (where == SEEK_SET)
     {
-        cir->reset();
-        uint32_t pos = http->re_connect(pos);
-        http_pos = pos;
+        uint32_t res = http->re_connect(pos);
+        http_pos = res;
     }
     else if (where == SEEK_CUR)
     {
-        if (cir->get_read_pos() >= pos)
+        if (pos < 0)
         {
-            cir->seek(pos, SEEK_CUR);
+            if (buffer_pos > 0)
+            {
+                if (buffer_pos + pos < 0)
+                {
+                    re_connect(pos);
+                }
+                else
+                {
+                    buffer_pos += pos;
+                    buffer_write -= pos;
+                }
+            }
+            else
+            {
+                re_connect(pos);
+            }
         }
-        else
+        else if (pos >= 0)
         {
-            cir->reset();
-
-            http->re_connect(pos);
+            if (pos > buffer_write)
+            {
+                for (;;)
+                {
+                    if (pos >= buffer_size)
+                    {
+                        buffer_write = 0;
+                        buffer_pos = 0;
+                        read_block();
+                        if (buffer_write == 0)
+                        {
+                            buffer_pos = 0;
+                            buffer_write = 0;
+                            return;
+                        }
+                        pos -= buffer_write;
+                    }
+                    else if (pos >= buffer_write)
+                    {
+                        read_block();
+                        if (buffer_write < pos)
+                        {
+                            buffer_pos = 0;
+                            buffer_write = 0;
+                            return;
+                        }
+                        buffer_pos += pos;
+                        buffer_write -= pos;
+                        break;
+                    }
+                    else
+                    {
+                        buffer_pos += pos;
+                        buffer_write -= pos;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                buffer_pos += pos;
+                buffer_write -= pos;
+            }
         }
-        http_pos += pos;
+    }
+    else if (where == SEEK_END)
+    {
     }
 }
 
 bool StreamHttp::test_read_size(uint32_t size)
 {
-    bool ret;
-    if (cir->get_read_pos() >= size)
+    if (buffer_write == 0 && get_less_read() == 0)
     {
-        ret = (cir->get_read_avail() >= size);
-        return ret;
+        return 0;
+    }
+    if (size > buffer_write)
+    {
+        read_block();
+        return buffer_write >= size;
     }
 
-    uint32_t need = size - cir->get_read_pos();
-    uint32_t rsize = http->read(buffer, need);
-    http_pos += rsize;
-    cir->write(buffer, rsize);
-
-    return (cir->get_read_avail() >= size);
+    return true;
 }
 
 bool StreamHttp::can_read()
@@ -125,5 +257,5 @@ bool StreamHttp::can_read()
     {
         return true;
     }
-    return http_pos < http_size;
+    return http_pos < http_size || buffer_write > 0;
 }

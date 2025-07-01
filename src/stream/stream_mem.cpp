@@ -1,9 +1,11 @@
 #include "stream_mem.h"
 
-#include "lvgl/src/misc/lv_log.h"
+#include "../lvgl/src/misc/lv_log.h"
 
 #include <string.h>
 #include <stdio.h>
+
+using namespace ColorAudio;
 
 StreamMemory::StreamMemory(uint8_t *buffer, uint32_t size) : Stream(STREAM_TYPE_MEM),
    buffer(buffer),
