@@ -66,27 +66,33 @@ static uint32_t skip_data(ColorAudio::Stream *st)
     return size;
 }
 
-static void cov_str(ColorAudio::Stream *st, char **tag, uint32_t *size)
+static void cov_str(ColorAudio::Stream *st, char **tag, uint32_t size)
 {
+    *tag = nullptr;
     uint8_t type = st->read_byte();
-    uint8_t *temp;
-    *size -= 1;
+    size -= 1;
     switch (type)
     {
     case 0:
-        // temp = malloc(tag->size);
-        st->seek(*size, SEEK_SET);
-        // free(temp);
+    {
+        uint8_t buffer[4];
+        st->read(buffer, 4);
+        size -= 4;
+        *tag = static_cast<char *>(malloc(size));
+        st->read(reinterpret_cast<uint8_t *>(*tag), size);
         break;
+    }
     case 1:
-        temp = static_cast<uint8_t *>(malloc(*size));
-        st->read(temp, *size);
-        *size = utf16_to_utf8(reinterpret_cast<uint16_t *>(temp), tag, *size);
+    {
+        uint8_t *temp = static_cast<uint8_t *>(malloc(size));
+        st->read(temp, size);
+        utf16_to_utf8(reinterpret_cast<uint16_t *>(temp), tag, size);
         free(temp);
         break;
+    }
     case 2:
-        *tag = static_cast<char *>(malloc(*size));
-        st->read(reinterpret_cast<uint8_t *>(temp), *size);
+        *tag = static_cast<char *>(malloc(size));
+        st->read(reinterpret_cast<uint8_t *>(*tag), size);
         break;
     default:
         break;
@@ -119,23 +125,30 @@ void mp3id3_skip(ColorAudio::Stream *st)
     }
 }
 
-mp3id3 *mp3id3_read(ColorAudio::Stream *st)
+mp3_id3::mp3_id3(ColorAudio::Stream *st)
+    : st(st)
+{
+}
+
+mp3_id3::~mp3_id3()
+{
+}
+
+bool mp3_id3::get_info()
 {
     if (!mp3id3_have(st))
     {
-        return NULL;
+        return false;
     }
-    mp3id3 *id3 = new mp3id3();
-
     uint8_t buffer[16];
 
     // 读取头
     st->read(buffer, 10);
-    id3->version = buffer[3];
-    id3->r_version = buffer[4];
-    id3->flag = buffer[5];
-    id3->length = (buffer[6] << 21) + (buffer[7] << 14) + (buffer[8] << 7) + buffer[9];
-    uint32_t len = id3->length;
+    version = buffer[3];
+    r_version = buffer[4];
+    flag = buffer[5];
+    length = (buffer[6] << 21) + (buffer[7] << 14) + (buffer[8] << 7) + buffer[9];
+    uint32_t len = length;
     uint32_t pos = 0;
 
     do
@@ -144,7 +157,7 @@ mp3id3 *mp3id3_read(ColorAudio::Stream *st)
         if (buffer[0] == 0)
         {
             st->seek(len + 10 - st->get_pos(), SEEK_CUR);
-            return id3;
+            return true;
         }
         pos += 4;
         id3_type type = test_id3_type(reinterpret_cast<char *>(buffer));
@@ -156,23 +169,42 @@ mp3id3 *mp3id3_read(ColorAudio::Stream *st)
         {
         case ID3_TITLE_TAG:
         {
-            cov_str(st, &output, &size);
-            id3->title = output;
-            free(output);
+            cov_str(st, &output, size);
+            if (output != nullptr)
+            {
+                title = output;
+                free(output);
+            }
             break;
         }
         case ID3_AUTHER_TAG:
         {
-            cov_str(st, &output, &size);
-            id3->auther = output;
-            free(output);
+            cov_str(st, &output, size);
+            if (output != nullptr)
+            {
+                auther = output;
+                free(output);
+            }
             break;
         }
         case ID3_ALBUM_TAG:
         {
-            cov_str(st, &output, &size);
-            id3->album = output;
-            free(output);
+            cov_str(st, &output, size);
+            if (output != nullptr)
+            {
+                album = output;
+                free(output);
+            }
+            break;
+        }
+        case ID3_COMMENT_TAG:
+        {
+            cov_str(st, &output, size);
+            if (output != nullptr)
+            {
+                comment = output;
+                free(output);
+            }
             break;
         }
         case ID3_PICTURE_TAG:
@@ -181,8 +213,8 @@ mp3id3 *mp3id3_read(ColorAudio::Stream *st)
             uint32_t mimeType = skip_data(st);
             uint32_t description = skip_data(st);
             uint32_t imageSize = size - (1 + mimeType + 1 + 1 + description + 1);
-            id3->image = new DataItem(size);
-            st->read(id3->image->data, size);
+            image = new data_item(size);
+            st->read(image->data, size);
             break;
         }
         default:
@@ -194,5 +226,5 @@ mp3id3 *mp3id3_read(ColorAudio::Stream *st)
         pos += size;
     } while (pos < len);
 
-    return id3;
+    return true;
 }

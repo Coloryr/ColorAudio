@@ -9,15 +9,21 @@
 
 #define MUSIC_API "https://music.mcya.cn/api.php"
 #define MUSIC_API_SEARCH_ARG "types=search&count=%d&source=netease&pages=%d&name=%s"
-#define MUSIC_API_URL_ARG "types=url&source=netease&id=%ld"
 #define MUSIC_API_PIC_ARG "types=pic&source=netease&id=%s"
+#if BUILD_ARM
+#define MUSIC_API_URL_ARG "types=url&source=netease&id=%lld"
+#define MUSIC_API_LYRIC_ARG "types=lyric&source=netease&id=%lld"
+#else
+#define MUSIC_API_URL_ARG "types=url&source=netease&id=%ld"
 #define MUSIC_API_LYRIC_ARG "types=lyric&source=netease&id=%ld"
+#endif
 
 using namespace nlohmann;
 
 json api_lyric_music(uint64_t lyric_id)
 {
     char data[512];
+
     sprintf(data, MUSIC_API "?" MUSIC_API_LYRIC_ARG, lyric_id);
 
     std::string res = http_get_string(data);

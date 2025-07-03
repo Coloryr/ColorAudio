@@ -16,7 +16,8 @@
 extern std::string title;
 extern std::string album;
 extern std::string auther;
-extern DataItem* image;
+extern std::string comment;
+extern data_item* image;
 
 extern std::map<uint32_t, play_item *> play_list;
 
@@ -28,7 +29,7 @@ extern ColorAudio::Stream *play_st;
 music_type play_test_music_type(ColorAudio::Stream *st);
 
 void play_update_text(std::string text, music_info_type type);
-void play_update_image(DataItem* data, music_info_type type);
+void play_update_image(data_item* data, music_info_type type);
 
 void play_jump_index(uint32_t index);
 void play_jump_time(float time);

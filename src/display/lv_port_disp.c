@@ -3,7 +3,9 @@
 #include "drivers/display/drm/lv_linux_drm.h"
 #include "drivers/sdl/lv_sdl_window.h"
 
-lv_display_t * lv_port_disp_init(lv_coord_t hor_res, lv_coord_t ver_res, int rot)
+static lv_display_t * disp;
+
+void lv_port_disp_init(lv_coord_t hor_res, lv_coord_t ver_res, int rot)
 {
 
 #ifdef BUILD_ARM
@@ -29,10 +31,10 @@ lv_display_t * lv_port_disp_init(lv_coord_t hor_res, lv_coord_t ver_res, int rot
     }
 
     LV_LOG_USER("LV_USE_LINUX_DRM");
-    return lv_drm_disp_create(rot);
+    disp = lv_drm_disp_create(rot);
 #else
     LV_LOG_USER("LV_USE_SDL");
-    return lv_sdl_window_create(hor_res, ver_res);
+    disp = lv_sdl_window_create(hor_res, ver_res);
 #endif
 }
 

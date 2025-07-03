@@ -7,7 +7,13 @@
 extern "C" {
 #endif
 
-lv_display_t * lv_port_disp_init(lv_coord_t hor_res, lv_coord_t ver_res, int rot);
+/**
+ * 初始化显示部分
+ * @param hor_res 宽度
+ * @param ver_res 高度
+ * @param rot 旋转
+ */
+void lv_port_disp_init(lv_coord_t hor_res, lv_coord_t ver_res, int rot);
 
 #ifdef __cplusplus
 } /*extern "C"*/

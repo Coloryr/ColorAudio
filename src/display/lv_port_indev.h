@@ -5,7 +5,10 @@
 extern "C" {
 #endif
 
-void lv_port_indev_init(int rot);
+/**
+ * 输入设备初始化
+ */
+void lv_port_indev_init();
 
 #ifdef __cplusplus
 } /*extern "C"*/

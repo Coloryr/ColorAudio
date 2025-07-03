@@ -15,19 +15,20 @@ typedef struct
     std::string title;
     std::string album;
     std::string auther;
-    DataItem* image;
+    std::string comment;
+    data_item* image;
 } music_info_t;
 
 namespace ColorAudio
 {
-    class FlacMetadata : FLAC::Decoder::Stream
+    class flac_metadata : FLAC::Decoder::Stream
     {
     public:
         ColorAudio::Stream *st;
         music_info_t info;
 
-        FlacMetadata(ColorAudio::Stream *st);
-        ~FlacMetadata();
+        flac_metadata(ColorAudio::Stream *st);
+        ~flac_metadata();
 
         bool decode_get_info();
 

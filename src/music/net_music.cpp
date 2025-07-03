@@ -17,6 +17,7 @@
 #include <json/json.hpp>
 
 using namespace nlohmann;
+using namespace ColorAudio;
 
 static void *net_pic_run(void *arg)
 {
@@ -36,7 +37,7 @@ static void *net_pic_run(void *arg)
         return NULL;
     }
 
-    DataItem *item = http_get_data(pic_url);
+    data_item *item = http_get_data(pic_url);
 
     if (item != NULL)
     {
@@ -71,7 +72,7 @@ static void *net_lyric_run(void *arg)
     return NULL;
 }
 
-static net_music_search_t * get_search_list(uint32_t size, uint32_t page, const char *name)
+static net_music_search_t *get_search_list(uint32_t size, uint32_t page, const char *name)
 {
     json j = api_search_music(20, 1, "Daisy Crown (English Ver.)");
     if (j == NULL)
@@ -111,17 +112,13 @@ static void *play_run(void *arg)
 {
     net_music_search_t *list = get_search_list(20, 1, "Daisy Crown (English Ver.)");
 
-    if (list == NULL || list->list.size() == 0)
+    while (list == NULL || list->list.size() == 0)
     {
-        return NULL;
+        list = get_search_list(20, 1, "Daisy Crown (English Ver.)");
+        usleep(5000000);
     }
 
     net_music_search_item_t *item = list->list[0];
-
-    if (item == NULL)
-    {
-        return NULL;
-    }
 
     play_update_text(item->name, MUSIC_INFO_TITLE);
     play_update_text(item->artist, MUSIC_INFO_AUTHER);
@@ -144,41 +141,29 @@ static void *play_run(void *arg)
         }
     }
 
-    ColorAudio::HttpStream *http = new ColorAudio::HttpStream(url);
+    HttpStream http = HttpStream(url);
 
-    if (http->connect())
+    if (http.connect())
     {
-        FILE* file = fopen("temp.mp3", "w");
-        ColorAudio::Stream *st = new ColorAudio::StreamHttp(http);
-
-        // uint8_t temp[4096];
-        // while (st->can_read())
-        // {
-        //     st->read(temp, 4096);
-        //     fwrite(temp, 1, 4096, file);
-        // }
-
-        // fclose(file);
+        Stream *st = new StreamHttp(&http);
 
         music_type type = play_test_music_type(st);
         if (type == MUSIC_TYPE_UNKNOW)
         {
             LV_LOG_ERROR("Unkown music file type");
             delete st;
-            delete http;
             return NULL;
         }
 
         if (type == MUSIC_TYPE_MP3)
         {
-            mp3id3 *id3 = mp3id3_read(st);
-            if (id3)
-            {
-                delete id3;
-            }
+            mp3_id3 id3 = mp3_id3(st);
+            id3.get_info();
 
             time_all = (float)size * 8 / br / 1000;
         }
+
+        view_update_info();
 
         play_st = st;
         pthread_cond_signal(&play_start);
@@ -188,10 +173,6 @@ static void *play_run(void *arg)
 
         // 等待播放结束
         pthread_mutex_lock(&play_mutex);
-
-        // 关闭
-        delete st;
-        delete http;
     }
 
     if (list)

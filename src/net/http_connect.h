@@ -62,6 +62,6 @@ namespace ColorAudio
 }
 
 std::string http_get_string(const std::string &url);
-DataItem *http_get_data(const std::string &url);
+data_item *http_get_data(const std::string &url);
 
 #endif

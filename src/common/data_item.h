@@ -3,16 +3,32 @@
 
 #include <stdint.h>
 
-class DataItem
+/**
+ * 数据存储
+ */
+class data_item
 {
 private:
     
 public:
+    /**
+     * 数据
+     */
     uint8_t *data;
+    /**
+     * 存储大小
+     */
     uint32_t size;
 
-    DataItem(uint32_t size);
-    ~DataItem();
+    /**
+     * 创建一个数据存储
+     * @param size 存储大小
+     */
+    data_item(uint32_t size);
+    /**
+     * 销毁数据存储
+     */
+    ~data_item();
 };
 
 #endif

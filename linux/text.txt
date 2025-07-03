@@ -5,3 +5,22 @@ export AUDIODEV=hw:0,0
 modetest -s 74@71:480x800@RG24
 
 modetest -s 74@71:720x720@RG24
+
+
+
+./bootstrap.sh -with-libraries=system,url
+
+using gcc : arm : /home/coloryr/arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++ ;
+
+
+sudo apt update
+sudo apt install bluez dbus
+
+sudo service dbus start
+sudo service bluetooth start
+
+sudo wpa_supplicant -B -i eth0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+
+sudo wpa_cli -i eth0 scan
+sudo wpa_cli -i eth0 status
+sudo wpa_cli -i eth0 scan_result

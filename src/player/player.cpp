@@ -31,7 +31,8 @@ std::map<uint32_t, play_item *> play_list;
 std::string title;
 std::string album;
 std::string auther;
-DataItem* image;
+std::string comment;
+data_item* image;
 
 ColorAudio::Stream *play_st;
 
@@ -162,7 +163,7 @@ void play_update_text(std::string text, music_info_type type)
     }
 }
 
-void play_update_image(DataItem* data, music_info_type type)
+void play_update_image(data_item* data, music_info_type type)
 {
     switch (type)
     {

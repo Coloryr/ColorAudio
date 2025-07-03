@@ -7,6 +7,8 @@
 
 #include "../player/player.h"
 #include "../stream/stream_file.h"
+#include "dep.h"
+#include "../net/music_api.h"
 #include "../ui/ui.h"
 #include "../ui/view.h"
 
@@ -25,6 +27,7 @@
 #include <fcntl.h>
 #include <deque>
 #include <map>
+#include <json/json.hpp>
 
 using namespace ColorAudio;
 
@@ -128,12 +131,11 @@ static void *play_list_info_scan(void *arg)
         {
         case MUSIC_TYPE_MP3:
         {
-            mp3id3 *id3 = mp3id3_read(st);
-            if (id3)
+            mp3_id3 id3 = mp3_id3(st);
+            if (id3.get_info())
             {
-                t->title = id3->title;
-                t->auther = id3->auther;
-                delete id3;
+                t->title = id3.title;
+                t->auther = id3.auther;
             }
             else
             {
@@ -144,14 +146,13 @@ static void *play_list_info_scan(void *arg)
         }
         case MUSIC_TYPE_FLAC:
         {
-            FlacMetadata *data = new FlacMetadata(st);
-            if (data->decode_get_info())
+            flac_metadata data = flac_metadata(st);
+            if (data.decode_get_info())
             {
-                t->title = data->info.title;
-                t->auther = data->info.auther;
-                t->time = data->info.time;
+                t->title = data.info.title;
+                t->auther = data.info.auther;
+                t->time = data.info.time;
             }
-            delete data;
             break;
         }
         }
@@ -162,6 +163,46 @@ static void *play_list_info_scan(void *arg)
     view_update_list();
 
     return NULL;
+}
+
+static void get_music_lyric(std::string &comment)
+{
+    LV_LOG_USER("test key");
+    if (comment.find("163 key(Don't modify):") != 0)
+    {
+        return;
+    }
+    LV_LOG_USER("find 163 key");
+    std::string key = comment.substr(22);
+    std::string temp = dep(key);
+    if (temp.empty())
+    {
+        LV_LOG_USER("163 key dep fail");
+        return;
+    }
+    temp = temp.substr(6);
+    json j1 = json::parse(temp);
+    json id = j1["musicId"];
+    if (id.is_string())
+    {
+        LV_LOG_USER("163 music id: %s", id.get<std::string>().c_str());
+        uint64_t id1 = std::stoul(id.get<std::string>());
+        json j = api_lyric_music(id1);
+
+        std::string lyric, tlyric;
+        if (api_music_get_lyric(j, lyric, tlyric))
+        {
+            LV_LOG_USER("163 music lyric get done");
+            lyric_node_t *data = parse_memory_lrc(const_cast<char *>(lyric.c_str()));
+            lyric_node_t *tr_data = parse_memory_lrc(const_cast<char *>(tlyric.c_str()));
+
+            view_set_lyric(data, tr_data);
+        }
+        else
+        {
+            view_set_lyric(nullptr, nullptr);
+        }
+    }
 }
 
 static void local_music_run()
@@ -189,15 +230,16 @@ static void local_music_run()
 
         if (type == MUSIC_TYPE_MP3)
         {
-            mp3id3 *id3 = mp3id3_read(st);
-            if (id3)
+            mp3_id3 id3 = mp3_id3(st);
+            if (id3.get_info())
             {
-                play_update_text(id3->title, MUSIC_INFO_TITLE);
-                play_update_text(id3->auther, MUSIC_INFO_AUTHER);
-                play_update_text(id3->album, MUSIC_INFO_ALBUM);
-                play_update_image(id3->image, MUSIC_INFO_IMAGE);
+                comment = id3.comment;
 
-                view_update_info();
+                play_update_text(id3.title, MUSIC_INFO_TITLE);
+                play_update_text(id3.auther, MUSIC_INFO_AUTHER);
+                play_update_text(id3.album, MUSIC_INFO_ALBUM);
+                play_update_image(id3.image, MUSIC_INFO_IMAGE);
+
                 view_update_img();
             }
 
@@ -215,6 +257,8 @@ static void local_music_run()
             }
 
             time_all = scan_time;
+
+            view_update_info();
         }
         else if (type == MUSIC_TYPE_FLAC)
         {
@@ -223,13 +267,17 @@ static void local_music_run()
             pthread_cond_signal(&play_start);
             pthread_mutex_unlock(&play_mutex);
 
-            FlacMetadata *flac = new FlacMetadata(st);
+            flac_metadata *flac = new flac_metadata(st);
             if (flac->decode_get_info())
             {
+                comment = flac->info.comment;
+
                 play_update_text(flac->info.title, MUSIC_INFO_TITLE);
                 play_update_text(flac->info.auther, MUSIC_INFO_AUTHER);
                 play_update_text(flac->info.album, MUSIC_INFO_ALBUM);
                 play_update_image(flac->info.image, MUSIC_INFO_IMAGE);
+
+                time_all = flac->info.time;
 
                 view_update_info();
                 view_update_img();
@@ -237,6 +285,11 @@ static void local_music_run()
         }
 
         delete st;
+
+        if (!comment.empty())
+        {
+            get_music_lyric(comment);
+        }
 
         usleep(1000);
 

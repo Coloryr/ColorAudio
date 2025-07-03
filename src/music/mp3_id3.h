@@ -16,7 +16,8 @@
 #define COMMENT_TAG "COMM"
 #define PICTURE_TAG "APIC"
 
-typedef enum {
+typedef enum
+{
     ID3_TITLE_TAG = 0,
     ID3_AUTHER_TAG,
     ID3_ALBUM_TAG,
@@ -28,21 +29,32 @@ typedef enum {
     ID3_UNKNOW_TAG = -1
 } id3_type;
 
-typedef struct
+namespace ColorAudio
 {
-    uint8_t version;
-    uint8_t r_version;
-    uint8_t flag;
-    uint32_t length;
-    std::string title;
-    std::string album;
-    std::string auther;
-    DataItem* image;
-} mp3id3;
+    class mp3_id3
+    {
+    private:
+        ColorAudio::Stream *st;
+
+    public:
+        uint8_t version;
+        uint8_t r_version;
+        uint8_t flag;
+        uint32_t length;
+        std::string title;
+        std::string album;
+        std::string auther;
+        std::string comment;
+        data_item *image;
+
+        mp3_id3(ColorAudio::Stream *st);
+        ~mp3_id3();
+
+        bool get_info();
+    };
+}
 
 bool mp3id3_have(ColorAudio::Stream *st);
-
-mp3id3* mp3id3_read(ColorAudio::Stream *st);
 
 void mp3id3_skip(ColorAudio::Stream *st);
 

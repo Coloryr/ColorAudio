@@ -141,11 +141,11 @@ std::string http_get_string(const std::string &url)
     }
     catch (const std::exception &e)
     {
-        return "Error: " + std::string(e.what());
+        return "";
     }
 }
 
-DataItem *http_get_data(const std::string &url)
+data_item *http_get_data(const std::string &url)
 {
     http::response<http::dynamic_body> res;
     try
@@ -153,7 +153,7 @@ DataItem *http_get_data(const std::string &url)
         auto parsed = parse_url(url);
         http_get_impl(parsed, res);
         auto data = res.body().data();
-        DataItem *item = new DataItem(data.buffer_bytes());
+        data_item *item = new data_item(data.buffer_bytes());
         asio::buffer_copy(asio::buffer(item->data, item->size), data);
         return item;
     }

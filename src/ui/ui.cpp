@@ -72,13 +72,13 @@ static void lyric_tick(lv_timer_t *timer)
 
 static void timer_tick(lv_timer_t *timer)
 {
-    lv_music_set_all_time(time_all);
     lv_music_set_now_time(time_now);
 
     if (clear_info)
     {
         lv_music_fft_clear();
         lv_music_set_title("");
+        view_set_lyric(nullptr, nullptr);
         clear_info = false;
     }
 
@@ -98,6 +98,7 @@ static void timer_tick(lv_timer_t *timer)
 
     if (update_info)
     {
+        lv_music_set_all_time(time_all);
         lv_music_set_title(title.c_str());
         lv_music_set_album(album.c_str());
         lv_music_set_auther(auther.c_str());

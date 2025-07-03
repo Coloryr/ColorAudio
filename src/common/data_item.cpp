@@ -2,7 +2,7 @@
 
 #include <malloc.h>
 
-DataItem::DataItem(uint32_t size)
+data_item::data_item(uint32_t size)
 {
     this->size = size;
     if (this->size > 0)
@@ -15,7 +15,7 @@ DataItem::DataItem(uint32_t size)
     }
 }
 
-DataItem::~DataItem()
+data_item::~data_item()
 {
     if (this->data)
     {

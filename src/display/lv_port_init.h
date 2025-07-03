@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 
+/**
+ * Lvgl初始化
+ */
 void lv_port_init(void);
 
 #ifdef __cplusplus
