@@ -141,6 +141,7 @@ std::string http_get_string(const std::string &url)
     }
     catch (const std::exception &e)
     {
+        LV_LOG_ERROR(e.what());
         return "";
     }
 }

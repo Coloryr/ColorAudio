@@ -21,23 +21,23 @@ using namespace ColorAudio;
 
 static void *net_pic_run(void *arg)
 {
-    std::string *pic_id = static_cast<std::string *>(arg);
+    std::string *pic_url = static_cast<std::string *>(arg);
 
-    json j = api_image_music(pic_id->c_str());
-    if (j == NULL)
-    {
-        LV_LOG_ERROR("JSON parse error");
-        return NULL;
-    }
+    // json j = api_image_music(pic_id->c_str());
+    // if (j == NULL)
+    // {
+    //     LV_LOG_ERROR("JSON parse error");
+    //     return NULL;
+    // }
 
-    std::string pic_url;
-    if (!api_music_get_image(j, pic_url))
-    {
-        LV_LOG_ERROR("image url get error");
-        return NULL;
-    }
+    // std::string pic_url;
+    // if (!api_music_get_image(j, pic_url))
+    // {
+    //     LV_LOG_ERROR("image url get error");
+    //     return NULL;
+    // }
 
-    data_item *item = http_get_data(pic_url);
+    data_item *item = http_get_data(*pic_url);
 
     if (item != NULL)
     {
@@ -91,7 +91,7 @@ static net_music_search_t *get_search_list(uint32_t size, uint32_t page, const c
     return list;
 }
 
-static bool get_play_url(uint64_t id, std::string &url, uint32_t *size, float *br)
+static bool get_play_url(uint64_t id, std::string &url, uint32_t *time)
 {
     json j1 = api_url_music(id);
     if (j1 == NULL)
@@ -99,7 +99,7 @@ static bool get_play_url(uint64_t id, std::string &url, uint32_t *size, float *b
         LV_LOG_ERROR("JSON parse error");
         return false;
     }
-    if (!api_music_get_url(j1, url, size, br))
+    if (!api_music_get_url(j1, url, time))
     {
         LV_LOG_ERROR("JSON parse error");
         return false;
@@ -127,15 +127,14 @@ static void *play_run(void *arg)
     view_update_info();
 
     pthread_t pid1, pid2;
-    pthread_create(&pid1, NULL, net_pic_run, &item->pic_id);
-    pthread_create(&pid2, NULL, net_lyric_run, &item->lyric_id);
+    pthread_create(&pid1, NULL, net_pic_run, &item->image);
+    pthread_create(&pid2, NULL, net_lyric_run, &item->id);
 
     std::string url;
-    uint32_t size;
-    float br;
+    uint32_t time;
     for (uint8_t i = 0; i < 10; i++)
     {
-        if (get_play_url(item->url_id, url, &size, &br))
+        if (get_play_url(item->id, url, &time))
         {
             break;
         }
@@ -160,7 +159,7 @@ static void *play_run(void *arg)
             mp3_id3 id3 = mp3_id3(st);
             id3.get_info();
 
-            time_all = (float)size * 8 / br / 1000;
+            time_all = (float)time / 1000;
         }
 
         view_update_info();

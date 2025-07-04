@@ -197,7 +197,7 @@ static void get_music_lyric(std::string &comment)
     }
     catch (const std::exception &e)
     {
-        LV_LOG_ERROR(e.what());
+        LV_LOG_ERROR("%s", e.what());
     }
 }
 

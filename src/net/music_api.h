@@ -21,10 +21,8 @@ typedef struct
     std::string name;
     std::string artist;
     std::string album;
-    std::string pic_id;
+    std::string image;
     uint64_t id;
-    uint64_t url_id;
-    uint64_t lyric_id;
     net_music_source source;
 } net_music_search_item_t;
 
@@ -37,11 +35,11 @@ typedef struct
 json api_lyric_music(uint64_t lyric_id);
 json api_url_music(uint64_t url_id);
 json api_search_music(uint32_t size, uint32_t page, const char *name);
-json api_image_music(const char *pic_id);
+// json api_image_music(const char *pic_id);
 
 bool api_music_get_search(json &j, net_music_search_t **search);
-bool api_music_get_url(json &json, std::string &url, uint32_t *size, float *br);
-bool api_music_get_image(json &j, std::string &url);
+bool api_music_get_url(json &j, std::string &url, uint32_t *time);
+// bool api_music_get_image(json &j, std::string &url);
 bool api_music_get_lyric(json &j, std::string &lyric, std::string &tlyric);
 
 void api_music_search_close(net_music_search_t *list);
