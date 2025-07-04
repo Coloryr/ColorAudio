@@ -711,6 +711,8 @@ static void theme_apply(lv_theme_t * th, lv_obj_t * obj)
 {
     LV_UNUSED(th);
 
+    extern lv_obj_class_t lv_keyboard_view_class;
+
     my_theme_t * theme = theme_def;
     lv_obj_t * parent = lv_obj_get_parent(obj);
 
@@ -1029,6 +1031,20 @@ static void theme_apply(lv_theme_t * th, lv_obj_t * obj)
 
 #if LV_USE_KEYBOARD
     else if(lv_obj_check_type(obj, &lv_keyboard_class)) {
+        lv_obj_add_style(obj, &theme->styles.scr, 0);
+        lv_obj_add_style(obj, theme->disp_size == DISP_LARGE ? &theme->styles.pad_small : &theme->styles.pad_tiny, 0);
+        lv_obj_add_style(obj, &theme->styles.outline_primary, LV_STATE_FOCUS_KEY);
+        lv_obj_add_style(obj, &theme->styles.outline_secondary, LV_STATE_EDITED);
+        lv_obj_add_style(obj, &theme->styles.btn, LV_PART_ITEMS);
+        lv_obj_add_style(obj, &theme->styles.disabled, LV_PART_ITEMS | LV_STATE_DISABLED);
+        lv_obj_add_style(obj, &theme->styles.bg_color_white, LV_PART_ITEMS);
+        lv_obj_add_style(obj, &theme->styles.keyboard_button_bg, LV_PART_ITEMS);
+        lv_obj_add_style(obj, &theme->styles.pressed, LV_PART_ITEMS | LV_STATE_PRESSED);
+        lv_obj_add_style(obj, &theme->styles.bg_color_grey, LV_PART_ITEMS | LV_STATE_CHECKED);
+        lv_obj_add_style(obj, &theme->styles.bg_color_primary_muted, LV_PART_ITEMS | LV_STATE_FOCUS_KEY);
+        lv_obj_add_style(obj, &theme->styles.bg_color_secondary_muted, LV_PART_ITEMS | LV_STATE_EDITED);
+    }
+    else if(lv_obj_check_type(obj, &lv_keyboard_view_class)) {
         lv_obj_add_style(obj, &theme->styles.scr, 0);
         lv_obj_add_style(obj, theme->disp_size == DISP_LARGE ? &theme->styles.pad_small : &theme->styles.pad_tiny, 0);
         lv_obj_add_style(obj, &theme->styles.outline_primary, LV_STATE_FOCUS_KEY);

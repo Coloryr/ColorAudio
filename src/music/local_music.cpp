@@ -4,13 +4,14 @@
 #include "mp3_id3.h"
 #include "mp3_header.h"
 #include "flac_metadata.h"
+#include "dep.h"
 
 #include "../player/player.h"
 #include "../stream/stream_file.h"
-#include "dep.h"
 #include "../net/music_api.h"
 #include "../ui/ui.h"
 #include "../ui/view.h"
+#include "../ui/info.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -31,8 +32,6 @@
 
 using namespace ColorAudio;
 
-static uint32_t scan_index = 0;
-
 static std::deque<uint32_t> play_last_stack;
 
 static void play_list_close()
@@ -43,6 +42,7 @@ static void play_list_close()
     }
 
     play_list.clear();
+    play_list_count = 0;
 }
 
 static uint32_t read_random()
@@ -90,23 +90,20 @@ static void play_read_list(const char *path)
         }
         else if (S_ISREG(file_stat.st_mode))
         {
-            Stream *file = new StreamFile(full_path);
-            music_type type = play_test_music_type(file);
-            delete file;
+            StreamFile st = StreamFile(full_path);
+            music_type type = play_test_music_type(&st);
             if (type == MUSIC_TYPE_UNKNOW)
             {
                 continue;
             }
             play_item *t = new play_item();
             t->path = full_path;
-            t->index = scan_index++;
+            t->index = play_list_count++;
             t->auther = "";
             t->title = "";
             t->time = 0;
 
             play_list[t->index] = t;
-
-            play_list_count++;
         }
     }
 
@@ -119,11 +116,10 @@ static void *play_list_info_scan(void *arg)
     for (auto it = play_list.begin(); it != play_list.end(); ++it)
     {
         t = it->second;
-        Stream *st = new StreamFile(t->path);
-        music_type type = play_test_music_type(st);
+        StreamFile st = StreamFile(t->path);
+        music_type type = play_test_music_type(&st);
         if (type == MUSIC_TYPE_UNKNOW)
         {
-            delete st;
             continue;
         }
 
@@ -131,7 +127,7 @@ static void *play_list_info_scan(void *arg)
         {
         case MUSIC_TYPE_MP3:
         {
-            mp3_id3 id3 = mp3_id3(st);
+            mp3_id3 id3 = mp3_id3(&st);
             if (id3.get_info())
             {
                 t->title = id3.title;
@@ -139,14 +135,14 @@ static void *play_list_info_scan(void *arg)
             }
             else
             {
-                st->seek(0, SEEK_SET);
+                st.seek(0, SEEK_SET);
             }
-            t->time = mp3_get_time_len(st);
+            t->time = mp3_get_time_len(&st);
             break;
         }
         case MUSIC_TYPE_FLAC:
         {
-            flac_metadata data = flac_metadata(st);
+            flac_metadata data = flac_metadata(&st);
             if (data.decode_get_info())
             {
                 t->title = data.info.title;
@@ -156,8 +152,6 @@ static void *play_list_info_scan(void *arg)
             break;
         }
         }
-
-        delete st;
     }
 
     view_update_list();
@@ -167,41 +161,43 @@ static void *play_list_info_scan(void *arg)
 
 static void get_music_lyric(std::string &comment)
 {
-    LV_LOG_USER("test key");
-    if (comment.find("163 key(Don't modify):") != 0)
+    try
     {
-        return;
-    }
-    LV_LOG_USER("find 163 key");
-    std::string key = comment.substr(22);
-    std::string temp = dep(key);
-    if (temp.empty())
-    {
-        LV_LOG_USER("163 key dep fail");
-        return;
-    }
-    temp = temp.substr(6);
-    json j1 = json::parse(temp);
-    json id = j1["musicId"];
-    if (id.is_string())
-    {
-        LV_LOG_USER("163 music id: %s", id.get<std::string>().c_str());
-        uint64_t id1 = std::stoul(id.get<std::string>());
-        json j = api_lyric_music(id1);
-
-        std::string lyric, tlyric;
-        if (api_music_get_lyric(j, lyric, tlyric))
+        if (comment.find("163 key(Don't modify):") != 0)
         {
-            LV_LOG_USER("163 music lyric get done");
-            lyric_node_t *data = parse_memory_lrc(const_cast<char *>(lyric.c_str()));
-            lyric_node_t *tr_data = parse_memory_lrc(const_cast<char *>(tlyric.c_str()));
-
-            view_set_lyric(data, tr_data);
+            return;
         }
-        else
+        std::string key = comment.substr(22);
+        std::string temp = dep(key);
+        if (temp.empty())
         {
-            view_set_lyric(nullptr, nullptr);
+            return;
         }
+        temp = temp.substr(6);
+        json j1 = json::parse(temp);
+        json id = j1["musicId"];
+        if (id.is_string())
+        {
+            uint64_t id1 = std::stoul(id.get<std::string>());
+            json j = api_lyric_music(id1);
+
+            std::string lyric, tlyric;
+            if (api_music_get_lyric(j, lyric, tlyric))
+            {
+                lyric_node_t *data = parse_memory_lrc(const_cast<char *>(lyric.c_str()));
+                lyric_node_t *tr_data = parse_memory_lrc(const_cast<char *>(tlyric.c_str()));
+
+                view_set_lyric(data, tr_data);
+            }
+            else
+            {
+                view_set_lyric(nullptr, nullptr);
+            }
+        }
+    }
+    catch (const std::exception &e)
+    {
+        LV_LOG_ERROR(e.what());
     }
 }
 
@@ -214,23 +210,17 @@ static void local_music_run()
         pthread_mutex_lock(&play_mutex);
         play_item *item = play_list[play_now_index];
 
-        StreamFile *st = new StreamFile(item->path);
-        if (st == NULL)
-        {
-            continue;
-        }
-
-        music_type type = play_test_music_type(st);
+        StreamFile st = StreamFile(item->path);
+        music_type type = play_test_music_type(&st);
         if (type == MUSIC_TYPE_UNKNOW)
         {
             LV_LOG_ERROR("Unkown music file type");
-            delete st;
             continue;
         }
 
         if (type == MUSIC_TYPE_MP3)
         {
-            mp3_id3 id3 = mp3_id3(st);
+            mp3_id3 id3 = mp3_id3(&st);
             if (id3.get_info())
             {
                 comment = id3.comment;
@@ -238,18 +228,18 @@ static void local_music_run()
                 play_update_text(id3.title, MUSIC_INFO_TITLE);
                 play_update_text(id3.auther, MUSIC_INFO_AUTHER);
                 play_update_text(id3.album, MUSIC_INFO_ALBUM);
-                play_update_image(id3.image, MUSIC_INFO_IMAGE);
+                play_update_image(id3.image->copy(), MUSIC_INFO_IMAGE);
 
                 view_update_img();
             }
 
-            Stream *st1 = st->copy();
+            Stream *st1 = st.copy();
             play_st = st1;
             pthread_cond_signal(&play_start);
             pthread_mutex_unlock(&play_mutex);
 
             time_all = 0;
-            float scan_time = mp3_get_time_len(st);
+            float scan_time = mp3_get_time_len(&st);
 
             if (scan_time == 0)
             {
@@ -262,29 +252,27 @@ static void local_music_run()
         }
         else if (type == MUSIC_TYPE_FLAC)
         {
-            Stream *st1 = st->copy();
+            Stream *st1 = st.copy();
             play_st = st1;
             pthread_cond_signal(&play_start);
             pthread_mutex_unlock(&play_mutex);
 
-            flac_metadata *flac = new flac_metadata(st);
-            if (flac->decode_get_info())
+            flac_metadata flac = flac_metadata(&st);
+            if (flac.decode_get_info())
             {
-                comment = flac->info.comment;
+                comment = flac.info.comment;
 
-                play_update_text(flac->info.title, MUSIC_INFO_TITLE);
-                play_update_text(flac->info.auther, MUSIC_INFO_AUTHER);
-                play_update_text(flac->info.album, MUSIC_INFO_ALBUM);
-                play_update_image(flac->info.image, MUSIC_INFO_IMAGE);
+                play_update_text(flac.info.title, MUSIC_INFO_TITLE);
+                play_update_text(flac.info.auther, MUSIC_INFO_AUTHER);
+                play_update_text(flac.info.album, MUSIC_INFO_ALBUM);
+                play_update_image(flac.info.image->copy(), MUSIC_INFO_IMAGE);
 
-                time_all = flac->info.time;
+                time_all = flac.info.time;
 
                 view_update_info();
                 view_update_img();
             }
         }
-
-        delete st;
 
         if (!comment.empty())
         {
@@ -367,8 +355,8 @@ static void local_music_run()
 
 static void *play_read_run(void *arg)
 {
+    top_info_display("正在读取列表");
     play_list_close();
-    scan_index = 0;
     play_read_list(READ_DIR);
     view_init_list();
 
@@ -380,6 +368,8 @@ static void *play_read_run(void *arg)
     {
         LV_LOG_ERROR("Music play list scan thread run fail: %d", res);
     }
+
+    top_info_close();
 
     local_music_run();
 

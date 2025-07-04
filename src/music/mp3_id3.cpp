@@ -6,6 +6,8 @@
 #include <string.h>
 #include <string>
 
+using namespace ColorAudio;
+
 /**
  * 判断MP3ID3帧类型
  * @param buffer 需要判断的数据
@@ -126,12 +128,18 @@ void mp3id3_skip(ColorAudio::Stream *st)
 }
 
 mp3_id3::mp3_id3(ColorAudio::Stream *st)
-    : st(st)
+    : st(st), image(nullptr)
 {
+    
 }
 
 mp3_id3::~mp3_id3()
 {
+    if (image != nullptr)
+    {
+        delete image;
+        image = nullptr;
+    }
 }
 
 bool mp3_id3::get_info()

@@ -29,6 +29,10 @@ public:
      * 销毁数据存储
      */
     ~data_item();
+    /**
+     * 创建一个副本
+     */
+    data_item* copy();
 };
 
 #endif

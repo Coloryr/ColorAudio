@@ -18,15 +18,18 @@ flac_metadata::flac_metadata(ColorAudio::Stream *st)
 {
     set_md5_checking(true);
     set_metadata_respond_all();
+
+    info.image = NULL;
 }
 
 flac_metadata::~flac_metadata()
 {
     finish();
 
-    if (info.image)
+    if (info.image != nullptr)
     {
         delete info.image;
+        info.image = nullptr;
     }
 }
 

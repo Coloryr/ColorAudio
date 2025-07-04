@@ -9,6 +9,7 @@
 static lv_obj_t *list_obj;
 static lv_obj_t *search_obj;
 static lv_obj_t *search_text_obj;
+static lv_obj_t *top_obj;
 static lv_obj_t *clear_obj;
 static lv_style_t style_scrollbar;
 static lv_style_t style_btn;
@@ -55,6 +56,22 @@ static void list_delete_event_cb(lv_event_t *e)
         lv_style_reset(&style_artist);
         lv_style_reset(&style_time);
     }
+    else if (code == LV_EVENT_SCROLL_END)
+    {
+        if (lv_obj_get_scroll_y(list_obj) > 100)
+        {
+            lv_obj_remove_flag(top_obj, LV_OBJ_FLAG_HIDDEN);
+        }
+        else
+        {
+            lv_obj_add_flag(top_obj, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+}
+
+static void list_top_event_cb(lv_event_t *e)
+{
+    lv_obj_scroll_to_view(search_obj, LV_ANIM_ON);
 }
 
 void item_check(view_play_item_t *item, bool state)
@@ -123,7 +140,7 @@ lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event
 
     /*Create an empty transparent container*/
     list_obj = lv_obj_create(parent);
-    lv_obj_add_event_cb(list_obj, list_delete_event_cb, LV_EVENT_DELETE, NULL);
+    lv_obj_add_event_cb(list_obj, list_delete_event_cb, LV_EVENT_ALL, NULL);
     lv_obj_remove_style_all(list_obj);
     lv_obj_set_size(list_obj, LV_HOR_RES, LV_VER_RES - LV_DEMO_MUSIC_HANDLE_SIZE);
     lv_obj_set_y(list_obj, LV_DEMO_MUSIC_HANDLE_SIZE);
@@ -185,19 +202,27 @@ lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event
     lv_obj_add_flag(border, LV_OBJ_FLAG_IGNORE_LAYOUT);
 
     LV_IMAGE_DECLARE(img_lv_list_search);
+    LV_IMAGE_DECLARE(img_lv_top);
 
-    lv_obj_t *search_obj = lv_image_create(parent);
-    lv_image_set_src(search_obj, &img_lv_list_search);
-    lv_obj_add_event_cb(search_obj, search, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(search_obj, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(search_obj, LV_ALIGN_BOTTOM_RIGHT, -10, 0);
+    lv_obj_t *button = lv_image_create(parent);
+    lv_image_set_src(button, &img_lv_list_search);
+    lv_obj_add_event_cb(button, search, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -10, 0);
+
+    top_obj = lv_image_create(parent);
+    lv_image_set_src(top_obj, &img_lv_top);
+    lv_obj_add_event_cb(top_obj, list_top_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(top_obj, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(top_obj, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align(top_obj, LV_ALIGN_BOTTOM_RIGHT, -10, -80);
 
     return list_obj;
 }
 
-view_play_item_t * view_list_add_item(const char *title, const char *artist, uint32_t time, lv_event_cb_t click)
+view_play_item_t *view_list_add_item(const char *title, const char *artist, uint32_t time, lv_event_cb_t click)
 {
-    view_play_item_t * view = (view_play_item_t *)calloc(1, sizeof(*view));
+    view_play_item_t *view = (view_play_item_t *)calloc(1, sizeof(*view));
 
     lv_obj_t *btn = lv_obj_create(list_obj);
     lv_obj_remove_style_all(btn);

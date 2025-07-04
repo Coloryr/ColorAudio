@@ -37,15 +37,13 @@ static void anim_cb(void *bar, int32_t value)
 
 static lv_obj_t *create_bar(lv_obj_t *parent)
 {
-    static lv_style_t style_indic;
+    lv_obj_t *bar = lv_bar_create(parent);
 
-    lv_obj_t *bar = lv_bar_create(lv_screen_active());
-    // lv_obj_add_style(bar, &style_indic, LV_PART_INDICATOR);
-
-    lv_obj_set_style_bg_opa(bar, LV_OPA_TRANSP, LV_PART_KNOB);
     lv_obj_set_style_pad_all(bar, 10, LV_PART_KNOB);
-    lv_obj_set_style_bg_grad_dir(bar, LV_GRAD_DIR_HOR, LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(bar, lv_color_hex(0xffffff), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(bar, 200, LV_PART_MAIN);
+
+    lv_obj_set_style_bg_grad_dir(bar, LV_GRAD_DIR_HOR, LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(bar, lv_color_hex(0x569af8), LV_PART_INDICATOR);
     lv_obj_set_style_bg_grad_color(bar, lv_color_hex(0xa666f1), LV_PART_INDICATOR);
     lv_obj_set_style_outline_width(bar, 0, 0);
@@ -111,7 +109,7 @@ void lv_info_display(bool display)
     anim_set_display(info_obj, display);
 }
 
-void lv_info_set_text(uint8_t *text)
+void lv_info_set_text(const char *text)
 {
     lv_label_set_text(text_obj, text);
 }

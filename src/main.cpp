@@ -76,7 +76,7 @@ int main(int argc, char **argv)
         clock_gettime(CLOCK_MONOTONIC, &ts);
         current = ts.tv_sec * 1000 + ts.tv_nsec / 1000000; // 转为毫秒
 #else
-        SDL_Delay(1);
+        SDL_Delay(5);
         current = SDL_GetTicks();
 #endif
         view_tick();

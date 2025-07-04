@@ -3,8 +3,6 @@
 /pcb/v2(out)/coloryr-backups
 /pcb/v2/coloryr-backups
 /pcb/v2/gb
-pcb/v2/~coloryr.kicad_pcb.lck
-pcb/v2/~coloryr.kicad_sch.lck
 linux/MiniLoaderAll.bin
 linux/update.img
 linux/boot.img
@@ -16,3 +14,6 @@ linux/coloraudio
 /ui/edit
 /src/out
 /src/.vs
+/src/build/
+.vscode
+/src/log/

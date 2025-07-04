@@ -5,10 +5,10 @@
 #include <iostream>
 #include <string>
 #include <cryptopp/base64.h>
-#include <cryptopp/aes.h>     // 包含AES加密算法的头文件
-#include <cryptopp/filters.h> // 包含加解密过程中使用的filters头文件
-#include <cryptopp/modes.h>   // 包含加解密过程中使用的modes头文件
-#include <cryptopp/hex.h>     // 包含将二进制转换为十六进制的头文件
+#include <cryptopp/aes.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/modes.h>
+#include <cryptopp/hex.h>
 
 using namespace CryptoPP;
 
@@ -19,15 +19,12 @@ const uint8_t key[] = {0x23, 0x31, 0x34, 0x6C,
 
 static std::string decrypt(const std::string &data)
 {
-    const int keylen = 16;
-
     try
     {
         std::string decrypted;
         CryptoPP::ECB_Mode<CryptoPP::AES>::Decryption decryptor;
-        decryptor.SetKey(key, keylen);
+        decryptor.SetKey(key, sizeof(key));
 
-        // 使用PKCS#7填充方案
         CryptoPP::StringSource ss(data, true,
                                   new CryptoPP::StreamTransformationFilter(decryptor,
                                                                            new CryptoPP::StringSink(decrypted),

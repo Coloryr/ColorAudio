@@ -7,6 +7,7 @@
 #include "../music/music.h"
 #include "../stream/stream.h"
 
+#include <boost/container/flat_map.hpp>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -19,7 +20,7 @@ extern std::string auther;
 extern std::string comment;
 extern data_item* image;
 
-extern std::map<uint32_t, play_item *> play_list;
+extern boost::container::flat_map<uint32_t, play_item *> play_list;
 
 extern pthread_mutex_t play_mutex;
 extern pthread_cond_t play_start; 

@@ -15,6 +15,8 @@ extern bool init_list;
 
 extern bool clear_info;
 
+extern bool update_top_info;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -28,6 +30,8 @@ void view_update_list_index();
 void view_init_list();
 
 void view_music_clear();
+
+void view_top_info();
 
 #ifdef __cplusplus
 } /*extern "C"*/

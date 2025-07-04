@@ -178,8 +178,16 @@ void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate)
 #else
     int err = snd_pcm_set_params(pcm_handle, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 1, 500000);
 #endif
+    if (err != 0)
+    {
+        LV_LOG_ERROR("ALSA format set fail");
+    }
 
     err = snd_pcm_prepare(pcm_handle);
+    if (err != 0)
+    {
+        LV_LOG_ERROR("ALSA format set fail");
+    }
 
     pcm_now_channels = channels;
     pcm_now_rate = rate;

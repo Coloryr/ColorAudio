@@ -12,6 +12,8 @@ bool init_list;
 
 bool clear_info;
 
+bool update_top_info;
+
 void view_update_list_index()
 {
     update_list_index = true;
@@ -39,4 +41,8 @@ void view_update_state()
 void view_music_clear()
 {
     clear_info = true;
+}
+void view_top_info()
+{
+    update_top_info = true;
 }

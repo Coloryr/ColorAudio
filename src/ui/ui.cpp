@@ -9,6 +9,7 @@
 #include "view/view_music_list.h"
 #include "music_list.h"
 #include "music_main.h"
+#include "info.h"
 
 #include "../player/player_info.h"
 #include "../player/player.h"
@@ -150,7 +151,7 @@ static void timer_tick(lv_timer_t *timer)
         view_music_list_button_check(play_now_index, true);
         if (play_list_count > 1)
         {
-            if (play_now_index - 1 >= 0)
+            if (play_now_index >= 1)
             {
                 view_music_list_button_check(play_now_index - 1, false);
             }
@@ -161,6 +162,12 @@ static void timer_tick(lv_timer_t *timer)
         }
 
         update_list_index = false;
+    }
+
+    if (update_top_info)
+    {
+        top_info_update();
+        update_top_info = false;
     }
 }
 

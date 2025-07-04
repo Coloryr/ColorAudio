@@ -1,24 +1,33 @@
 #include "data_item.h"
 
 #include <malloc.h>
+#include <string.h>
 
 data_item::data_item(uint32_t size)
 {
     this->size = size;
-    if (this->size > 0)
+    if (size > 0)
     {
-        this->data = static_cast<uint8_t *>(calloc(1, size));
+        data = static_cast<uint8_t *>(calloc(1, size));
     }
     else
     {
-        this->data = NULL;
+        data = NULL;
     }
 }
 
 data_item::~data_item()
 {
-    if (this->data)
+    if (data)
     {
-        free(this->data);
+        free(data);
     }
+}
+
+data_item* data_item::copy()
+{
+    data_item* item = new data_item(size);
+    memcpy(item->data, data, size);
+
+    return item;
 }

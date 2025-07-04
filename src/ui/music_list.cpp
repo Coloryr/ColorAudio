@@ -1,6 +1,3 @@
-/*********************
- *      INCLUDES
- *********************/
 #include "music_list.h"
 #include "music_main.h"
 #include "view/view_input.h"
@@ -9,6 +6,8 @@
 #include "../music/music.h"
 #include "../player/player.h"
 
+#include <boost/container/flat_map.hpp>
+#include <boost/system.hpp>
 #include <string.h>
 #include <malloc.h>
 #include <map>
@@ -19,9 +18,9 @@ static void search_click_event_cb(lv_event_t *e);
 static void play_click_event_cb(lv_event_t *e);
 static void list_delete_event_cb(lv_event_t *e);
 
-static std::map<uint32_t, view_play_item_t *> view_play_list;
+static char view_list_search_data[512] = {0};
 
-static char view_list_search_data[1024] = {0};
+static boost::container::flat_map<uint32_t, view_play_item_t *> view_play_list;
 
 static bool is_search = false;
 
@@ -33,9 +32,9 @@ static void search_done(bool iscancel)
         is_search = false;
         view_music_list_search_display(false);
 
-        for (std::map<uint32_t, view_play_item_t *>::iterator it = view_play_list.begin(); it != view_play_list.end(); ++it)
+        for (const auto& pair : view_play_list)
         {
-            lv_obj_remove_flag(it->second->view, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(pair.second->view, LV_OBJ_FLAG_HIDDEN);
         }
 
         item = view_play_list[play_now_index];
@@ -47,24 +46,24 @@ static void search_done(bool iscancel)
         return;
     }
 
-    for (std::map<uint32_t, view_play_item_t *>::iterator it = view_play_list.begin(); it != view_play_list.end(); ++it)
+    for (const auto& pair : view_play_list)
     {
-        if (strstr(lv_label_get_text(it->second->title), view_list_search_data) || strstr(lv_label_get_text(it->second->auther), view_list_search_data))
+        if (strstr(lv_label_get_text(pair.second->title), view_list_search_data) || strstr(lv_label_get_text(pair.second->auther), view_list_search_data))
         {
             if (item == NULL)
             {
-                item = it->second;
+                item = pair.second;
             }
-            lv_obj_remove_flag(it->second->view, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_remove_flag(pair.second->view, LV_OBJ_FLAG_HIDDEN);
         }
         else
         {
-            lv_obj_add_flag(it->second->view, LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(pair.second->view, LV_OBJ_FLAG_HIDDEN);
         }
     }
 
     view_music_list_search_text(view_list_search_data);
-    view_music_list_search_display(false);
+    view_music_list_search_display(true);
     if (item != NULL)
     {
         lv_obj_scroll_to_view(item->view, LV_ANIM_ON);
@@ -112,10 +111,10 @@ void view_music_list_button_check(uint32_t index, bool state)
 
 void lv_list_clear()
 {
-    for (std::map<uint32_t, view_play_item_t *>::iterator it = view_play_list.begin(); it != view_play_list.end(); ++it)
+    for (const auto& pair : view_play_list)
     {
-        lv_obj_delete(it->second->view);
-        free(it->second);
+        lv_obj_delete(pair.second->view);
+        free(pair.second);
     }
 
     view_play_list.clear();
@@ -126,11 +125,9 @@ void lv_muisc_list_item_reload(play_item *item)
     view_play_item_t *view = view_play_list[item->index];
     if (view != NULL)
     {
-        const char *title = item->title.c_str();
-        const char *artist = item->auther.c_str();
         uint32_t time = static_cast<uint32_t>(item->time);
-        lv_label_set_text(view->title, title);
-        lv_label_set_text(view->auther, artist);
+        lv_label_set_text(view->title, item->title.c_str());
+        lv_label_set_text(view->auther, item->auther.c_str());
         lv_label_set_text_fmt(view->time, "%" LV_PRIu32 ":%02" LV_PRIu32, time / 60, time % 60);
     }
 }
@@ -142,10 +139,10 @@ lv_obj_t *lv_music_list_create(lv_obj_t *parent)
 
 void lv_list_add_item(play_item *item)
 {
-    const char *title = item->title.c_str();
-    const char *artist = item->auther.c_str();
-
-    view_play_item_t *view = view_list_add_item(title, artist, static_cast<uint32_t>(item->time), play_click_event_cb);
+    view_play_item_t *view = view_list_add_item(item->title.c_str(), item->auther.c_str(), 
+        static_cast<uint32_t>(item->time), play_click_event_cb);
     view->index = item->index;
     view_play_list[item->index] = view;
+    auto temp = view_play_list.end();
+    uint32_t size = view_play_list.size();
 }
