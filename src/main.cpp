@@ -59,8 +59,8 @@ int main(int argc, char **argv)
 
     view_init();
 
-    // local_music_init();
-    net_music_init();
+    local_music_init();
+    // net_music_init();
 
 #ifdef BUILD_ARM
     struct timespec ts;

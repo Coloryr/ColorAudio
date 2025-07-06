@@ -21,6 +21,16 @@
 
 using namespace nlohmann;
 
+json api_dynamic_cover(uint64_t lyric_id)
+{
+    char data[512];
+
+    sprintf(data, MUSIC_API MUSIC_API_DYNAMIC_COVER_ARG, lyric_id);
+
+    std::string res = http_get_string(data);
+    return json::parse(res);
+}
+
 json api_lyric_music(uint64_t lyric_id)
 {
     char data[512];
@@ -116,6 +126,28 @@ bool api_music_get_url(json &j, std::string &url, uint32_t *time)
 
 //     return true;
 // }
+
+bool api_music_get_dynamic_cover(json &j, std::string &url)
+{
+    if (j == NULL)
+    {
+        return false;
+    }
+
+    if (!j.is_object())
+    {
+        return false;
+    }
+
+    auto temp = j["data"]["videoPlayUrl"];
+    if (temp.is_string())
+    {
+        url = temp.get<std::string>();
+        return true;
+    }
+
+    return false;
+}
 
 bool api_music_get_search(json &j, net_music_search_t **search)
 {

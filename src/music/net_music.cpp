@@ -7,6 +7,7 @@
 #include "../player/player_info.h"
 #include "../ui/view.h"
 #include "../ui/ui.h"
+#include "../ui/mp4.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -21,28 +22,34 @@ using namespace ColorAudio;
 
 static void *net_pic_run(void *arg)
 {
-    std::string *pic_url = static_cast<std::string *>(arg);
+    net_music_search_item_t *item = static_cast<net_music_search_item_t *>(arg);
 
-    // json j = api_image_music(pic_id->c_str());
-    // if (j == NULL)
-    // {
-    //     LV_LOG_ERROR("JSON parse error");
-    //     return NULL;
-    // }
-
-    // std::string pic_url;
-    // if (!api_music_get_image(j, pic_url))
-    // {
-    //     LV_LOG_ERROR("image url get error");
-    //     return NULL;
-    // }
-
-    data_item *item = http_get_data(*pic_url);
-
-    if (item != NULL)
+    json j = api_dynamic_cover(2101179024);
+    if (j == NULL)
     {
-        play_update_image(item, MUSIC_INFO_IMAGE);
-        view_update_img();
+        LV_LOG_ERROR("JSON parse error");
+        return NULL;
+    }
+
+    std::string pic_url;
+    if (!api_music_get_dynamic_cover(j, pic_url))
+    {
+        data_item *item = http_get_data(pic_url);
+
+        if (item != NULL)
+        {
+            play_update_image(item, MUSIC_INFO_IMAGE);
+            view_update_img();
+        }
+        return NULL;
+    }
+    else
+    {
+        data_item *item = http_get_data(pic_url);
+        if (item != NULL)
+        {
+            load_mp4(item);
+        }
     }
 
     return NULL;
@@ -74,7 +81,7 @@ static void *net_lyric_run(void *arg)
 
 static net_music_search_t *get_search_list(uint32_t size, uint32_t page, const char *name)
 {
-    json j = api_search_music(20, 1, "Daisy Crown (English Ver.)");
+    json j = api_search_music(size, page, name);
     if (j == NULL)
     {
         LV_LOG_ERROR("JSON parse error");
@@ -110,11 +117,11 @@ static bool get_play_url(uint64_t id, std::string &url, uint32_t *time)
 
 static void *play_run(void *arg)
 {
-    net_music_search_t *list = get_search_list(20, 1, "Daisy Crown (English Ver.)");
+    net_music_search_t *list = get_search_list(20, 1, "Against the Tide");
 
     while (list == NULL || list->list.size() == 0)
     {
-        list = get_search_list(20, 1, "Daisy Crown (English Ver.)");
+        list = get_search_list(20, 1, "Against the Tide");
         usleep(5000000);
     }
 
@@ -127,7 +134,7 @@ static void *play_run(void *arg)
     view_update_info();
 
     pthread_t pid1, pid2;
-    pthread_create(&pid1, NULL, net_pic_run, &item->image);
+    pthread_create(&pid1, NULL, net_pic_run, item);
     pthread_create(&pid2, NULL, net_lyric_run, &item->id);
 
     std::string url;

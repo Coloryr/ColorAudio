@@ -141,7 +141,7 @@ std::string http_get_string(const std::string &url)
     }
     catch (const std::exception &e)
     {
-        LV_LOG_ERROR(e.what());
+        LV_LOG_ERROR("%s", e.what());
         return "";
     }
 }
@@ -181,6 +181,7 @@ HttpStream::HttpStream(std::string &url)
 
     http_buffer = new beast::flat_buffer();
     parser = new http::response_parser<http::buffer_body>();
+    parser->body_limit(boost::none);
 
     if (parsed.protocol == "https")
     {
@@ -193,7 +194,7 @@ HttpStream::HttpStream(std::string &url)
     }
     else
     {
-        stream = new beast::tcp_stream(ioc);
+       stream = new beast::tcp_stream(ioc);
     }
 }
 
@@ -222,6 +223,7 @@ bool HttpStream::connect()
 
     if (ec)
     {
+        LV_LOG_ERROR("%s", ec.message().c_str());
         return false;
     }
 

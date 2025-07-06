@@ -152,10 +152,15 @@ static enum mad_flow play_mp3_error(void *data, struct mad_stream *mad, struct m
     time_now += (float)frame->header.duration.fraction / 352800000UL;
 
     DecoderMp3 *st = (DecoderMp3 *)data;
+#ifdef BUILD_ARM
+    LV_LOG_ERROR("decoding error 0x%04x (%s) at byte offset %u\n",
+                 mad->error, mad_stream_errorstr(mad),
+                 mad->this_frame - st->buffer);
+#else
     LV_LOG_ERROR("decoding error 0x%04x (%s) at byte offset %lu\n",
                  mad->error, mad_stream_errorstr(mad),
                  mad->this_frame - st->buffer);
-
+#endif
     return MAD_FLOW_CONTINUE;
 }
 
