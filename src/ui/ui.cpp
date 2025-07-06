@@ -45,7 +45,7 @@ static void lyric_tick(lv_timer_t *timer)
     if (lyric_data != NULL)
     {
         char *data = lyric_find(lyric_data, time_now * 1000);
-        if (data)
+        if (data && strlen(data) > 0)
         {
             find = true;
             lv_lyric_set_text(data);
