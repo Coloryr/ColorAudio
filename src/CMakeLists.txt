@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10.0)
 project(coloraudio VERSION 0.1.0)
 
 # build arm32
-set(BUILD_ARM ON)
+# set(BUILD_ARM ON)
 
 # Lvgl
 set(LV_CONF_PATH

@@ -1,12 +1,12 @@
 #include "view.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
 bool update_info;
 bool update_img;
 bool update_state;
 bool update_list;
-bool update_list_index;
 
 bool init_list;
 
@@ -14,10 +14,8 @@ bool clear_info;
 
 bool update_top_info;
 
-void view_update_list_index()
-{
-    update_list_index = true;
-}
+int32_t volume_down;
+
 void view_init_list()
 {
     init_list = true;

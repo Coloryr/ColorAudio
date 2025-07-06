@@ -94,7 +94,6 @@ static void *play_run(void *arg)
         play_state = MUSIC_STATE_PLAY;
 
         view_update_state();
-        view_update_list_index();
 
         Decoder *play_decoder;
 
@@ -195,20 +194,6 @@ void play_init()
 music_command get_play_command()
 {
     return play_now_command;
-}
-
-void play_jump_index(uint32_t index)
-{
-    if (index >= play_list_count)
-    {
-        play_now_index = play_list_count - 1;
-    }
-    else
-    {
-        play_now_index = index;
-    }
-
-    play_state = MUSIC_STATE_STOP;
 }
 
 bool play_set_command(music_command command)

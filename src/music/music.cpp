@@ -1,12 +1,28 @@
 #include "music.h"
 
+#include "../player/player.h"
+
 #include <stdint.h>
 #include <pthread.h>
+#include <deque>
+#include <fcntl.h>
 
 // pthread_mutex_t play_mutex;
 // pthread_cond_t play_start;
 
+static uint32_t jump_index = UINT32_MAX;
 
+static std::deque<uint32_t> play_last_stack;
+
+static uint32_t read_random()
+{
+    uint32_t temp;
+    int fd = open("/dev/random", O_RDONLY);
+    read(fd, &temp, 4);
+    close(fd);
+
+    return temp;
+}
 
 void music_test_run(music_run_type type)
 {
@@ -14,8 +30,101 @@ void music_test_run(music_run_type type)
     {
         return;
     }
+}
 
+void music_next()
+{
+    if (play_get_command() == MUSIC_COMMAND_NEXT)
+    {
+        if (play_music_mode == MUSIC_MODE_RND)
+        {
+            play_last_stack.push_front(play_now_index);
+            uint32_t next_value;
+            bool is_have = false;
+            do
+            {
+                is_have = false;
+                next_value = read_random() % play_list_count;
+                for (auto it = play_last_stack.rbegin(); it != play_last_stack.rend(); ++it)
+                {
+                    if (*it == next_value)
+                    {
+                        is_have = true;
+                        break;
+                    }
+                }
+            } while (is_have);
+            play_now_index = next_value;
+            if (play_last_stack.size() > play_list_count / 10)
+            {
+                play_last_stack.pop_front();
+            }
+        }
+        else if (play_music_mode == MUSIC_MODE_LOOP)
+        {
+            play_now_index++;
+            if (play_now_index >= play_list_count)
+            {
+                play_now_index = 0;
+            }
+        }
+    }
+    else if (play_get_command() == MUSIC_COMMAND_LAST)
+    {
+        if (play_music_mode == MUSIC_MODE_RND)
+        {
+            if (play_last_stack.size() == 0)
+            {
+                goto last_go;
+            }
+            else
+            {
+                play_now_index = play_last_stack.front();
+                play_last_stack.pop_front();
+            }
+        }
+        else if (play_music_mode == MUSIC_MODE_LOOP)
+        {
+        last_go:
+            if (play_now_index == 0)
+            {
+                play_now_index = play_list_count - 1;
+            }
+            else
+            {
+                play_now_index--;
+            }
+        }
+    }
+}
 
+void play_jump_index(uint32_t index)
+{
+    if (index >= play_list_count)
+    {
+        jump_index = play_list_count - 1;
+    }
+    else
+    {
+        jump_index = index;
+    }
+
+    play_state = MUSIC_STATE_STOP;
+}
+
+bool have_jump_index()
+{
+    return jump_index != UINT32_MAX;
+}
+
+void play_jump_index_clear()
+{
+    jump_index = UINT32_MAX;
+}
+
+uint32_t get_jump_index()
+{
+    return jump_index;
 }
 
 void music_go_local()
@@ -30,6 +139,8 @@ void music_go_net()
 
 void music_init()
 {
+    play_last_stack.clear();
+
     // pthread_mutex_init(&play_mutex, NULL);
     // pthread_cond_init(&play_start, NULL);
 }

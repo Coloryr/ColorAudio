@@ -32,7 +32,7 @@ static void search_done(bool iscancel)
         is_search = false;
         view_music_list_search_display(false);
 
-        for (const auto& pair : view_play_list)
+        for (const auto &pair : view_play_list)
         {
             lv_obj_remove_flag(pair.second->view, LV_OBJ_FLAG_HIDDEN);
         }
@@ -46,7 +46,7 @@ static void search_done(bool iscancel)
         return;
     }
 
-    for (const auto& pair : view_play_list)
+    for (const auto &pair : view_play_list)
     {
         if (strstr(lv_label_get_text(pair.second->title), view_list_search_data) || strstr(lv_label_get_text(pair.second->auther), view_list_search_data))
         {
@@ -94,14 +94,16 @@ static void play_click_event_cb(lv_event_t *e)
 
     if (item->index != play_now_index)
     {
-        uint32_t last = play_now_index;
         play_jump_index(item->index);
-        view_music_list_button_check(last, false);
     }
 }
 
 void view_music_list_button_check(uint32_t index, bool state)
 {
+    if (!view_play_list.contains(index))
+    {
+        return;
+    }
     view_play_item_t *item = view_play_list[index];
     if (item != NULL)
     {
@@ -111,7 +113,7 @@ void view_music_list_button_check(uint32_t index, bool state)
 
 void lv_list_clear()
 {
-    for (const auto& pair : view_play_list)
+    for (const auto &pair : view_play_list)
     {
         lv_obj_delete(pair.second->view);
         free(pair.second);
@@ -139,8 +141,8 @@ lv_obj_t *lv_music_list_create(lv_obj_t *parent)
 
 void lv_list_add_item(play_item *item)
 {
-    view_play_item_t *view = view_list_add_item(item->title.c_str(), item->auther.c_str(), 
-        static_cast<uint32_t>(item->time), play_click_event_cb);
+    view_play_item_t *view = view_list_add_item(item->title.c_str(), item->auther.c_str(),
+                                                static_cast<uint32_t>(item->time), play_click_event_cb);
     view->index = item->index;
     view_play_list[item->index] = view;
     auto temp = view_play_list.end();

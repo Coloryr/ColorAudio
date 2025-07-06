@@ -10,7 +10,7 @@
 #include <malloc.h>
 #include <math.h>
 
-#define POINTS 4096
+#define POINTS (1024 * 8)
 #define OUT_POINTS 20
 #define SQRT2 1.4142135623730951
 

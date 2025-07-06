@@ -32,7 +32,6 @@ music_type play_test_music_type(ColorAudio::Stream *st);
 void play_update_text(std::string text, music_info_type type);
 void play_update_image(data_item* data, music_info_type type);
 
-void play_jump_index(uint32_t index);
 void play_jump_time(float time);
 void play_jump_end();
 

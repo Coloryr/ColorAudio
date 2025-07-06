@@ -26,13 +26,9 @@
 #include <assert.h>
 #include <pthread.h>
 #include <fcntl.h>
-#include <deque>
-#include <map>
 #include <json/json.hpp>
 
 using namespace ColorAudio;
-
-static std::deque<uint32_t> play_last_stack;
 
 static void play_list_close()
 {
@@ -43,16 +39,6 @@ static void play_list_close()
 
     play_list.clear();
     play_list_count = 0;
-}
-
-static uint32_t read_random()
-{
-    uint32_t temp;
-    int fd = open("/dev/random", O_RDONLY);
-    read(fd, &temp, 4);
-    close(fd);
-
-    return temp;
 }
 
 static void play_read_list(const char *path)
@@ -165,12 +151,14 @@ static void get_music_lyric(std::string &comment)
     {
         if (comment.find("163 key(Don't modify):") != 0)
         {
+            view_set_lyric_state(LYRIC_NONE);
             return;
         }
         std::string key = comment.substr(22);
         std::string temp = dep(key);
         if (temp.empty())
         {
+            view_set_lyric_state(LYRIC_NONE);
             return;
         }
         temp = temp.substr(6);
@@ -192,12 +180,14 @@ static void get_music_lyric(std::string &comment)
             else
             {
                 view_set_lyric(nullptr, nullptr);
+                view_set_lyric_state(LYRIC_FAIL);
             }
         }
     }
     catch (const std::exception &e)
     {
         LV_LOG_ERROR("%s", e.what());
+        view_set_lyric_state(LYRIC_FAIL);
     }
 }
 
@@ -217,6 +207,8 @@ static void local_music_run()
             LV_LOG_ERROR("Unkown music file type");
             continue;
         }
+
+        view_set_check(play_now_index, true);
 
         if (type == MUSIC_TYPE_MP3)
         {
@@ -278,73 +270,26 @@ static void local_music_run()
         {
             get_music_lyric(comment);
         }
+        else
+        {
+            view_set_lyric_state(LYRIC_NONE);
+        }
 
         usleep(1000);
 
         // 等待播放结束
         pthread_mutex_lock(&play_mutex);
 
-        if (play_get_command() == MUSIC_COMMAND_NEXT)
+        view_set_check(play_now_index, false);
+
+        if (have_jump_index())
         {
-            if (play_music_mode == MUSIC_MODE_RND)
-            {
-                play_last_stack.push_front(play_now_index);
-                uint32_t next_value;
-                bool is_have = false;
-                do
-                {
-                    is_have = false;
-                    next_value = read_random() % play_list_count;
-                    for (auto it = play_last_stack.rbegin(); it != play_last_stack.rend(); ++it)
-                    {
-                        if (*it == next_value)
-                        {
-                            is_have = true;
-                            break;
-                        }
-                    }
-                } while (is_have);
-                play_now_index = next_value;
-                if (play_last_stack.size() > play_list_count / 10)
-                {
-                    play_last_stack.pop_front();
-                }
-            }
-            else if (play_music_mode == MUSIC_MODE_LOOP)
-            {
-                play_now_index++;
-                if (play_now_index >= play_list_count)
-                {
-                    play_now_index = 0;
-                }
-            }
+            play_now_index = get_jump_index();
+            play_jump_index_clear();
         }
-        else if (play_get_command() == MUSIC_COMMAND_LAST)
+        else
         {
-            if (play_music_mode == MUSIC_MODE_RND)
-            {
-                if (play_last_stack.size() == 0)
-                {
-                    goto last_go;
-                }
-                else
-                {
-                    play_now_index = play_last_stack.front();
-                    play_last_stack.pop_front();
-                }
-            }
-            else if (play_music_mode == MUSIC_MODE_LOOP)
-            {
-            last_go:
-                if (play_now_index == 0)
-                {
-                    play_now_index = play_list_count - 1;
-                }
-                else
-                {
-                    play_now_index--;
-                }
-            }
+            music_next();
         }
 
         // 清理指令
@@ -378,8 +323,6 @@ static void *play_read_run(void *arg)
 
 void local_music_init()
 {
-    play_last_stack.clear();
-
     pthread_t rtid;
     int res = pthread_create(&rtid, NULL, play_read_run, NULL);
     if (res)

@@ -225,6 +225,7 @@ view_play_item_t *view_list_add_item(const char *title, const char *artist, uint
     view_play_item_t *view = (view_play_item_t *)calloc(1, sizeof(*view));
 
     lv_obj_t *btn = lv_obj_create(list_obj);
+    lv_obj_remove_flag(btn, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_remove_style_all(btn);
     lv_obj_set_size(btn, lv_pct(100), 110);
 

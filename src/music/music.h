@@ -17,6 +17,12 @@ typedef struct
 extern uint32_t play_now_index;
 extern uint32_t play_list_count;
 
+void play_jump_index(uint32_t index);
+void play_jump_index_clear();
+uint32_t get_jump_index();
+bool have_jump_index();
+
+void music_next();
 void music_test_run(music_run_type type);
 void music_go_local();
 void music_go_net();

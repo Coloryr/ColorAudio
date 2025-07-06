@@ -27,7 +27,7 @@ lv_obj_t *lv_lyric_create(lv_obj_t *parent)
 
     lv_obj_t *pan = lv_obj_create(parent);
     lv_obj_remove_style_all(pan);
-    lv_obj_set_size(pan, wid, 80);
+    lv_obj_set_size(pan, wid, 110);
 
     lv_obj_t *pan1 = lv_obj_create(pan);
     lv_obj_remove_style_all(pan1);

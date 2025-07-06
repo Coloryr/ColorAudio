@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <pthread.h>
+#include <stack>
 
 static void timer_tick(lv_timer_t *timer);
 
@@ -29,21 +30,24 @@ static lv_obj_t *main_view;
 static lyric_node_t *lyric_data = NULL;
 static lyric_node_t *lyric_tr_data = NULL;
 
+static uint32_t check_list_button;
+static uint32_t uncheck_list_button;
+
 static pthread_mutex_t lyric_mutex;
+
+static lyric_state ly_state = LYRIC_UNKNOW;
 
 static void lyric_tick(lv_timer_t *timer)
 {
     pthread_mutex_lock(&lyric_mutex);
 
-    if (lyric_data == NULL)
-    {
-        lv_lyric_set_text("");
-    }
-    else
+    bool find = false;
+    if (lyric_data != NULL)
     {
         char *data = lyric_find(lyric_data, time_now * 1000);
         if (data)
         {
+            find = true;
             lv_lyric_set_text(data);
         }
         else
@@ -51,20 +55,23 @@ static void lyric_tick(lv_timer_t *timer)
             lv_lyric_set_text("");
         }
     }
-    if (lyric_tr_data == NULL)
+    if (lyric_tr_data != NULL)
     {
-        lv_lyric_tr_set_text("");
-    }
-    else
-    {
-        char *data = lyric_find(lyric_tr_data, time_now * 1000);
-        if (data)
+        if (!find)
         {
-            lv_lyric_tr_set_text(data);
+            lv_lyric_tr_set_text("");
         }
         else
         {
-            lv_lyric_tr_set_text("");
+            char *data = lyric_find(lyric_tr_data, time_now * 1000);
+            if (data)
+            {
+                lv_lyric_tr_set_text(data);
+            }
+            else
+            {
+                lv_lyric_tr_set_text("");
+            }
         }
     }
 
@@ -79,7 +86,6 @@ static void timer_tick(lv_timer_t *timer)
     {
         lv_music_fft_clear();
         lv_music_set_title("");
-        view_set_lyric(nullptr, nullptr);
         clear_info = false;
     }
 
@@ -134,6 +140,9 @@ static void timer_tick(lv_timer_t *timer)
         {
             lv_list_add_item(it->second);
         }
+
+        view_music_list_button_check(play_now_index, true);
+
         init_list = false;
     }
 
@@ -146,28 +155,65 @@ static void timer_tick(lv_timer_t *timer)
         update_list = false;
     }
 
-    if (update_list_index)
+    if (check_list_button != UINT32_MAX)
     {
-        view_music_list_button_check(play_now_index, true);
-        if (play_list_count > 1)
-        {
-            if (play_now_index >= 1)
-            {
-                view_music_list_button_check(play_now_index - 1, false);
-            }
-            if (play_now_index + 1 < play_list_count)
-            {
-                view_music_list_button_check(play_now_index + 1, false);
-            }
-        }
+        view_music_list_button_check(check_list_button, true);
 
-        update_list_index = false;
+        check_list_button = UINT32_MAX;
+    }
+    if (uncheck_list_button != UINT32_MAX)
+    {
+        view_music_list_button_check(uncheck_list_button, false);
+
+        uncheck_list_button = UINT32_MAX;
     }
 
     if (update_top_info)
     {
         top_info_update();
         update_top_info = false;
+    }
+
+    if (ly_state == LYRIC_NONE)
+    {
+        view_set_lyric(nullptr, nullptr);
+        lv_lyric_set_text("无歌词");
+        lv_lyric_tr_set_text("");
+        ly_state = LYRIC_UNKNOW;
+    }
+    else if (ly_state == LYRIC_FAIL)
+    {
+        view_set_lyric(nullptr, nullptr);
+        lv_lyric_set_text("歌词获取失败");
+        lv_lyric_tr_set_text("");
+        ly_state = LYRIC_UNKNOW;
+    }
+
+    if (volume_down > 0)
+    {
+        volume_down--;
+        if (volume_down <= 0)
+        {
+            lv_music_volume_display(false);
+            volume_down = 0;
+        }
+    }
+}
+
+void view_set_lyric_state(lyric_state state)
+{
+    ly_state = state;
+}
+
+void view_set_check(uint32_t index, bool enable)
+{
+    if (enable)
+    {
+        check_list_button = index;
+    }
+    else
+    {
+        uncheck_list_button = index;
     }
 }
 

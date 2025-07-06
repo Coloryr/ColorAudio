@@ -127,28 +127,15 @@ static void speak_click_event_cb(lv_event_t *e)
     if (is_display_volume)
     {
         is_display_volume = false;
-        lv_anim_t a;
-        lv_anim_init(&a);
-        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
-        lv_anim_set_values(&a, 255, 0);
-        lv_anim_set_duration(&a, 200);
-        lv_anim_set_var(&a, volume_slider_obj);
-        lv_anim_start(&a);
+        volume_down = 2000;
     }
     else
     {
         is_display_volume = true;
-        lv_obj_remove_flag(volume_slider_obj, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_move_foreground(volume_slider_obj);
-
-        lv_anim_t a;
-        lv_anim_init(&a);
-        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
-        lv_anim_set_values(&a, 0, 255);
-        lv_anim_set_duration(&a, 200);
-        lv_anim_set_var(&a, volume_slider_obj);
-        lv_anim_start(&a);
+        volume_down = 0;
     }
+
+    lv_music_volume_display(is_display_volume);
 }
 
 static lv_obj_t *create_volume_slider(lv_obj_t *parent, lv_event_cb_t volume)
@@ -158,13 +145,13 @@ static lv_obj_t *create_volume_slider(lv_obj_t *parent, lv_event_cb_t volume)
     lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_HIDDEN);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 
-    lv_obj_set_height(obj, 6);
-    lv_obj_set_width(obj, 80);
+    lv_obj_set_height(obj, 200);
+    lv_obj_set_width(obj, 12);
 
     lv_slider_set_range(obj, 0, 100);
     lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_KNOB);
     lv_obj_set_style_pad_all(obj, 10, LV_PART_KNOB);
-    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_HOR, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_INDICATOR);
     lv_obj_set_style_bg_color(obj, lv_color_hex(0x569af8), LV_PART_INDICATOR);
     lv_obj_set_style_bg_grad_color(obj, lv_color_hex(0xa666f1), LV_PART_INDICATOR);
     lv_obj_set_style_outline_width(obj, 0, 0);
@@ -265,7 +252,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     /*Create the titles*/
     lv_obj_t *cont = lv_obj_create(parent);
     lv_obj_remove_style_all(cont);
-    lv_obj_set_height(cont, 160);
+    lv_obj_set_height(cont, 130);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_refresh_ext_draw_size(cont);
@@ -274,29 +261,31 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
 
     title_label = lv_label_create(cont);
     lv_obj_set_style_text_font(title_label, font_32, 0);
+    lv_obj_set_height(title_label, lv_font_get_line_height(font_32));
     lv_obj_set_style_text_color(title_label, lv_color_hex(0x504d6d), 0);
     lv_obj_set_width(title_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(title_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(title_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-    lv_obj_set_height(title_label, lv_font_get_line_height(font_32));
     lv_label_set_text(title_label, "无音乐");
 
     lv_obj_set_style_margin_top(title_label, 15, 0);
 
     artist_label = lv_label_create(cont);
     lv_obj_set_style_text_font(artist_label, font_22, 0);
+    lv_obj_set_height(artist_label, lv_font_get_line_height(font_22));
     lv_obj_set_style_text_color(artist_label, lv_color_hex(0x504d6d), 0);
     lv_obj_set_width(artist_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(artist_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_label_set_long_mode(artist_label, LV_LABEL_LONG_MODE_WRAP);
+    lv_label_set_long_mode(artist_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
     lv_label_set_text(artist_label, "");
 
     genre_label = lv_label_create(cont);
     lv_obj_set_style_text_font(genre_label, font_22, 0);
+    lv_obj_set_height(genre_label, lv_font_get_line_height(font_22));
     lv_obj_set_style_text_color(genre_label, lv_color_hex(0x8a86b8), 0);
     lv_obj_set_width(genre_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(genre_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
+    lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_DOTS);
     lv_label_set_text(genre_label, "");
 
     return cont;
@@ -373,7 +362,7 @@ static lv_obj_t *create_ctrl_box(lv_obj_t *parent, lv_event_cb_t mode, lv_event_
     /*Create the control box*/
     lv_obj_t *cont = lv_obj_create(parent);
     lv_obj_remove_style_all(cont);
-    lv_obj_set_height(cont, LV_SIZE_CONTENT);
+    lv_obj_set_height(cont, 220);
     lv_obj_remove_flag(cont, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     static const int32_t grid_col[] = {LV_GRID_FR(2), LV_GRID_FR(3), LV_GRID_FR(5), LV_GRID_FR(5), LV_GRID_FR(5), LV_GRID_FR(3), LV_GRID_FR(2), LV_GRID_TEMPLATE_LAST};
     static const int32_t grid_row[] = {LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
@@ -500,7 +489,7 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     lv_obj_set_grid_cell(image_bg, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
     lv_obj_set_grid_cell(image_bg1, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
-    lv_obj_set_style_pad_top(ctrl_box, 50, 0);
+    lv_obj_set_style_pad_top(ctrl_box, 70, 0);
     lv_obj_set_style_margin_top(ctrl_box, 35, 0);
 
     lv_obj_set_grid_cell(ctrl_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 3, 1);
@@ -519,12 +508,39 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     lv_obj_update_layout(main_cont);
 
     volume_slider_obj = create_volume_slider(cont, volume);
-    lv_obj_align_to(volume_slider_obj, volume_obj, LV_ALIGN_OUT_TOP_MID, 0, -15);
+    lv_obj_align_to(volume_slider_obj, image_bg, LV_ALIGN_OUT_RIGHT_MID, 80, 0);
     lv_obj_t *lyric = lv_lyric_create(cont);
     lv_obj_set_grid_cell(lyric, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 3, 1);
     lv_obj_set_style_margin_top(lyric, 10, 0);
 
     return main_cont;
+}
+
+void lv_music_volume_display(bool display)
+{
+    if (display)
+    {
+        lv_anim_t a;
+        lv_anim_init(&a);
+        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
+        lv_anim_set_values(&a, 255, 0);
+        lv_anim_set_duration(&a, 200);
+        lv_anim_set_var(&a, volume_slider_obj);
+        lv_anim_start(&a);
+    }
+    else
+    {
+        lv_obj_remove_flag(volume_slider_obj, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(volume_slider_obj);
+
+        lv_anim_t a;
+        lv_anim_init(&a);
+        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
+        lv_anim_set_values(&a, 0, 255);
+        lv_anim_set_duration(&a, 200);
+        lv_anim_set_var(&a, volume_slider_obj);
+        lv_anim_start(&a);
+    }
 }
 
 void lv_music_set_all_time(float time)
