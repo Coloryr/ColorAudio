@@ -581,6 +581,7 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
     if (img_dsc.data)
     {
         free((uint8_t *)img_dsc.data);
+        img_dsc.data = NULL;
     }
     if (data == NULL)
     {
