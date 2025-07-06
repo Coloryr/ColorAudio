@@ -49,7 +49,7 @@
       "conflict_shadows",
       "shapes"
     ],
-    "visible_layers": "ffffffff_ffffffff_ffffff75_fffdff7f",
+    "visible_layers": "ffffffff_ffffffff_ffffff75_fffdffff",
     "zone_display_mode": 0
   },
   "git": {
@@ -114,15 +114,27 @@
   "project": {
     "files": [
       {
-        "name": "coloryr.kicad_pcb",
-        "open": true,
+        "name": "coloryr.kicad_sch",
+        "open": false,
         "window": {
           "display": 0,
           "maximized": true,
           "pos_x": -8,
           "pos_y": -8,
-          "size_x": 1936,
-          "size_y": 1048
+          "size_x": 2576,
+          "size_y": 1568
+        }
+      },
+      {
+        "name": "coloryr.kicad_pcb",
+        "open": false,
+        "window": {
+          "display": 0,
+          "maximized": true,
+          "pos_x": -8,
+          "pos_y": -8,
+          "size_x": 2576,
+          "size_y": 1568
         }
       }
     ]
