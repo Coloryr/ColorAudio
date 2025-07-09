@@ -205,7 +205,6 @@ static void lv_lyric_render(lv_event_t *e)
         lyric_draw_dsc.sel_color = lv_color_hex(0x5172f7);
         lyric_draw_dsc.sel_bg_color = lv_color_hex(0xffffff);
         lyric_draw_dsc.color = have_k ? lv_color_hex(0xaf93f6) : lv_color_hex(0x8199f7);
-        lyric_draw_dsc.sel_bg_no_draw = 1;
 
         lv_draw_label(layer, &lyric_draw_dsc, &txt_coords);
     }
