@@ -40,6 +40,7 @@ static lv_obj_t *title_box;
 static lv_obj_t *ctrl_box;
 static lv_obj_t *handle_box;
 static lv_obj_t *volume_slider_obj;
+static lv_obj_t *volume_pan_obj;
 static lv_obj_t *image_bg;
 static lv_obj_t *image_bg1;
 
@@ -125,15 +126,15 @@ static void volume_display(bool display)
 {
     if (display)
     {
-        lv_obj_remove_flag(volume_slider_obj, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_move_foreground(volume_slider_obj);
+        lv_obj_remove_flag(volume_pan_obj, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(volume_pan_obj);
 
         lv_anim_t a;
         lv_anim_init(&a);
         lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
         lv_anim_set_values(&a, 0, 255);
         lv_anim_set_duration(&a, 200);
-        lv_anim_set_var(&a, volume_slider_obj);
+        lv_anim_set_var(&a, volume_pan_obj);
         lv_anim_start(&a);
     }
     else
@@ -143,7 +144,7 @@ static void volume_display(bool display)
         lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
         lv_anim_set_values(&a, 255, 0);
         lv_anim_set_duration(&a, 200);
-        lv_anim_set_var(&a, volume_slider_obj);
+        lv_anim_set_var(&a, volume_pan_obj);
         lv_anim_start(&a);
     }
 }
@@ -165,25 +166,41 @@ static void speak_click_event_cb(lv_event_t *e)
     volume_display(is_display_volume);
 }
 
-static lv_obj_t *create_volume_slider(lv_obj_t *parent, lv_event_cb_t volume)
+static lv_obj_t *create_volume_slider(lv_obj_t *parent, lv_event_cb_t volume, lv_event_cb_t mute)
 {
-    lv_obj_t *obj = lv_slider_create(parent);
-    lv_obj_set_style_anim_duration(obj, 100, 0);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_HIDDEN);
+    lv_obj_t *obj = lv_obj_create(parent);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
+    static const int32_t grid_col[] = {LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
+    static const int32_t grid_row[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
+    lv_obj_set_grid_dsc_array(obj, grid_col, grid_row);
 
-    lv_obj_set_height(obj, 200);
-    lv_obj_set_width(obj, 12);
+    volume_slider_obj = lv_slider_create(obj);
+    lv_obj_set_style_anim_duration(volume_slider_obj, 100, 0);
+    lv_obj_add_flag(volume_slider_obj, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(volume_slider_obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+    lv_obj_set_grid_cell(volume_slider_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    lv_slider_set_range(obj, 0, 100);
-    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_KNOB);
-    lv_obj_set_style_pad_all(obj, 10, LV_PART_KNOB);
-    lv_obj_set_style_bg_grad_dir(obj, LV_GRAD_DIR_VER, LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(obj, lv_color_hex(0x569af8), LV_PART_INDICATOR);
-    lv_obj_set_style_bg_grad_color(obj, lv_color_hex(0xa666f1), LV_PART_INDICATOR);
-    lv_obj_set_style_outline_width(obj, 0, 0);
+    lv_obj_set_height(volume_slider_obj, 200);
+    lv_obj_set_width(volume_slider_obj, 12);
 
-    lv_obj_add_event_cb(obj, volume, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_slider_set_range(volume_slider_obj, 0, 100);
+    lv_obj_set_style_bg_opa(volume_slider_obj, LV_OPA_TRANSP, LV_PART_KNOB);
+    lv_obj_set_style_pad_all(volume_slider_obj, 10, LV_PART_KNOB);
+    lv_obj_set_style_bg_grad_dir(volume_slider_obj, LV_GRAD_DIR_VER, LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(volume_slider_obj, lv_color_hex(0x569af8), LV_PART_INDICATOR);
+    lv_obj_set_style_bg_grad_color(volume_slider_obj, lv_color_hex(0xa666f1), LV_PART_INDICATOR);
+    lv_obj_set_style_outline_width(volume_slider_obj, 0, 0);
+
+    lv_obj_add_event_cb(volume_slider_obj, volume, LV_EVENT_ALL, NULL);
+
+    LV_IMAGE_DECLARE(lv_img_mute);
+    lv_obj_t * icon = lv_image_create(obj);
+    lv_image_set_src(icon, &lv_img_mute);
+    lv_obj_set_style_margin_top(icon, 20, 0);
+    lv_obj_set_grid_cell(icon, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
+    lv_obj_add_event_cb(icon, mute, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(icon, LV_OBJ_FLAG_CLICKABLE);
 
     return obj;
 }
@@ -410,8 +427,8 @@ static lv_obj_t *create_ctrl_box(lv_obj_t *parent, lv_event_cb_t mode, lv_event_
     static const int32_t grid_row[] = {LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
     lv_obj_set_grid_dsc_array(cont, grid_col, grid_row);
 
-    LV_IMAGE_DECLARE(img_lv_demo_music_btn_next);
-    LV_IMAGE_DECLARE(img_lv_demo_music_btn_prev);
+    LV_IMAGE_DECLARE(img_lv_next);
+    LV_IMAGE_DECLARE(img_lv_last);
     LV_IMAGE_DECLARE(img_lv_demo_music_btn_play);
     LV_IMAGE_DECLARE(img_lv_demo_music_btn_pause);
     LV_IMAGE_DECLARE(img_lv_music_speaker);
@@ -430,7 +447,7 @@ static lv_obj_t *create_ctrl_box(lv_obj_t *parent, lv_event_cb_t mode, lv_event_
 
     lv_obj_t *icon;
     icon = lv_image_create(cont);
-    lv_image_set_src(icon, &img_lv_demo_music_btn_prev);
+    lv_image_set_src(icon, &img_lv_last);
     lv_obj_set_grid_cell(icon, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
     lv_obj_add_event_cb(icon, prev, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(icon, LV_OBJ_FLAG_CLICKABLE);
@@ -446,7 +463,7 @@ static lv_obj_t *create_ctrl_box(lv_obj_t *parent, lv_event_cb_t mode, lv_event_
     lv_obj_set_width(play_obj, img_lv_demo_music_btn_play.header.w);
 
     icon = lv_image_create(cont);
-    lv_image_set_src(icon, &img_lv_demo_music_btn_next);
+    lv_image_set_src(icon, &img_lv_next);
     lv_obj_set_grid_cell(icon, LV_GRID_ALIGN_CENTER, 4, 1, LV_GRID_ALIGN_CENTER, 0, 1);
     lv_obj_add_event_cb(icon, next, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(icon, LV_OBJ_FLAG_CLICKABLE);
@@ -481,7 +498,8 @@ static lv_obj_t *create_handle(lv_obj_t *parent)
 
 lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
                                  lv_event_cb_t volume, lv_event_cb_t mode,
-                                 lv_event_cb_t prev, lv_event_cb_t play, lv_event_cb_t next)
+                                 lv_event_cb_t prev, lv_event_cb_t play, 
+                                 lv_event_cb_t next, lv_event_cb_t mute)
 {
     /*Create the content of the music player*/
     lv_obj_t *cont = create_cont(parent);
@@ -549,8 +567,9 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
 
     lv_obj_update_layout(main_cont);
 
-    volume_slider_obj = create_volume_slider(cont, volume);
-    lv_obj_align_to(volume_slider_obj, image_bg, LV_ALIGN_OUT_RIGHT_MID, 80, 0);
+    volume_pan_obj = create_volume_slider(cont, volume, mute);
+    lv_obj_align_to(volume_pan_obj, image_bg, LV_ALIGN_OUT_RIGHT_MID, 70, 0);
+
     lv_obj_t *lyric = lv_lyric_create(cont);
     lv_obj_set_grid_cell(lyric, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 3, 1);
     lv_obj_set_style_margin_top(lyric, 10, 0);

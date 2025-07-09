@@ -1,4 +1,5 @@
 #include "music_main.h"
+#include "view.h"
 #include "view/view_music_main.h"
 
 #include "../player/player.h"
@@ -59,8 +60,27 @@ static void play_event_click_cb(lv_event_t *e)
 static void volume_click_event_cb(lv_event_t *e)
 {
     lv_obj_t *obj = lv_event_get_target_obj(e);
-    int sel = lv_slider_get_value(obj);
-    play_set_volume(sel);
+    lv_event_code_t code = lv_event_get_code(e);
+    if (code == LV_EVENT_VALUE_CHANGED)
+    {
+        int sel = lv_slider_get_value(obj);
+        play_set_volume(sel);
+    }
+    else if (code == LV_EVENT_PRESSED)
+    {
+        volume_down = INT32_MAX;
+    }
+    else if (code == LV_EVENT_RELEASED)
+    {
+        volume_down = LV_MUSIC_VOLUME_DISPLAY_TIME;
+    }
+}
+
+static void mute_click_event_cb(lv_event_t *e)
+{
+    play_set_volume(0);
+    lv_music_set_volume(0);
+    volume_down = LV_MUSIC_VOLUME_DISPLAY_TIME;
 }
 
 lv_obj_t *lv_music_main_create(lv_obj_t *parent)
@@ -68,5 +88,5 @@ lv_obj_t *lv_music_main_create(lv_obj_t *parent)
     return view_music_main_create(parent, time_change_event_cb,
                                   volume_click_event_cb, mode_click_event_cb,
                                   prev_click_event_cb, play_event_click_cb,
-                                  next_click_event_cb);
+                                  next_click_event_cb, mute_click_event_cb);
 }

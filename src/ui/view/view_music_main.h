@@ -3,13 +3,16 @@
 
 #include "lvgl.h"
 
+#define LV_MUSIC_VOLUME_DISPLAY_TIME 8
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
                                  lv_event_cb_t volume, lv_event_cb_t mode,
-                                 lv_event_cb_t prev, lv_event_cb_t play, lv_event_cb_t next);
+                                 lv_event_cb_t prev, lv_event_cb_t play, lv_event_cb_t next,
+                                 lv_event_cb_t mute);
 
 void lv_music_set_all_time(float time);
 void lv_music_set_now_time(float time);
