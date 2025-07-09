@@ -14,7 +14,21 @@ bool clear_info;
 
 bool update_top_info;
 
+bool enable_mp4;
+
+bool mp4_have_update;
+
 int32_t volume_down;
+
+void view_enable_mp4(bool enable)
+{
+    enable_mp4 = enable;
+}
+
+void view_mp4_update()
+{
+    mp4_have_update = true;
+}
 
 void view_init_list()
 {

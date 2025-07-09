@@ -40,6 +40,8 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t* img_dsc);
  */
 uint32_t min(uint32_t a, uint32_t b);
 
+uint32_t utf8_strlen(const char *str);
+
 #ifdef __cplusplus
 } /*extern "C"*/
 #endif

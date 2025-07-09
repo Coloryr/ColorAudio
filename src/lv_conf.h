@@ -659,15 +659,15 @@
 
 /** If a word is at least this long, will break wherever "prettiest".
  *  To disable, set to a value <= 0. */
-#define LV_TXT_LINE_BREAK_LONG_LEN 0
+#define LV_TXT_LINE_BREAK_LONG_LEN 1
 
 /** Minimum number of characters in a long word to put on a line before a break.
  *  Depends on LV_TXT_LINE_BREAK_LONG_LEN. */
-#define LV_TXT_LINE_BREAK_LONG_PRE_MIN_LEN 3
+#define LV_TXT_LINE_BREAK_LONG_PRE_MIN_LEN 6
 
 /** Minimum number of characters in a long word to put on a line after a break.
  *  Depends on LV_TXT_LINE_BREAK_LONG_LEN. */
-#define LV_TXT_LINE_BREAK_LONG_POST_MIN_LEN 3
+#define LV_TXT_LINE_BREAK_LONG_POST_MIN_LEN 6
 
 /** Support bidirectional text. Allows mixing Left-to-Right and Right-to-Left text.
  *  The direction will be processed according to the Unicode Bidirectional Algorithm:
@@ -1167,7 +1167,7 @@
 #if LV_USE_SDL
     #define LV_SDL_INCLUDE_PATH     <SDL2/SDL.h>
     #define LV_SDL_RENDER_MODE      LV_DISPLAY_RENDER_MODE_DIRECT   /**< LV_DISPLAY_RENDER_MODE_DIRECT is recommended for best performance */
-    #define LV_SDL_BUF_COUNT        1    /**< 1 or 2 */
+    #define LV_SDL_BUF_COUNT        2    /**< 1 or 2 */
     #define LV_SDL_ACCELERATED      1    /**< 1: Use hardware acceleration*/
     #define LV_SDL_FULLSCREEN       0    /**< 1: Make the window full screen by default */
     #define LV_SDL_DIRECT_EXIT      1    /**< 1: Exit the application when all SDL windows are closed */

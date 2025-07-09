@@ -33,7 +33,7 @@ std::string title;
 std::string album;
 std::string auther;
 std::string comment;
-data_item* image;
+data_item *image;
 
 ColorAudio::Stream *play_st;
 
@@ -163,7 +163,20 @@ void play_update_text(std::string text, music_info_type type)
     }
 }
 
-void play_update_image(data_item* data, music_info_type type)
+void play_clear()
+{
+    title.clear();
+    album.clear();
+    auther.clear();
+    comment.clear();
+
+    play_update_image(nullptr, MUSIC_INFO_IMAGE);
+
+    view_update_info();
+    view_update_img();
+}
+
+void play_update_image(data_item *data, music_info_type type)
 {
     switch (type)
     {

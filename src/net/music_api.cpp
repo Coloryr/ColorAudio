@@ -12,10 +12,12 @@
 #if BUILD_ARM
 #define MUSIC_API_URL_ARG "/song/url?id=%lld"
 #define MUSIC_API_LYRIC_ARG "/lyric?id=%lld"
+#define MUSIC_API_LYRIC_ARG_NEW "/lyric/new?id=%lld"
 #define MUSIC_API_DYNAMIC_COVER_ARG "/song/dynamic/cover?id=%lld"
 #else
 #define MUSIC_API_URL_ARG "/song/url?id=%ld"
 #define MUSIC_API_LYRIC_ARG "/lyric?id=%ld"
+#define MUSIC_API_LYRIC_ARG_NEW "/lyric/new?id=%ld"
 #define MUSIC_API_DYNAMIC_COVER_ARG "/song/dynamic/cover?id=%ld"
 #endif
 
@@ -36,6 +38,16 @@ json api_lyric_music(uint64_t lyric_id)
     char data[512];
 
     sprintf(data, MUSIC_API MUSIC_API_LYRIC_ARG, lyric_id);
+
+    std::string res = http_get_string(data);
+    return json::parse(res);
+}
+
+json api_lyric_music_new(uint64_t lyric_id)
+{
+    char data[512];
+
+    sprintf(data, MUSIC_API MUSIC_API_LYRIC_ARG_NEW, lyric_id);
 
     std::string res = http_get_string(data);
     return json::parse(res);
@@ -231,6 +243,43 @@ bool api_music_get_lyric(json &j, std::string &lyric, std::string &tlyric)
 
     lyric = lyric_obj.is_string() ? lyric_obj.get<std::string>() : "";
     tlyric = tlyric_obj.is_string() ? tlyric_obj.get<std::string>() : "";
+
+    return true;
+}
+
+bool api_music_get_lyric_new(json &j, std::string &lyric, std::string &tlyric)
+{
+    if (j == NULL)
+    {
+        return false;
+    }
+
+    if (!j.is_object())
+    {
+        return false;
+    }
+
+    if (j["yrc"].is_object())
+    {
+        json lyric_obj = j["yrc"]["lyric"];
+        lyric = lyric_obj.is_string() ? lyric_obj.get<std::string>() : "";
+    }
+    else
+    {
+        json lyric_obj = j["lrc"]["lyric"];
+        lyric = lyric_obj.is_string() ? lyric_obj.get<std::string>() : "";
+    }
+
+    if (j["ytlrc"].is_object())
+    {
+        json lyric_obj = j["ytlrc"]["lyric"];
+        tlyric = lyric_obj.is_string() ? lyric_obj.get<std::string>() : "";
+    }
+    else
+    {
+        json tlyric_obj = j["tlyric"]["lyric"];
+        tlyric = tlyric_obj.is_string() ? tlyric_obj.get<std::string>() : "";
+    }
 
     return true;
 }

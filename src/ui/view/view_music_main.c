@@ -121,21 +121,48 @@ static void spectrum_draw_event_cb(lv_event_t *e)
     }
 }
 
+static void volume_display(bool display)
+{
+    if (display)
+    {
+        lv_obj_remove_flag(volume_slider_obj, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_move_foreground(volume_slider_obj);
+
+        lv_anim_t a;
+        lv_anim_init(&a);
+        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
+        lv_anim_set_values(&a, 0, 255);
+        lv_anim_set_duration(&a, 200);
+        lv_anim_set_var(&a, volume_slider_obj);
+        lv_anim_start(&a);
+    }
+    else
+    {
+        lv_anim_t a;
+        lv_anim_init(&a);
+        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
+        lv_anim_set_values(&a, 255, 0);
+        lv_anim_set_duration(&a, 200);
+        lv_anim_set_var(&a, volume_slider_obj);
+        lv_anim_start(&a);
+    }
+}
+
 static void speak_click_event_cb(lv_event_t *e)
 {
     lv_obj_t *obj = lv_event_get_target(e);
     if (is_display_volume)
     {
         is_display_volume = false;
-        volume_down = 2000;
+        volume_down = 0;
     }
     else
     {
         is_display_volume = true;
-        volume_down = 0;
+        volume_down = 8;
     }
 
-    lv_music_volume_display(is_display_volume);
+    volume_display(is_display_volume);
 }
 
 static lv_obj_t *create_volume_slider(lv_obj_t *parent, lv_event_cb_t volume)
@@ -249,6 +276,18 @@ static void create_wave_images(lv_obj_t *parent)
 
 static lv_obj_t *create_title_box(lv_obj_t *parent)
 {
+    static lv_anim_t animation_template;
+    static lv_style_t label_style;
+
+    lv_anim_init(&animation_template);
+    lv_anim_set_delay(&animation_template, 3000);
+    lv_anim_set_repeat_delay(&animation_template, 3000);
+    lv_anim_set_reverse_delay(&animation_template, 3000);
+    lv_anim_set_repeat_count(&animation_template, LV_ANIM_REPEAT_INFINITE);
+
+    lv_style_init(&label_style);
+    lv_style_set_anim(&label_style, &animation_template);
+
     /*Create the titles*/
     lv_obj_t *cont = lv_obj_create(parent);
     lv_obj_remove_style_all(cont);
@@ -265,7 +304,8 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_style_text_color(title_label, lv_color_hex(0x504d6d), 0);
     lv_obj_set_width(title_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(title_label, LV_TEXT_ALIGN_CENTER, 0);
-    lv_label_set_long_mode(title_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
+    lv_obj_add_style(title_label, &label_style, LV_STATE_DEFAULT);
+    lv_label_set_long_mode(title_label, LV_LABEL_LONG_MODE_SCROLL);
     lv_label_set_text(title_label, "无音乐");
 
     lv_obj_set_style_margin_top(title_label, 15, 0);
@@ -285,7 +325,9 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_style_text_color(genre_label, lv_color_hex(0x8a86b8), 0);
     lv_obj_set_width(genre_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(genre_label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_add_style(genre_label, &label_style, LV_STATE_DEFAULT);
     lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_DOTS);
+    // lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_SCROLL);
     lv_label_set_text(genre_label, "");
 
     return cont;
@@ -516,31 +558,11 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     return main_cont;
 }
 
-void lv_music_volume_display(bool display)
+void lv_music_volume_close()
 {
-    if (display)
-    {
-        lv_anim_t a;
-        lv_anim_init(&a);
-        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
-        lv_anim_set_values(&a, 255, 0);
-        lv_anim_set_duration(&a, 200);
-        lv_anim_set_var(&a, volume_slider_obj);
-        lv_anim_start(&a);
-    }
-    else
-    {
-        lv_obj_remove_flag(volume_slider_obj, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_move_foreground(volume_slider_obj);
-
-        lv_anim_t a;
-        lv_anim_init(&a);
-        lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)anim_opa_cb);
-        lv_anim_set_values(&a, 0, 255);
-        lv_anim_set_duration(&a, 200);
-        lv_anim_set_var(&a, volume_slider_obj);
-        lv_anim_start(&a);
-    }
+    volume_down = 0;
+    is_display_volume = false;
+    volume_display(false);
 }
 
 void lv_music_set_all_time(float time)
@@ -599,6 +621,22 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
     }
 }
 
+void lv_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data)
+{
+    if (img_dsc.data)
+    {
+        free((uint8_t *)img_dsc.data);
+    }
+    img_dsc.header.w = width;
+    img_dsc.header.h = height;
+    img_dsc.data = data;
+    img_dsc.data_size = width * height * 3;
+    img_dsc.header.stride = width * 3;
+    img_dsc.header.cf = LV_COLOR_FORMAT_RGB888;
+
+    lv_image_set_src(album_image_obj, &img_dsc);
+}
+
 void lv_music_set_fft_data(uint16_t index, uint16_t value, uint32_t size)
 {
     if (value > BAR_MAX_VALUE)
@@ -611,6 +649,11 @@ void lv_music_set_fft_data(uint16_t index, uint16_t value, uint32_t size)
 void lv_music_fft_load()
 {
     lv_obj_invalidate(spectrum_obj);
+}
+
+void lv_music_img_load()
+{
+    lv_obj_invalidate(album_image_obj);
 }
 
 void lv_music_set_sound_info(uint16_t bit, uint32_t rate, uint8_t channel, uint32_t bps)

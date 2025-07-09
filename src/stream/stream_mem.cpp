@@ -18,6 +18,14 @@ StreamMemory::StreamMemory(uint8_t *buffer, uint32_t size) : Stream(STREAM_TYPE_
     }
 }
 
+StreamMemory::StreamMemory(data_item *item) : Stream(STREAM_TYPE_MEM),
+    buffer(item->data),
+    buffer_pos(0),
+    buffer_size(item->size)
+{
+
+}
+
 StreamMemory::~StreamMemory()
 {
 

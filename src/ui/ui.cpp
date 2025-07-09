@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <stack>
+#include <string>
 
 static void timer_tick(lv_timer_t *timer);
 
@@ -27,8 +28,8 @@ static lv_obj_t *ctrl_view;
 static lv_obj_t *list_view;
 static lv_obj_t *main_view;
 
-static lyric_node_t *lyric_data = NULL;
-static lyric_node_t *lyric_tr_data = NULL;
+static LyricParser *lyric_data = NULL;
+static LyricParser *lyric_tr_data = NULL;
 
 static uint32_t check_list_button;
 static uint32_t uncheck_list_button;
@@ -37,18 +38,55 @@ static pthread_mutex_t lyric_mutex;
 
 static lyric_state ly_state = LYRIC_UNKNOW;
 
+static bool enable_mp4;
+static uint32_t image_w, image_h;
+static uint8_t *image_d;
+
 static void lyric_tick(lv_timer_t *timer)
 {
+    if (ly_state == LYRIC_NONE)
+    {
+        view_set_lyric(nullptr, nullptr);
+        lv_lyric_set_text("无歌词");
+        lv_lyric_tr_set_text("");
+        ly_state = LYRIC_UNKNOW;
+        return;
+    }
+    else if (ly_state == LYRIC_FAIL)
+    {
+        view_set_lyric(nullptr, nullptr);
+        lv_lyric_set_text("歌词获取失败");
+        lv_lyric_tr_set_text("");
+        ly_state = LYRIC_UNKNOW;
+        return;
+    }
+    else if (ly_state == LYRIC_CLEAR)
+    {
+        view_set_lyric(nullptr, nullptr);
+        lv_lyric_set_text("");
+        lv_lyric_k_set_text("");
+        lv_lyric_k_now_set_text("");
+        lv_lyric_tr_set_text("");
+        ly_state = LYRIC_UNKNOW;
+        return;
+    }
+
     pthread_mutex_lock(&lyric_mutex);
 
     bool find = false;
+    std::string text, ktext, know_text;
+    float kp;
+    bool have_k;
     if (lyric_data != NULL)
     {
-        char *data = lyric_find(lyric_data, time_now * 1000);
-        if (data && strlen(data) > 0)
+        if (lyric_data->get_lyric(text, ktext, know_text, kp, have_k, time_now * 1000))
         {
             find = true;
-            lv_lyric_set_text(data);
+            lv_lyric_set_text(text.c_str());
+            lv_lyric_k_set_text(ktext.c_str());
+            lv_lyric_k_now_set_text(know_text.c_str());
+            lv_lyric_set_have_k(have_k);
+            lv_lyric_kp_set_text(kp);
         }
         else
         {
@@ -63,16 +101,20 @@ static void lyric_tick(lv_timer_t *timer)
         }
         else
         {
-            char *data = lyric_find(lyric_tr_data, time_now * 1000);
-            if (data)
+            if (lyric_tr_data->get_lyric(text, ktext, know_text, kp, have_k, time_now * 1000))
             {
-                lv_lyric_tr_set_text(data);
+                lv_lyric_tr_set_text(text.c_str());
             }
             else
             {
                 lv_lyric_tr_set_text("");
             }
         }
+    }
+
+    if (find)
+    {
+        lv_lyric_draw();
     }
 
     pthread_mutex_unlock(&lyric_mutex);
@@ -174,30 +216,34 @@ static void timer_tick(lv_timer_t *timer)
         update_top_info = false;
     }
 
-    if (ly_state == LYRIC_NONE)
-    {
-        view_set_lyric(nullptr, nullptr);
-        lv_lyric_set_text("无歌词");
-        lv_lyric_tr_set_text("");
-        ly_state = LYRIC_UNKNOW;
-    }
-    else if (ly_state == LYRIC_FAIL)
-    {
-        view_set_lyric(nullptr, nullptr);
-        lv_lyric_set_text("歌词获取失败");
-        lv_lyric_tr_set_text("");
-        ly_state = LYRIC_UNKNOW;
-    }
-
     if (volume_down > 0)
     {
         volume_down--;
         if (volume_down <= 0)
         {
-            lv_music_volume_display(false);
-            volume_down = 0;
+            lv_music_volume_close();
         }
     }
+
+    if (enable_mp4)
+    {
+        lv_music_set_image_data(image_w, image_h, image_d);
+        enable_mp4 = false;
+    }
+
+    if (mp4_have_update)
+    {
+        lv_music_img_load();
+        mp4_have_update = false;
+    }
+}
+
+void view_set_image_data(uint32_t width, uint32_t height, uint8_t *data)
+{
+    image_w = width;
+    image_h = height;
+    image_d = data;
+    enable_mp4 = true;
 }
 
 void view_set_lyric_state(lyric_state state)
@@ -217,22 +263,22 @@ void view_set_check(uint32_t index, bool enable)
     }
 }
 
-void view_set_lyric(lyric_node_t *lyric, lyric_node_t *tlyric)
+void view_set_lyric(LyricParser *lyric, LyricParser *tlyric)
 {
     pthread_mutex_lock(&lyric_mutex);
-    lyric_node_t *temp = lyric_data;
-    lyric_node_t *temp1 = lyric_tr_data;
+    LyricParser *temp = lyric_data;
+    LyricParser *temp1 = lyric_tr_data;
     lyric_data = lyric;
     lyric_tr_data = tlyric;
     pthread_mutex_unlock(&lyric_mutex);
     if (temp)
     {
-        lyric_close(temp);
+        delete temp;
     }
 
     if (temp1)
     {
-        lyric_close(temp1);
+        delete temp1;
     }
 }
 

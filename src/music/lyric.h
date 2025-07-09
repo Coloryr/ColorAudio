@@ -2,24 +2,40 @@
 #define _LYRIC_H_
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <string>
+#include <vector>
 
-typedef struct lyric_node_t
+struct LyricChar
 {
-    uint32_t timestamp;
-    char *lyric;
-    struct lyric_node_t *next;
-} lyric_node_t;
+    uint32_t start;
+    uint32_t duration;
+    std::string text;
+};
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct LyricLine
+{
+    uint32_t time;
+    uint32_t duration;
+    std::string text;
+    std::vector<LyricChar *> chars;
+};
 
-lyric_node_t *parse_memory_lrc(char *data);
-char *lyric_find(lyric_node_t *head, uint32_t current_time);
-void lyric_close(lyric_node_t *head);
+class LyricParser
+{
+private:
+    std::vector<LyricLine *> lines; // 歌词行集合
 
-#ifdef __cplusplus
-} /*extern "C"*/
-#endif
+    void parse_line(std::string &text, std::string &time);
+    void parse_line_json(std::string &text);
+    void parse_line_yrc(std::string &text, std::string &time);
+
+public:
+    LyricParser(std::string &text);
+    ~LyricParser();
+
+    bool get_lyric(std::string &text, std::string &ktext,
+                   std::string &now_ktext, float &kp, bool &have_k, uint32_t time);
+};
 
 #endif

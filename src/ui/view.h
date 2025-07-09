@@ -17,6 +17,8 @@ extern bool clear_info;
 
 extern bool update_top_info;
 
+extern bool mp4_have_update;
+
 extern int32_t volume_down;
 
 #ifdef __cplusplus
@@ -33,6 +35,8 @@ void view_init_list();
 void view_music_clear();
 
 void view_top_info();
+
+void view_mp4_update();
 
 #ifdef __cplusplus
 } /*extern "C"*/

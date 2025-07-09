@@ -23,7 +23,9 @@ void lv_music_fft_clear();
 void lv_music_set_sound_info(uint16_t bit, uint32_t rate, uint8_t channel, uint32_t bps);
 void lv_music_set_play_mode();
 void lv_music_set_volume(float value);
-void lv_music_volume_display(bool display);
+void lv_music_volume_close();
+void lv_music_img_load();
+void lv_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data);
 
 void lv_music_set_play();
 void lv_music_set_pause();

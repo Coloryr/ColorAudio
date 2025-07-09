@@ -22,6 +22,10 @@ void play_jump_index_clear();
 uint32_t get_jump_index();
 bool have_jump_index();
 
+void music_lyric_163(uint64_t id);
+
+void music_start();
+void music_end();
 void music_next();
 void music_test_run(music_run_type type);
 void music_go_local();

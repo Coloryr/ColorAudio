@@ -24,56 +24,50 @@ static void *net_pic_run(void *arg)
 {
     net_music_search_item_t *item = static_cast<net_music_search_item_t *>(arg);
 
-    json j = api_dynamic_cover(2101179024);
-    if (j == NULL)
-    {
-        LV_LOG_ERROR("JSON parse error");
-        return NULL;
-    }
+    // json j = api_dynamic_cover(item->id);
+    // if (j == NULL)
+    // {
+    //     LV_LOG_ERROR("JSON parse error");
+    //     return NULL;
+    // }
 
-    std::string pic_url;
-    if (!api_music_get_dynamic_cover(j, pic_url))
-    {
-        data_item *item = http_get_data(pic_url);
+    // std::string pic_url;
+    // if (!api_music_get_dynamic_cover(j, pic_url))
+    // {
+    data_item *data = http_get_data(item->image);
 
-        if (item != NULL)
-        {
-            play_update_image(item, MUSIC_INFO_IMAGE);
-            view_update_img();
-        }
-        return NULL;
-    }
-    else
+    if (data != NULL)
     {
-        data_item *item = http_get_data(pic_url);
-        if (item != NULL)
-        {
-            load_mp4(item);
-        }
+        play_update_image(data, MUSIC_INFO_IMAGE);
+        view_update_img();
     }
-
     return NULL;
+    // }
+    // else
+    // {
+    //     data_item *item = http_get_data(pic_url);
+    //     if (item != NULL)
+    //     {
+    //         play_update_image(nullptr, MUSIC_INFO_IMAGE);
+    //         load_mp4(item);
+    //     }
+    // }
+
+    // return NULL;
 }
 
 static void *net_lyric_run(void *arg)
 {
     uint64_t *lyric_id = (uint64_t *)arg;
 
-    json j = api_lyric_music(*lyric_id);
-
-    if (j == NULL)
+    try
     {
-        LV_LOG_ERROR("JSON parse error");
-        return NULL;
+        music_lyric_163(*lyric_id);
     }
-
-    std::string lyric, tlyric;
-    if (api_music_get_lyric(j, lyric, tlyric))
+    catch (const std::exception &e)
     {
-        lyric_node_t *data = parse_memory_lrc(const_cast<char *>(lyric.c_str()));
-        lyric_node_t *tr_data = parse_memory_lrc(const_cast<char *>(tlyric.c_str()));
-
-        view_set_lyric(data, tr_data);
+        LV_LOG_ERROR("%s", e.what());
+        view_set_lyric_state(LYRIC_FAIL);
     }
 
     return NULL;
@@ -117,11 +111,11 @@ static bool get_play_url(uint64_t id, std::string &url, uint32_t *time)
 
 static void *play_run(void *arg)
 {
-    net_music_search_t *list = get_search_list(20, 1, "Against the Tide");
+    net_music_search_t *list = get_search_list(20, 1, "White Love 津田朱里");
 
     while (list == NULL || list->list.size() == 0)
     {
-        list = get_search_list(20, 1, "Against the Tide");
+        list = get_search_list(20, 1, "White Love 津田朱里");
         usleep(5000000);
     }
 

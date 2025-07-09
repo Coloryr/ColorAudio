@@ -99,9 +99,9 @@ static void play_read_list(const char *path)
 static void *play_list_info_scan(void *arg)
 {
     play_item *t;
-    for (auto it = play_list.begin(); it != play_list.end(); ++it)
+    for (const auto &it : play_list)
     {
-        t = it->second;
+        t = it.second;
         StreamFile st = StreamFile(t->path);
         music_type type = play_test_music_type(&st);
         if (type == MUSIC_TYPE_UNKNOW)
@@ -167,21 +167,8 @@ static void get_music_lyric(std::string &comment)
         if (id.is_string())
         {
             uint64_t id1 = std::stoul(id.get<std::string>());
-            json j = api_lyric_music(id1);
 
-            std::string lyric, tlyric;
-            if (api_music_get_lyric(j, lyric, tlyric))
-            {
-                lyric_node_t *data = parse_memory_lrc(const_cast<char *>(lyric.c_str()));
-                lyric_node_t *tr_data = parse_memory_lrc(const_cast<char *>(tlyric.c_str()));
-
-                view_set_lyric(data, tr_data);
-            }
-            else
-            {
-                view_set_lyric(nullptr, nullptr);
-                view_set_lyric_state(LYRIC_FAIL);
-            }
+            music_lyric_163(id1);
         }
     }
     catch (const std::exception &e)
@@ -208,7 +195,7 @@ static void local_music_run()
             continue;
         }
 
-        view_set_check(play_now_index, true);
+        music_start();
 
         if (type == MUSIC_TYPE_MP3)
         {
@@ -280,20 +267,8 @@ static void local_music_run()
         // 等待播放结束
         pthread_mutex_lock(&play_mutex);
 
-        view_set_check(play_now_index, false);
+        music_end();
 
-        if (have_jump_index())
-        {
-            play_now_index = get_jump_index();
-            play_jump_index_clear();
-        }
-        else
-        {
-            music_next();
-        }
-
-        // 清理指令
-        play_set_command(MUSIC_COMMAND_UNKNOW);
         pthread_mutex_unlock(&play_mutex);
     }
 }

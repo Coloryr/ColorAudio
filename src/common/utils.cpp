@@ -6,6 +6,7 @@
 #include <string.h>
 #include <turbojpeg.h>
 #include <png.h>
+#include <string>
 
 uint32_t get_length(uint8_t *buffer)
 {
@@ -304,4 +305,17 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
 uint32_t min(uint32_t a, uint32_t b)
 {
     return a > b ? b : a;
+}
+
+uint32_t utf8_strlen(const char *str)
+{
+    uint32_t len = 0;
+    for (uint32_t i = 0; str[i] != '\0'; ++i)
+    {
+        if ((str[i] & 0xC0) != 0x80)
+        {
+            ++len;
+        }
+    }
+    return len;
 }

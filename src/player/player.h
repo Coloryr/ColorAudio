@@ -37,6 +37,7 @@ void play_jump_end();
 
 void play_set_volume(uint16_t value);
 
+void play_clear();
 void play_init();
 
 bool play_set_command(music_command command);

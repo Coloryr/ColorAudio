@@ -1,11 +1,16 @@
 #include "music.h"
 
+#include "lyric.h"
 #include "../player/player.h"
+#include "../net/music_api.h"
+#include "../ui/view.h"
+#include "../ui/ui.h"
 
 #include <stdint.h>
 #include <pthread.h>
 #include <deque>
 #include <fcntl.h>
+#include <json/json.hpp>
 
 // pthread_mutex_t play_mutex;
 // pthread_cond_t play_start;
@@ -24,12 +29,69 @@ static uint32_t read_random()
     return temp;
 }
 
+void music_lyric_163(uint64_t id)
+{
+    json j = api_lyric_music_new(id);
+
+    std::string lyric, tlyric;
+    if (api_music_get_lyric_new(j, lyric, tlyric))
+    {
+        LyricParser *data = new LyricParser(lyric);
+        LyricParser *tr_data = new LyricParser(tlyric);
+
+        view_set_lyric(data, tr_data);
+    }
+    else
+    {
+        j = api_lyric_music(id);
+
+        std::string lyric, tlyric;
+        if (api_music_get_lyric(j, lyric, tlyric))
+        {
+            LyricParser *data = new LyricParser(lyric);
+            LyricParser *tr_data = new LyricParser(tlyric);
+
+            view_set_lyric(data, tr_data);
+        }
+        else
+        {
+            view_set_lyric_state(LYRIC_NONE);
+        }
+    }
+}
+
 void music_test_run(music_run_type type)
 {
     if (type == music_run)
     {
         return;
     }
+}
+
+void music_start()
+{
+    view_set_check(play_now_index, true);
+}
+
+void music_end()
+{
+    view_set_lyric_state(LYRIC_CLEAR);
+    play_clear();
+
+    view_set_check(play_now_index, false);
+
+    if (have_jump_index())
+    {
+        play_now_index = get_jump_index();
+        play_jump_index_clear();
+    }
+    else
+    {
+        music_next();
+    }
+
+    // 清理指令
+    play_set_command(MUSIC_COMMAND_UNKNOW);
 }
 
 void music_next()

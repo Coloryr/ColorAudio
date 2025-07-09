@@ -3,6 +3,8 @@
 
 #include "stream.h"
 
+#include "../common/data_item.h"
+
 namespace ColorAudio
 {
     class StreamMemory : public Stream
@@ -14,6 +16,7 @@ namespace ColorAudio
 
     public:
         StreamMemory(uint8_t *buffer, uint32_t size);
+        StreamMemory(data_item *item);
         ~StreamMemory();
 
         uint32_t read(uint8_t *buffer, uint32_t len);
