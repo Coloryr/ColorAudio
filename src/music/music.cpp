@@ -1,16 +1,20 @@
 #include "music.h"
 
 #include "lyric.h"
+
 #include "../player/player.h"
 #include "../net/music_api.h"
 #include "../ui/view.h"
 #include "../ui/ui.h"
+#include "../config/config.h"
 
 #include <stdint.h>
 #include <pthread.h>
 #include <deque>
 #include <fcntl.h>
 #include <json/json.hpp>
+
+using namespace ColorAudio;
 
 // pthread_mutex_t play_mutex;
 // pthread_cond_t play_start;
@@ -202,6 +206,8 @@ void music_go_net()
 void music_init()
 {
     play_last_stack.clear();
+
+    play_music_mode = config::get_config_music_mode();
 
     // pthread_mutex_init(&play_mutex, NULL);
     // pthread_cond_init(&play_start, NULL);

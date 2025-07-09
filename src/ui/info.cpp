@@ -15,6 +15,14 @@ void top_info_display(std::string info)
     text = info;
 }
 
+void top_error_display(std::string info)
+{
+    use_bar = false;
+    display = true;
+    update_top_info = true;
+    text = info;
+}
+
 void top_info_close()
 {
     display = false;

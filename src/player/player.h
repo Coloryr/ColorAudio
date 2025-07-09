@@ -35,10 +35,11 @@ void play_update_image(data_item* data, music_info_type type);
 void play_jump_time(float time);
 void play_jump_end();
 
-void play_set_volume(uint16_t value);
-
 void play_clear();
 void play_init();
+
+float play_get_volume();
+void play_set_volume(float volume);
 
 bool play_set_command(music_command command);
 music_command play_get_command();

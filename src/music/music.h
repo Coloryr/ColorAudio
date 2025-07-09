@@ -31,4 +31,6 @@ void music_test_run(music_run_type type);
 void music_go_local();
 void music_go_net();
 
+void music_init();
+
 #endif

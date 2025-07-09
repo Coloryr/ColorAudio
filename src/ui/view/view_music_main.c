@@ -169,6 +169,8 @@ static void speak_click_event_cb(lv_event_t *e)
 static lv_obj_t *create_volume_slider(lv_obj_t *parent, lv_event_cb_t volume, lv_event_cb_t mute)
 {
     lv_obj_t *obj = lv_obj_create(parent);
+    lv_obj_remove_style_all(obj);
+    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_add_flag(obj, LV_OBJ_FLAG_HIDDEN);
     static const int32_t grid_col[] = {LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};

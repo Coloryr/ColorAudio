@@ -6,6 +6,7 @@
 #include <string>
 
 void top_info_display(std::string info);
+void top_error_display(std::string info);
 void top_info_close();
 void top_info_update();
 

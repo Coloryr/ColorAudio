@@ -80,34 +80,8 @@ uint32_t StreamFile::peek(uint8_t* buffer, uint32_t len)
     return temp;
 }
 
-uint32_t StreamFile::get_pos()
-{
-    return this->pos;
-}
-
-
-uint32_t StreamFile::get_all_size()
-{
-    return this->size;
-}
-
-uint32_t StreamFile::get_less_read()
-{
-    return (this->size > this->pos) ? (this->size - this->pos) : 0;
-}
-
 void StreamFile::seek(int32_t pos, uint8_t where)
 {
     fseek(this->file, pos, where);
     this->pos = ftell(this->file);
-}
-
-bool StreamFile::test_read_size(uint32_t size)
-{
-    return this->pos + size <= this->size;
-}
-
-bool StreamFile::can_read()
-{
-    return this->pos < this->size;
 }

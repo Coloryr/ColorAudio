@@ -203,14 +203,6 @@ void alsa_set_volume(float value)
     int err = snd_ctl_elem_write(ctl_handle, control);
 }
 
-void alsa_set_mute(bool mute)
-{
-    if (mute)
-    {
-        alsa_set_volume(0);
-    }
-}
-
 void alsa_check_buffer(uint16_t len)
 {
     if (pcm_now_size != len)

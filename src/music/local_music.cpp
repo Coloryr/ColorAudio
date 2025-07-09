@@ -12,6 +12,8 @@
 #include "../ui/ui.h"
 #include "../ui/view.h"
 #include "../ui/info.h"
+#include "../config/config.h"
+#include "../common/utilspp.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -264,6 +266,12 @@ static void local_music_run()
 
         usleep(1000);
 
+        std::string name;
+        getfilename(item->path, name);
+        config::set_config_music_name(name);
+        config::set_config_music_index(play_now_index);
+        config::save_config();
+
         // 等待播放结束
         pthread_mutex_lock(&play_mutex);
 
@@ -280,7 +288,36 @@ static void *play_read_run(void *arg)
     play_read_list(READ_DIR);
     view_init_list();
 
+    if (play_list.empty())
+    {
+        top_error_display("没有音乐文件");
+        return NULL;
+    }
+
+    std::string name = config::get_config_music_name();
+    uint32_t index = config::get_config_music_index();
+
     play_now_index = 0;
+
+    if (play_list.contains(index) && !name.empty())
+    {
+        play_item *item = play_list[index];
+        if (endsWith(item->path, name))
+        {
+            play_now_index = index;
+        }
+        else
+        {
+            for (const auto &item : play_list)
+            {
+                if (endsWith(item.second->path, name))
+                {
+                    play_now_index = item.first;
+                    break;
+                }
+            }
+        }
+    }
 
     pthread_t sid;
     int res = pthread_create(&sid, NULL, play_list_info_scan, NULL);

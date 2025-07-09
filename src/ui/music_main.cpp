@@ -9,6 +9,8 @@
 #include <malloc.h>
 #include <string.h>
 
+static float last_mute;
+
 static void mode_click_event_cb(lv_event_t *e)
 {
     LV_UNUSED(e);
@@ -65,6 +67,7 @@ static void volume_click_event_cb(lv_event_t *e)
     {
         int sel = lv_slider_get_value(obj);
         play_set_volume(sel);
+        last_mute = 0;
     }
     else if (code == LV_EVENT_PRESSED)
     {
@@ -78,8 +81,18 @@ static void volume_click_event_cb(lv_event_t *e)
 
 static void mute_click_event_cb(lv_event_t *e)
 {
-    play_set_volume(0);
-    lv_music_set_volume(0);
+    if (last_mute != 0)
+    {
+        play_set_volume(last_mute);
+        lv_music_set_volume(last_mute);
+        last_mute = 0;
+    }
+    else
+    {
+        last_mute = play_get_volume();
+        play_set_volume(0);
+        lv_music_set_volume(0);
+    }
     volume_down = LV_MUSIC_VOLUME_DISPLAY_TIME;
 }
 

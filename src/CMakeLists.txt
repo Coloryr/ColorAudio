@@ -61,6 +61,7 @@ file(GLOB_RECURSE SOURCES
 "./stream/*.*"
 "./player/*.*"
 "./net/*.*"
+"./config/*.*"
 "./fft/*.*"
 )
 

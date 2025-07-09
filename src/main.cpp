@@ -33,11 +33,14 @@
 #include "net/http_connect.h"
 #include "music/net_music.h"
 #include "music/local_music.h"
+#include "config/config.h"
 
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
 #include <SDL2/SDL.h>
 #endif
+
+using namespace ColorAudio;
 
 static int quit = 0;
 
@@ -50,6 +53,9 @@ static void sigterm_handler(int sig)
 int main(int argc, char **argv)
 {
     signal(SIGINT, sigterm_handler);
+
+    config::load_config();
+
     lv_port_init();
 
     alsa_init();
@@ -58,6 +64,8 @@ int main(int argc, char **argv)
     rime_init();
 
     view_init();
+
+    music_init();
 
     local_music_init();
     // net_music_init();

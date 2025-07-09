@@ -202,20 +202,20 @@ lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event
     lv_obj_add_flag(border, LV_OBJ_FLAG_IGNORE_LAYOUT);
 
     LV_IMAGE_DECLARE(img_lv_list_search);
-    LV_IMAGE_DECLARE(img_lv_top);
+    LV_IMAGE_DECLARE(img_lv_list_top);
 
     lv_obj_t *button = lv_image_create(parent);
     lv_image_set_src(button, &img_lv_list_search);
     lv_obj_add_event_cb(button, search, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -10, 0);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
 
     top_obj = lv_image_create(parent);
-    lv_image_set_src(top_obj, &img_lv_top);
+    lv_image_set_src(top_obj, &img_lv_list_top);
     lv_obj_add_event_cb(top_obj, list_top_event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(top_obj, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(top_obj, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_align(top_obj, LV_ALIGN_BOTTOM_RIGHT, -10, -80);
+    lv_obj_align(top_obj, LV_ALIGN_BOTTOM_RIGHT, -20, -100);
 
     return list_obj;
 }
