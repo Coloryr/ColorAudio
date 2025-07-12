@@ -1484,7 +1484,7 @@ static int bq25890_probe(struct i2c_client *client)
 
 	bq25890_field_write(bq, F_AUTO_DPDM_EN, 0);
 	bq25890_field_write(bq, F_EN_ILIM, 0);
-	bq25890_field_write(bq, F_IINLIM, bq25890_find_idx(1000000, TBL_IINLIM));
+	bq25890_field_write(bq, F_IINLIM, bq25890_find_idx(2000000, TBL_IINLIM));
 	dev_info(bq->dev, "bq25700 set done\n");	
 
 	return 0;

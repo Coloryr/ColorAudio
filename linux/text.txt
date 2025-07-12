@@ -6,7 +6,14 @@ modetest -s 74@71:480x800@RG24
 
 modetest -s 74@71:720x720@RG24
 
+wget https://ftp.gnu.org/gnu/gdb/gdb-16.3.tar.gz
 
+mkdir _install
+./configure --target=arm-linux-gnueabihf --disable-werror --prefix=/home/coloryr/gdb-16.3/ _install
+make
+make install
+
+./configure --host=arm-linux-gnueabihf
 
 ./bootstrap.sh -with-libraries=system,url
 
@@ -19,7 +26,7 @@ sudo apt install bluez dbus
 sudo service dbus start
 sudo service bluetooth start
 
-export DISPLAY="192.168.1.10:0.0"
+export DISPLAY="192.168.112.1:0.0"
 
 echo 1 > /sys/class/leds/wifi-power/brightness
 
@@ -33,12 +40,16 @@ wpa_cli -i wlan0 scan
 wpa_cli -i wlan0 scan_result
 #查看当前连接的是哪个网络
 wpa_cli -i wlan0 list_network    
+
+wpa_cli -i wlan0 remove_network 1
 #获取一个存储wifi结构的id,假设为1
 wpa_cli -i wlan0 add_network
 #设置ID为1的热点SSID
 wpa_cli -i wlan0 set_network 1 ssid '"USER_06EDB9_5G"'  
+wpa_cli -i wlan0 set_network 1 ssid '"Color_yr"'  
 #设置ID为1的热点的密码
 wpa_cli -i wlan0 set_network 1 psk '"38416894"'
+wpa_cli -i wlan0 set_network 1 psk '"1234567890qwe"'
 #设置加密方式,可以不加
 wpa_cli -i wlan0 set_network 1 key_mgmt WPA2-PSK-CCMP
 #设置当前网络优先级,默认为2,可以不加
@@ -54,3 +65,58 @@ wpa_cli -i wlan0 save_config
 #请求自动分配IP地址,-b:后台(back) –i:指定接口 –q:获得续约后退出,如果想尽在前台运行,则去掉-b,加上-f
 #不用不加,会自动分配
 udhcpc -b -i wlan0 -q 
+
+sudo apt install hostapd dnsmasq wpasupplicant iw
+
+sudo modprobe mac80211_hwsim radios=2
+sudo ip addr add 192.168.100.1/24 dev wlan1
+
+vim hostapd.conf
+# hostapd.conf
+interface=wlan1
+driver=nl80211
+country_code=DE
+ssid=coloryr
+channel=0
+hw_mode=b
+wpa=3
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP CCMP
+wpa_passphrase=1234567890
+auth_algs=3
+beacon_int=100
+
+sudo hostapd hostapd.conf
+
+sudo apt-get install git automake build-essential libtool pkg-config python3-docutils -y
+sudo apt-get install libasound2-dev libbluetooth-dev libdbus-1-dev libglib2.0-dev libsbc-dev libfdk-aac-dev libfreeaptx-dev liblc3-dev libspandsp-dev libopus-dev -y
+
+git clone https://github.com/arkq/bluez-alsa.git
+cd bluez-alsa
+autoreconf --install --force
+./configure --enable-aac --enable-aptx --with-libfreeaptx --enable-msbc --enable-opus --enable-lc3-swb --enable-faststream --enable-systemd --enable-debug --with-libsamplerate --host=arm-linux-gnueabihf
+
+vim /usr/share/dbus-1/system.d/org.bluealsa.conf
+
+<busconfig>
+
+  <!-- ../system.conf have denied everything, so we just punch some holes -->
+
+  <policy user="coloryr">
+    <allow own_prefix="org.bluealsa"/>
+    <allow send_destination="org.bluealsa"/>
+  </policy>
+
+  <policy group="audio">
+    <allow send_destination="org.bluealsa"/>
+  </policy>
+
+</busconfig>
+
+sudo systemctl daemon-reload
+sudo systemctl reload dbus.service
+
+./bluealsad -p a2dp-sink -B org.bluealsa
+./bluealsa-aplay
+
+
