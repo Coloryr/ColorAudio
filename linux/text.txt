@@ -89,18 +89,28 @@ beacon_int=100
 sudo hostapd hostapd.conf
 
 sudo apt-get install git automake build-essential libtool pkg-config python3-docutils -y
-sudo apt-get install libasound2-dev libbluetooth-dev libdbus-1-dev libglib2.0-dev libsbc-dev libfdk-aac-dev libfreeaptx-dev liblc3-dev libspandsp-dev libopus-dev -y
+sudo apt-get install libasound2-dev libbluetooth-dev libdbus-1-dev libglib2.0-dev libsbc-dev libfdk-aac-dev libfreeaptx-dev liblc3-dev libspandsp-dev libopus-dev libreadline-dev -y
 
 git clone https://github.com/arkq/bluez-alsa.git
 cd bluez-alsa
 autoreconf --install --force
-./configure --enable-aac --enable-aptx --with-libfreeaptx --enable-msbc --enable-opus --enable-lc3-swb --enable-faststream --enable-systemd --enable-debug --with-libsamplerate --host=arm-linux-gnueabihf
+
+export CC="arm-linux-gnueabihf-gcc"
+export AS="arm-linux-gnueabihf-as"
+export LD="arm-linux-gnueabihf-ld"
+
+./configure --enable-aac --enable-aptx --with-libfreeaptx --enable-opus --enable-debug --with-libsamplerate --enable-rfcomm --host=arm-linux-gnueabihf
 
 vim /usr/share/dbus-1/system.d/org.bluealsa.conf
 
 <busconfig>
 
   <!-- ../system.conf have denied everything, so we just punch some holes -->
+
+  <policy user="root">
+    <allow own_prefix="org.bluealsa"/>
+    <allow send_destination="org.bluealsa"/>
+  </policy>
 
   <policy user="coloryr">
     <allow own_prefix="org.bluealsa"/>
