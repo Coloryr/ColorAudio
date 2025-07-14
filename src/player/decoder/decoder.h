@@ -11,11 +11,13 @@ namespace ColorAudio
 {
     class Decoder
     {
-    public:
-         ColorAudio::Stream *st;
 
+    protected:
+        ColorAudio::Stream *st;
+
+    public:
         Decoder(ColorAudio::Stream *st);
-        ~Decoder();
+        virtual ~Decoder();
 
         virtual bool decode_start() = 0;
     };

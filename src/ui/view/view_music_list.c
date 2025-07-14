@@ -1,6 +1,6 @@
 #include "view_music_list.h"
 
-#include "../view.h"
+#include "../view_state.h"
 #include "../font.h"
 
 #include <stdbool.h>

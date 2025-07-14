@@ -10,8 +10,9 @@
 #include "../stream/stream_file.h"
 #include "../net/music_api.h"
 #include "../ui/ui.h"
-#include "../ui/view.h"
-#include "../ui/info.h"
+#include "../ui/music_view.h"
+#include "../ui/view_state.h"
+#include "../ui/info_view.h"
 #include "../config/config.h"
 #include "../common/utilspp.h"
 
@@ -115,7 +116,7 @@ static void *play_list_info_scan(void *arg)
         {
         case MUSIC_TYPE_MP3:
         {
-            mp3_id3 id3 = mp3_id3(&st);
+            Mp3Id3 id3 = Mp3Id3(&st);
             if (id3.get_info())
             {
                 t->title = id3.title;
@@ -130,7 +131,7 @@ static void *play_list_info_scan(void *arg)
         }
         case MUSIC_TYPE_FLAC:
         {
-            flac_metadata data = flac_metadata(&st);
+            FlacMetadata data = FlacMetadata(&st);
             if (data.decode_get_info())
             {
                 t->title = data.info.title;
@@ -153,14 +154,14 @@ static void get_music_lyric(std::string &comment)
     {
         if (comment.find("163 key(Don't modify):") != 0)
         {
-            view_set_lyric_state(LYRIC_NONE);
+            view_music_set_lyric_state(LYRIC_NONE);
             return;
         }
         std::string key = comment.substr(22);
         std::string temp = dep(key);
         if (temp.empty())
         {
-            view_set_lyric_state(LYRIC_NONE);
+            view_music_set_lyric_state(LYRIC_NONE);
             return;
         }
         temp = temp.substr(6);
@@ -176,7 +177,7 @@ static void get_music_lyric(std::string &comment)
     catch (const std::exception &e)
     {
         LV_LOG_ERROR("%s", e.what());
-        view_set_lyric_state(LYRIC_FAIL);
+        view_music_set_lyric_state(LYRIC_FAIL);
     }
 }
 
@@ -201,7 +202,7 @@ static void local_music_run()
 
         if (type == MUSIC_TYPE_MP3)
         {
-            mp3_id3 id3 = mp3_id3(&st);
+            Mp3Id3 id3 = Mp3Id3(&st);
             if (id3.get_info())
             {
                 comment = id3.comment;
@@ -214,8 +215,7 @@ static void local_music_run()
                 view_update_img();
             }
 
-            Stream *st1 = st.copy();
-            play_st = st1;
+            play_st = st.copy();
             pthread_cond_signal(&play_start);
             pthread_mutex_unlock(&play_mutex);
 
@@ -233,12 +233,11 @@ static void local_music_run()
         }
         else if (type == MUSIC_TYPE_FLAC)
         {
-            Stream *st1 = st.copy();
-            play_st = st1;
+            play_st = st.copy();
             pthread_cond_signal(&play_start);
             pthread_mutex_unlock(&play_mutex);
 
-            flac_metadata flac = flac_metadata(&st);
+            FlacMetadata flac = FlacMetadata(&st);
             if (flac.decode_get_info())
             {
                 comment = flac.info.comment;
@@ -261,7 +260,7 @@ static void local_music_run()
         }
         else
         {
-            view_set_lyric_state(LYRIC_NONE);
+            view_music_set_lyric_state(LYRIC_NONE);
         }
 
         usleep(1000);

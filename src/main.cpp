@@ -25,7 +25,7 @@
 #include "sys/timestamp.h"
 
 #include "main.h"
-#include "ui/view.h"
+#include "ui/view_state.h"
 #include "ui/ui.h"
 #include "player/sound.h"
 #include "player/player.h"
@@ -34,6 +34,8 @@
 #include "music/net_music.h"
 #include "music/local_music.h"
 #include "config/config.h"
+#include "wireless/wifi.h"
+#include "wireless/ble.h"
 
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
@@ -56,9 +58,15 @@ int main(int argc, char **argv)
 
     config::load_config();
 
+    alsa_init();
+
+    ble_init();
+
+    bluez_alsa_start();
+
     lv_port_init();
 
-    alsa_init();
+    wifi_test();
     play_init();
 
     rime_init();

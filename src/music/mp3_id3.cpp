@@ -127,13 +127,13 @@ void mp3id3_skip(ColorAudio::Stream *st)
     }
 }
 
-mp3_id3::mp3_id3(ColorAudio::Stream *st)
+Mp3Id3::Mp3Id3(ColorAudio::Stream *st)
     : st(st), image(nullptr)
 {
     
 }
 
-mp3_id3::~mp3_id3()
+Mp3Id3::~Mp3Id3()
 {
     if (image != nullptr)
     {
@@ -142,7 +142,7 @@ mp3_id3::~mp3_id3()
     }
 }
 
-bool mp3_id3::get_info()
+bool Mp3Id3::get_info()
 {
     if (!mp3id3_have(st))
     {

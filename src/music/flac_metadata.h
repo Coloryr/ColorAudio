@@ -21,14 +21,14 @@ typedef struct
 
 namespace ColorAudio
 {
-    class flac_metadata : FLAC::Decoder::Stream
+    class FlacMetadata : FLAC::Decoder::Stream
     {
     public:
         ColorAudio::Stream *st;
         music_info_t info;
 
-        flac_metadata(ColorAudio::Stream *st);
-        ~flac_metadata();
+        FlacMetadata(ColorAudio::Stream *st);
+        ~FlacMetadata();
 
         bool decode_get_info();
 

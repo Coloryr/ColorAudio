@@ -16,8 +16,8 @@ StreamFile::StreamFile(const char *path) : Stream(STREAM_TYPE_FILE), pos(0)
         LV_LOG_ERROR("[stream] Can't open null file");
         return;
     }
-    this->file = fopen(path, "r");
-    if (this->file == nullptr)
+    file = fopen(path, "r");
+    if (file == nullptr)
     {
         LV_LOG_ERROR("[stream] Can't open file: %s", path);
         return;
@@ -34,54 +34,54 @@ StreamFile::StreamFile(const char *path) : Stream(STREAM_TYPE_FILE), pos(0)
         fseek(file, 0, SEEK_SET);
     }
 
-    this->size = flen;
+    size = flen;
 }
 
 StreamFile::~StreamFile()
 {
-    if (this->file)
+    if (file)
     {
-        fclose(this->file);
-        this->file = NULL;
+        fclose(file);
+        file = NULL;
     }
 
-    if (this->path)
+    if (path)
     {
-        free(this->path);
-        this->path = NULL;
+        free(path);
+        path = NULL;
     }
 }
 
 StreamFile* StreamFile::copy()
 {
-    StreamFile* st1 = new StreamFile(this->path);
-    st1->seek(this->pos, SEEK_SET);
+    StreamFile* st1 = new StreamFile(path);
+    st1->seek(pos, SEEK_SET);
     return st1;
 }
 
 uint32_t StreamFile::read(uint8_t* buffer, uint32_t len)
 {
-    uint32_t temp = fread(buffer, 1, len, this->file);
-    this->pos += temp;
+    uint32_t temp = fread(buffer, 1, len, file);
+    pos += temp;
     return temp;
 }
 
 uint32_t StreamFile::write(uint8_t* buffer, uint32_t len)
 {
-    uint32_t written = fwrite(buffer, 1, len, this->file);
-    this->pos += written;
+    uint32_t written = fwrite(buffer, 1, len, file);
+    pos += written;
     return written;
 }
 
 uint32_t StreamFile::peek(uint8_t* buffer, uint32_t len)
 {
-    uint32_t temp = fread(buffer, 1, len, this->file);
-    fseek(this->file, this->pos, SEEK_SET);
+    uint32_t temp = fread(buffer, 1, len, file);
+    fseek(file, pos, SEEK_SET);
     return temp;
 }
 
 void StreamFile::seek(int32_t pos, uint8_t where)
 {
-    fseek(this->file, pos, where);
-    this->pos = ftell(this->file);
+    fseek(file, pos, where);
+    this->pos = ftell(file);
 }

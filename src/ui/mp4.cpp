@@ -2,8 +2,9 @@
 
 #include "../common/data_item.h"
 #include "../stream/stream_mem.h"
-#include "view.h"
+#include "view_state.h"
 #include "ui.h"
+#include "music_view.h"
 
 #include "lvgl.h"
 #include <minimp4/minimp4.h>
@@ -157,7 +158,7 @@ void load_mp4(data_item *item)
 
         uint32_t frame = 0;
         rgb = static_cast<uint8_t *>(malloc(track->SampleDescription.video.width * track->SampleDescription.video.height * 3));
-        view_set_image_data(track->SampleDescription.video.width, track->SampleDescription.video.height, rgb);
+        view_music_set_image_data(track->SampleDescription.video.width, track->SampleDescription.video.height, rgb);
         for (uint32_t i = 0; i < track->sample_count; i++)
         {
             unsigned frame_bytes, timestamp, duration;

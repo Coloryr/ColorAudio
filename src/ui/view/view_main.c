@@ -23,12 +23,12 @@ static void create_wave_images(lv_obj_t *parent)
 
 static void local_music_event_cb(lv_event_t *e)
 {
-    //view_go_music();
+    // view_go_music();
 }
 
 static void net_music_event_cb(lv_event_t *e)
 {
-    //view_go_music();
+    // view_go_music();
 }
 
 lv_obj_t *lv_main_create(lv_obj_t *parent)

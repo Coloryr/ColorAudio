@@ -20,10 +20,9 @@ namespace ColorAudio
     class Stream
     {
     private:
-        /* data */
-    public:
         steam_type type;
 
+    public:
         Stream(steam_type type);
         virtual ~Stream();
 

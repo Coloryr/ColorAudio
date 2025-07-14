@@ -83,19 +83,11 @@ static enum mad_flow play_mp3_input(void *data, struct mad_stream *st)
 
     DecoderMp3 *mp3 = (DecoderMp3 *)data;
 
-    if (mp3->st->can_read())
+    if (mp3->can_read())
     {
         unproc_data_size = st->bufend - st->next_frame;
-        memcpy(mp3->buffer, mp3->buffer + mp3->pos - unproc_data_size, unproc_data_size);
-        copy_size = BUFSIZE - unproc_data_size;
-        if (mp3->st->test_read_size(copy_size) == false)
-        {
-            copy_size = mp3->st->get_less_read();
-        }
-        mp3->st->read(mp3->buffer + unproc_data_size, copy_size);
-        mp3->pos = unproc_data_size + copy_size;
-
-        mad_stream_buffer(st, mp3->buffer, mp3->pos);
+        mp3->copy(unproc_data_size);
+        mad_stream_buffer(st, mp3->get_buffer(), mp3->get_pos());
         ret_code = MAD_FLOW_CONTINUE;
     }
     else
@@ -155,11 +147,11 @@ static enum mad_flow play_mp3_error(void *data, struct mad_stream *mad, struct m
 #ifdef BUILD_ARM
     LV_LOG_ERROR("decoding error 0x%04x (%s) at byte offset %u\n",
                  mad->error, mad_stream_errorstr(mad),
-                 mad->this_frame - st->buffer);
+                 mad->this_frame - st->get_buffer());
 #else
     LV_LOG_ERROR("decoding error 0x%04x (%s) at byte offset %lu\n",
                  mad->error, mad_stream_errorstr(mad),
-                 mad->this_frame - st->buffer);
+                 mad->this_frame - st->get_buffer());
 #endif
     return MAD_FLOW_CONTINUE;
 }
@@ -195,4 +187,17 @@ DecoderMp3::~DecoderMp3()
 bool DecoderMp3::decode_start()
 {
     return mad_decoder_run(decoder, MAD_DECODER_MODE_SYNC) == 0;
+}
+
+void DecoderMp3::copy(uint32_t data_size)
+{
+    memcpy(buffer, buffer + pos - data_size, data_size);
+
+    uint32_t copy_size = BUFSIZE - data_size;
+    if (st->test_read_size(copy_size) == false)
+    {
+        copy_size = st->get_less_read();
+    }
+    st->read(buffer + data_size, copy_size);
+    pos = data_size + copy_size;
 }

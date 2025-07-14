@@ -38,9 +38,21 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t* img_dsc);
  * @param b
  * @return 最小值
  */
-uint32_t min(uint32_t a, uint32_t b);
-
+inline uint32_t min(uint32_t a, uint32_t b)
+{
+    return a > b ? b : a;
+}
+/**
+ * 计算UTF8字符串长度
+ * @param str 字符串
+ * @return 字符数量
+ */
 uint32_t utf8_strlen(const char *str);
+/**
+ * 获取一个随机数
+ * @return 随机数
+ */
+uint32_t read_random();
 
 #ifdef __cplusplus
 } /*extern "C"*/
