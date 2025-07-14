@@ -1,7 +1,7 @@
 #include "sound.h"
 #include "sound_fft.h"
 
-#include "../ui/view.h"
+#include "../ui/view_state.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -258,6 +258,11 @@ void alsa_clear()
     snd_pcm_reset(pcm_handle);
 }
 
+void alsa_ready()
+{
+    snd_pcm_prepare(pcm_handle);
+}
+
 void alsa_reset()
 {
     isset = false;
@@ -268,6 +273,17 @@ void alsa_reset()
 int alsa_write()
 {
     snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle, sound_buf, pcm_now_size);
+    if (frames < 0)
+        frames = snd_pcm_recover(pcm_handle, frames, 0);
+    if (frames < 0)
+        return -1;
+
+    return 0;
+}
+
+int alsa_write_buffer(const void *buffer, size_t samples)
+{
+    snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle, buffer, samples);
     if (frames < 0)
         frames = snd_pcm_recover(pcm_handle, frames, 0);
     if (frames < 0)

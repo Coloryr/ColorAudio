@@ -20,9 +20,10 @@ void alsa_reset();
 void alsa_init();
 void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate);
 void alsa_check_buffer(uint16_t len);
-void alsa_reset();
 void alsa_clear();
+void alsa_ready();
 int alsa_write();
+int alsa_write_buffer(const void *buffer, size_t samples);
 
 #ifdef __cplusplus
 } /*extern "C"*/

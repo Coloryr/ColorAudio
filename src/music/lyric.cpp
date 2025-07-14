@@ -61,8 +61,10 @@ LyricParser::~LyricParser()
         {
             delete part1;
         }
+        part->chars.clear();
         delete part;
     }
+    lines.clear();
 }
 
 void LyricParser::parse_line_json(std::string &text)
@@ -82,7 +84,7 @@ void LyricParser::parse_line_json(std::string &text)
             }
         }
 
-        LyricLine *line = new LyricLine();
+        lyric_line_t *line = new lyric_line_t();
         line->time = time;
         line->text = text1;
         lines.push_back(line);
@@ -106,7 +108,7 @@ void LyricParser::parse_line(std::string &text, std::string &time)
 
     uint32_t timestamp = min * 60000 + sec * 1000 + ms;
 
-    LyricLine *line = new LyricLine();
+    lyric_line_t *line = new lyric_line_t();
     line->time = timestamp;
     if (text.length() > end_pos)
     {
@@ -129,7 +131,7 @@ void LyricParser::parse_line_yrc(std::string &line, std::string &time)
     uint32_t start = std::stoul(time.substr(0, comma_pos));
     uint32_t duration = std::stoul(time.substr(comma_pos + 1));
 
-    LyricLine *new_line = new LyricLine();
+    lyric_line_t *new_line = new lyric_line_t();
     new_line->time = start;
     new_line->duration = duration;
 
@@ -163,7 +165,7 @@ void LyricParser::parse_line_yrc(std::string &line, std::string &time)
                     character = line.substr(char_end + 1, len);
                 }
 
-                LyricChar *chars = new LyricChar();
+                lyric_char_t *chars = new lyric_char_t();
                 chars->start = time_params[0];
                 chars->duration = time_params[1];
                 chars->text = character;
@@ -190,8 +192,8 @@ bool LyricParser::get_lyric(std::string &text, std::string &ktext,
     kp = 0;
     for (uint32_t index = 0; index < lines.size(); index++)
     {
-        LyricLine *part = lines[index];
-        LyricLine *part1 = nullptr;
+        lyric_line_t *part = lines[index];
+        lyric_line_t *part1 = nullptr;
         if (index + 1 < lines.size())
         {
             part1 = lines[index + 1];
@@ -211,8 +213,8 @@ bool LyricParser::get_lyric(std::string &text, std::string &ktext,
         {
             for (uint32_t index1 = 0; index1 < part->chars.size(); index1++)
             {
-                LyricChar *part2 = part->chars[index1];
-                LyricChar *part3 = nullptr;
+                lyric_char_t *part2 = part->chars[index1];
+                lyric_char_t *part3 = nullptr;
                 if (part2->start > time)
                 {
                     text += part2->text;

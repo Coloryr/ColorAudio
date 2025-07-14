@@ -24,9 +24,9 @@ namespace ip = boost::asio::ip;
 namespace urls = boost::urls;
 namespace ssl = boost::asio::ssl;
 
-ParsedURL parse_url(const std::string &url_str)
+parsed_url_t parse_url(const std::string &url_str)
 {
-    ParsedURL parsed;
+    parsed_url_t parsed;
 
     auto path = url_str;
     std::string params;
@@ -84,7 +84,7 @@ ParsedURL parse_url(const std::string &url_str)
     return parsed;
 }
 
-void http_get_impl(const ParsedURL &parsed, http::response<http::dynamic_body> &res)
+void http_get_impl(const parsed_url_t &parsed, http::response<http::dynamic_body> &res)
 {
     asio::io_context ioc;
     beast::error_code ec;

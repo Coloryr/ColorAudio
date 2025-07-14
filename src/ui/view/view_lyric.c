@@ -1,7 +1,7 @@
 #include "view_lyric.h"
 
 #include "../font.h"
-#include "../view.h"
+#include "../view_state.h"
 #include "../../common/utils.h"
 
 #include "lvgl.h"

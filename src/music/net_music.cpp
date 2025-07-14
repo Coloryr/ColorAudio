@@ -5,7 +5,8 @@
 #include "../music/mp3_id3.h"
 #include "../player/player.h"
 #include "../player/player_info.h"
-#include "../ui/view.h"
+#include "../ui/view_state.h"
+#include "../ui/music_view.h"
 #include "../ui/ui.h"
 #include "../ui/mp4.h"
 
@@ -67,7 +68,7 @@ static void *net_lyric_run(void *arg)
     catch (const std::exception &e)
     {
         LV_LOG_ERROR("%s", e.what());
-        view_set_lyric_state(LYRIC_FAIL);
+        view_music_set_lyric_state(LYRIC_FAIL);
     }
 
     return NULL;
@@ -157,7 +158,7 @@ static void *play_run(void *arg)
 
         if (type == MUSIC_TYPE_MP3)
         {
-            mp3_id3 id3 = mp3_id3(st);
+            Mp3Id3 id3 = Mp3Id3(st);
             id3.get_info();
 
             time_all = (float)time / 1000;

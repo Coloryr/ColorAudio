@@ -6,25 +6,25 @@
 #include <string>
 #include <vector>
 
-struct LyricChar
+typedef struct
 {
     uint32_t start;
     uint32_t duration;
     std::string text;
-};
+} lyric_char_t;
 
-struct LyricLine
+typedef struct
 {
     uint32_t time;
     uint32_t duration;
     std::string text;
-    std::vector<LyricChar *> chars;
-};
+    std::vector<lyric_char_t *> chars;
+} lyric_line_t;
 
 class LyricParser
 {
 private:
-    std::vector<LyricLine *> lines; // 歌词行集合
+    std::vector<lyric_line_t *> lines;
 
     void parse_line(std::string &text, std::string &time);
     void parse_line_json(std::string &text);

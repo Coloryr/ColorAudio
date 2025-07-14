@@ -13,7 +13,7 @@
 
 using namespace ColorAudio;
 
-flac_metadata::flac_metadata(ColorAudio::Stream *st)
+FlacMetadata::FlacMetadata(ColorAudio::Stream *st)
     : st(st)
 {
     set_md5_checking(true);
@@ -22,7 +22,7 @@ flac_metadata::flac_metadata(ColorAudio::Stream *st)
     info.image = NULL;
 }
 
-flac_metadata::~flac_metadata()
+FlacMetadata::~FlacMetadata()
 {
     finish();
 
@@ -33,7 +33,7 @@ flac_metadata::~flac_metadata()
     }
 }
 
-FLAC__StreamDecoderReadStatus flac_metadata::read_callback(FLAC__byte buffer[], size_t *bytes)
+FLAC__StreamDecoderReadStatus FlacMetadata::read_callback(FLAC__byte buffer[], size_t *bytes)
 {
     if (st->can_read() == false)
     {
@@ -51,36 +51,36 @@ FLAC__StreamDecoderReadStatus flac_metadata::read_callback(FLAC__byte buffer[], 
     }
 }
 
-FLAC__StreamDecoderSeekStatus flac_metadata::seek_callback(FLAC__uint64 absolute_byte_offset)
+FLAC__StreamDecoderSeekStatus FlacMetadata::seek_callback(FLAC__uint64 absolute_byte_offset)
 {
     st->seek((off_t)absolute_byte_offset, SEEK_SET);
     return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
 }
 
-FLAC__StreamDecoderTellStatus flac_metadata::tell_callback(FLAC__uint64 *absolute_byte_offset)
+FLAC__StreamDecoderTellStatus FlacMetadata::tell_callback(FLAC__uint64 *absolute_byte_offset)
 {
     *absolute_byte_offset = (FLAC__uint64)st->get_pos();
 
     return FLAC__STREAM_DECODER_TELL_STATUS_OK;
 }
 
-FLAC__StreamDecoderLengthStatus flac_metadata::length_callback(FLAC__uint64 *stream_length)
+FLAC__StreamDecoderLengthStatus FlacMetadata::length_callback(FLAC__uint64 *stream_length)
 {
     *stream_length = (FLAC__uint64)st->get_all_size();
     return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
 }
 
-bool flac_metadata::eof_callback()
+bool FlacMetadata::eof_callback()
 {
     return st->can_read() == false;
 }
 
-FLAC__StreamDecoderWriteStatus flac_metadata::write_callback(const ::FLAC__Frame *frame, const FLAC__int32 *const buffer[])
+FLAC__StreamDecoderWriteStatus FlacMetadata::write_callback(const ::FLAC__Frame *frame, const FLAC__int32 *const buffer[])
 {
     return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 
-void flac_metadata::metadata_callback(const ::FLAC__StreamMetadata *metadata)
+void FlacMetadata::metadata_callback(const ::FLAC__StreamMetadata *metadata)
 {
     if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO)
     {
@@ -145,12 +145,12 @@ void flac_metadata::metadata_callback(const ::FLAC__StreamMetadata *metadata)
     }
 }
 
-void flac_metadata::error_callback(::FLAC__StreamDecoderErrorStatus status)
+void FlacMetadata::error_callback(::FLAC__StreamDecoderErrorStatus status)
 {
     LV_LOG_ERROR("Error: %s\n", FLAC__StreamDecoderErrorStatusString[status]);
 }
 
-bool flac_metadata::decode_get_info()
+bool FlacMetadata::decode_get_info()
 {
     if (init() != FLAC__STREAM_DECODER_INIT_STATUS_OK || !process_until_end_of_metadata())
     {

@@ -33,50 +33,50 @@ StreamMemory::~StreamMemory()
 
 uint32_t StreamMemory::read(uint8_t* buffer, uint32_t len)
 {
-    if (this->buffer_pos + len > this->buffer_size)
+    if (buffer_pos + len > buffer_size)
     {
-        len = this->buffer_size - this->buffer_pos;
+        len = buffer_size - buffer_pos;
     }
-    memcpy(buffer, this->buffer + this->buffer_pos, len);
-    this->buffer_pos += len;
+    memcpy(buffer, buffer + buffer_pos, len);
+    buffer_pos += len;
     return len;
 }
 
 uint32_t StreamMemory::write(uint8_t* buffer, uint32_t len)
 {
-    uint32_t remain = this->buffer_size - this->buffer_pos;
+    uint32_t remain = buffer_size - buffer_pos;
     if (len > remain)
     {
         len = remain;
     }
-    memcpy(this->buffer + this->buffer_pos, buffer, len);
-    this->buffer_pos += len;
+    memcpy(buffer + buffer_pos, buffer, len);
+    buffer_pos += len;
     return len;
 }
 
 uint32_t StreamMemory::peek(uint8_t* buffer, uint32_t len)
 {
-    if (this->buffer_pos + len > this->buffer_size)
+    if (buffer_pos + len > buffer_size)
     {
-        len = this->buffer_size - this->buffer_pos;
+        len = buffer_size - buffer_pos;
     }
-    memcpy(buffer, this->buffer + this->buffer_pos, len);
+    memcpy(buffer, buffer + buffer_pos, len);
     return len;
 }
 
 uint32_t StreamMemory::get_pos()
 {
-    return this->buffer_pos;
+    return buffer_pos;
 }
 
 uint32_t StreamMemory::get_all_size()
 {
-    return this->buffer_size;
+    return buffer_size;
 }
 
 uint32_t StreamMemory::get_less_read()
 {
-    return this->buffer_size - this->buffer_pos;
+    return buffer_size - buffer_pos;
 }
 
 void StreamMemory::seek(int32_t pos, uint8_t where)
@@ -84,42 +84,42 @@ void StreamMemory::seek(int32_t pos, uint8_t where)
     switch (where)
     {
     case SEEK_CUR:
-        if (this->buffer_pos + pos > this->buffer_size)
+        if (buffer_pos + pos > buffer_size)
         {
-            this->buffer_pos = this->buffer_size;
+            buffer_pos = buffer_size;
         }
         else
         {
-            this->buffer_pos += pos;
+            buffer_pos += pos;
         }
         break;
     case SEEK_SET:
-        if (pos > this->buffer_size)
+        if (pos > buffer_size)
         {
-            this->buffer_pos = this->buffer_size;
+            buffer_pos = buffer_size;
         }
         else
         {
-            this->buffer_pos = pos;
+            buffer_pos = pos;
         }
         break;
     case SEEK_END:
-        int32_t new_pos = this->buffer_size + pos;
+        int32_t new_pos = buffer_size + pos;
         if (new_pos < 0)
             new_pos = 0;
-        if (new_pos > this->buffer_size)
-            new_pos = this->buffer_size;
-        this->buffer_pos = new_pos;
+        if (new_pos > buffer_size)
+            new_pos = buffer_size;
+        buffer_pos = new_pos;
         break;
     }
 }
 
 bool StreamMemory::test_read_size(uint32_t size)
 {
-    return this->buffer_pos + size <= this->buffer_size;
+    return buffer_pos + size <= buffer_size;
 }
 
 bool StreamMemory::can_read()
 {
-    return this->buffer_pos < this->buffer_size;
+    return buffer_pos < buffer_size;
 }

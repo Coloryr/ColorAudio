@@ -4,14 +4,15 @@
 
 #include "../player/player.h"
 #include "../net/music_api.h"
-#include "../ui/view.h"
+#include "../ui/view_state.h"
 #include "../ui/ui.h"
+#include "../ui/music_view.h"
 #include "../config/config.h"
+#include "../common/utils.h"
 
 #include <stdint.h>
 #include <pthread.h>
 #include <deque>
-#include <fcntl.h>
 #include <json/json.hpp>
 
 using namespace ColorAudio;
@@ -23,16 +24,6 @@ static uint32_t jump_index = UINT32_MAX;
 
 static std::deque<uint32_t> play_last_stack;
 
-static uint32_t read_random()
-{
-    uint32_t temp;
-    int fd = open("/dev/random", O_RDONLY);
-    read(fd, &temp, 4);
-    close(fd);
-
-    return temp;
-}
-
 void music_lyric_163(uint64_t id)
 {
     json j = api_lyric_music_new(id);
@@ -43,7 +34,7 @@ void music_lyric_163(uint64_t id)
         LyricParser *data = new LyricParser(lyric);
         LyricParser *tr_data = new LyricParser(tlyric);
 
-        view_set_lyric(data, tr_data);
+        view_music_set_lyric(data, tr_data);
     }
     else
     {
@@ -55,11 +46,11 @@ void music_lyric_163(uint64_t id)
             LyricParser *data = new LyricParser(lyric);
             LyricParser *tr_data = new LyricParser(tlyric);
 
-            view_set_lyric(data, tr_data);
+            view_music_set_lyric(data, tr_data);
         }
         else
         {
-            view_set_lyric_state(LYRIC_NONE);
+            view_music_set_lyric_state(LYRIC_NONE);
         }
     }
 }
@@ -74,15 +65,15 @@ void music_test_run(music_run_type type)
 
 void music_start()
 {
-    view_set_check(play_now_index, true);
+    view_music_set_check(play_now_index, true);
 }
 
 void music_end()
 {
-    view_set_lyric_state(LYRIC_CLEAR);
+    view_music_set_lyric_state(LYRIC_CLEAR);
     play_clear();
 
-    view_set_check(play_now_index, false);
+    view_music_set_check(play_now_index, false);
 
     if (have_jump_index())
     {
@@ -123,7 +114,7 @@ void music_next()
             play_now_index = next_value;
             if (play_last_stack.size() > play_list_count / 10)
             {
-                play_last_stack.pop_front();
+                play_last_stack.pop_back();
             }
         }
         else if (play_music_mode == MUSIC_MODE_LOOP)

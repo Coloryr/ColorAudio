@@ -186,7 +186,7 @@ bool DecoderFlac::decode_start()
         return false;
     }
 
-    do
+    for (;;)
     {
         if (play_state == MUSIC_STATE_PAUSE)
         {
@@ -222,7 +222,7 @@ bool DecoderFlac::decode_start()
         {
             return true;
         }
-    } while (1);
+    }
 
     return true;
 }

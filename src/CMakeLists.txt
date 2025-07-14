@@ -19,36 +19,34 @@ if (DEFINED BUILD_ARM)
     include_directories(./include)
     include_directories(./include/drm)
     include_directories(./include/freetype2)
+    include_directories(./include/glib-2.0)
+    include_directories(./include/dbus-1.0)
+    include_directories(./include/opus)
 else()
     find_package(SDL2 REQUIRED)
     include_directories(/usr/include/drm)
     include_directories(/usr/include/freetype2)
     include_directories(${Boost_INCLUDE_DIRS})
+    include_directories(/usr/include/glib-2.0)
+    include_directories(/usr/lib/x86_64-linux-gnu/glib-2.0/include)
+    include_directories(/usr/include/dbus-1.0)
+    include_directories(/usr/lib/x86_64-linux-gnu/dbus-1.0/include)
+    include_directories(/usr/include/opus)
 endif()
 
 # includes
 
-# include_directories(./display)
-# include_directories(./sys)
-# include_directories(./common)
-# include_directories(./view)
-# include_directories(./music)
-# include_directories(./input)
-# include_directories(./net)
-# include_directories(./stream)
-# include_directories(./melon/include)
-# include_directories(./lvgl)
-
 include_directories(./lib_src)
+include_directories(./lib_src/bluez-alsa/src)
 
 #def
-add_definitions(-DMLN_ROOT="/usr/local/melon")
-add_definitions(-DMLN_NULL="/dev/null")
-add_definitions(-DMLN_LANG_LIB="/usr/local/lib/melang")
-add_definitions(-DMLN_LANG_DYLIB="/usr/local/lib/melang_dynamic")
-add_definitions(-DMLN_EPOLL -DMLN_SENDFILE -DMLN_WRITEV -DMLN_USE_UNIX98 -DMLN_MMAP -DMLN_CONSTRUCTOR -DMINIMP4_IMPLEMENTATION)
+add_definitions(-DHAVE_CONFIG_H -DMINIMP4_IMPLEMENTATION)
 
 #src
+
+file(GLOB_RECURSE LIB_SOURCES
+"./lib_src/bluez-alsa/src/*.*"
+)
 
 file(GLOB_RECURSE SOURCES 
 "./lvgl/src/*.*"
@@ -61,11 +59,12 @@ file(GLOB_RECURSE SOURCES
 "./stream/*.*"
 "./player/*.*"
 "./net/*.*"
+"./wireless/*.*"
 "./config/*.*"
 "./fft/*.*"
 )
 
-add_executable(coloraudio ${SOURCES} main.cpp)
+add_executable(coloraudio ${LIB_SOURCES} ${SOURCES} main.cpp)
 
 if (DEFINED BUILD_ARM)
     target_link_libraries(coloraudio PRIVATE 
@@ -85,19 +84,35 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libssl.so"
     "${CMAKE_SOURCE_DIR}/libs/libmad.so"
     "${CMAKE_SOURCE_DIR}/libs/libcrypto.so.3"
+    "${CMAKE_SOURCE_DIR}/libs/libopenh264.so"
+    "${CMAKE_SOURCE_DIR}/libs/libwpa_client.so"
+    "${CMAKE_SOURCE_DIR}/libs/libfdk-aac.so"
+    "${CMAKE_SOURCE_DIR}/libs/libfreeaptx.so"
+    "${CMAKE_SOURCE_DIR}/libs/libopus.so"
+    "${CMAKE_SOURCE_DIR}/libs/libbluetooth.so"
+    "${CMAKE_SOURCE_DIR}/libs/libdbus-1.so"
+    "${CMAKE_SOURCE_DIR}/libs/libglib-2.0.so"
+    "${CMAKE_SOURCE_DIR}/libs/libsbc.so"
+    "${CMAKE_SOURCE_DIR}/libs/libgobject-2.0.so"
+    "${CMAKE_SOURCE_DIR}/libs/libgio-2.0.so"
 
+    #rime
     "${CMAKE_SOURCE_DIR}/libs/librime.a"
     "${CMAKE_SOURCE_DIR}/libs/libglog.a"
     "${CMAKE_SOURCE_DIR}/libs/libmarisa.a"
     "${CMAKE_SOURCE_DIR}/libs/libleveldb.a"
     "${CMAKE_SOURCE_DIR}/libs/libopencc.a"
     "${CMAKE_SOURCE_DIR}/libs/libyaml-cpp.a"
+
+    "${CMAKE_SOURCE_DIR}/libs/liblc3.a"
     )
 else()
     add_library(boost_beast INTERFACE)
     # target_include_directories(boost_beast SYSTEM PUBLIC "${CMAKE_CURRENT_LIST_DIR}/../beast/include")
     target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES}
-        drm asound mad freetype m turbojpeg FLAC++ FLAC rime 
-        boost_system boost_url ssl crypto cryptopp openh264
+        drm asound mad freetype m turbojpeg FLAC++ FLAC rime dbus-1 opus
+        fdk-aac sbc bluetooth glib-2.0 gio-2.0 gobject-2.0 freeaptx lc3
+        sbc spandsp
+        boost_system boost_url ssl crypto cryptopp openh264 wpa_client
     )
 endif()

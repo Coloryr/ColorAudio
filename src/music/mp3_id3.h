@@ -31,7 +31,7 @@ typedef enum
 
 namespace ColorAudio
 {
-    class mp3_id3
+    class Mp3Id3
     {
     private:
         ColorAudio::Stream *st;
@@ -47,8 +47,8 @@ namespace ColorAudio
         std::string comment;
         data_item *image;
 
-        mp3_id3(ColorAudio::Stream *st);
-        ~mp3_id3();
+        Mp3Id3(ColorAudio::Stream *st);
+        ~Mp3Id3();
 
         bool get_info();
     };

@@ -17,3 +17,4 @@ linux/coloraudio
 /src/build/
 .vscode
 /src/log/
+src/libs/libfreeaptx.so

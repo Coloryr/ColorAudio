@@ -1,7 +1,7 @@
 #include "view_music_main.h"
 #include "view_lyric.h"
 
-#include "../view.h"
+#include "../view_state.h"
 #include "../font.h"
 #include "../anim.h"
 #include "../common/utils.h"

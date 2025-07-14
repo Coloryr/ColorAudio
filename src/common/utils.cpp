@@ -7,6 +7,8 @@
 #include <turbojpeg.h>
 #include <png.h>
 #include <string>
+#include <fcntl.h>
+#include <unistd.h>
 
 uint32_t get_length(uint8_t *buffer)
 {
@@ -152,8 +154,8 @@ uint32_t utf16_to_utf8(uint16_t *input, char **output, uint32_t size)
     return utf8_index;
 }
 
-const uint8_t jpg_signature[] = {0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46};
-const uint8_t png_signature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
+static const uint8_t jpg_signature[] = {0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10, 0x4A, 0x46, 0x49, 0x46};
+static const uint8_t png_signature[] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
 static int is_jpg(uint8_t *raw_data, size_t len)
 {
@@ -171,7 +173,7 @@ static int is_png(uint8_t *raw_data, size_t len)
 
 static void istream_png_reader(png_structp png_ptr, png_bytep png_data, png_size_t data_size)
 {
-    ColorAudio::Stream *st = (ColorAudio::Stream *)png_get_io_ptr(png_ptr);
+    ColorAudio::Stream *st = static_cast<ColorAudio::Stream *>(png_get_io_ptr(png_ptr));
 
     if (st->test_read_size(data_size) == false)
     {
@@ -204,7 +206,7 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
         img_dsc->data_size = width * height * 3;
         img_dsc->header.stride = width * 3;
         img_dsc->header.cf = LV_COLOR_FORMAT_RGB888;
-        img_dsc->data = (uint8_t *)malloc(img_dsc->data_size); // RGB 24bpp
+        img_dsc->data = (uint8_t *)malloc(img_dsc->data_size);
         if (!img_dsc->data)
         {
             tjDestroy(handle);
@@ -235,7 +237,7 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
         png_infop info_ptr = png_create_info_struct(png_ptr);
         if (!info_ptr)
         {
-            png_destroy_read_struct(&png_ptr, NULL, NULL); // 释放已经分配的资源
+            png_destroy_read_struct(&png_ptr, NULL, NULL);
             return false;
         }
 
@@ -243,8 +245,8 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
         {
             LV_LOG_ERROR("Png decode error");
         }
-        ColorAudio::StreamMemory *st = new ColorAudio::StreamMemory(data, size);
-        png_set_read_fn(png_ptr, st, istream_png_reader);
+        ColorAudio::StreamMemory st =  ColorAudio::StreamMemory(data, size);
+        png_set_read_fn(png_ptr, &st, istream_png_reader);
 
         png_read_info(png_ptr, info_ptr);
         png_uint_32 width = png_get_image_width(png_ptr, info_ptr);
@@ -267,7 +269,7 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
         // png_set_swap_alpha(png_ptr);                            // RGBA -> ARGB
         png_set_bgr(png_ptr);
 
-        png_read_update_info(png_ptr, info_ptr); // 更新格式信息
+        png_read_update_info(png_ptr, info_ptr);
 
         img_dsc->header.w = width;
         img_dsc->header.h = height;
@@ -278,7 +280,6 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
         if (!img_dsc->data)
         {
             LV_LOG_ERROR("Png decode error");
-            delete st;
             png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
             return false;
         }
@@ -294,17 +295,11 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
 
         free(row_pointers);
         png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
-        delete st;
 
         return true;
     }
 
     return false;
-}
-
-uint32_t min(uint32_t a, uint32_t b)
-{
-    return a > b ? b : a;
 }
 
 uint32_t utf8_strlen(const char *str)
@@ -318,4 +313,14 @@ uint32_t utf8_strlen(const char *str)
         }
     }
     return len;
+}
+
+uint32_t read_random()
+{
+    uint32_t temp;
+    int fd = open("/dev/random", O_RDONLY);
+    read(fd, &temp, 4);
+    close(fd);
+
+    return temp;
 }

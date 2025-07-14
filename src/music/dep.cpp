@@ -22,13 +22,10 @@ static std::string decrypt(const std::string &data)
     try
     {
         std::string decrypted;
-        CryptoPP::ECB_Mode<CryptoPP::AES>::Decryption decryptor;
+        ECB_Mode<AES>::Decryption decryptor;
         decryptor.SetKey(key, sizeof(key));
 
-        CryptoPP::StringSource ss(data, true,
-                                  new CryptoPP::StreamTransformationFilter(decryptor,
-                                                                           new CryptoPP::StringSink(decrypted),
-                                                                           CryptoPP::StreamTransformationFilter::PKCS_PADDING));
+        StringSource ss(data, true, new StreamTransformationFilter(decryptor, new StringSink(decrypted), StreamTransformationFilter::PKCS_PADDING));
         return decrypted;
     }
     catch (const CryptoPP::Exception &e)
@@ -42,9 +39,7 @@ std::string dep(std::string &input)
     try
     {
         std::string decoded;
-        CryptoPP::StringSource ss(input, true,
-                                  new CryptoPP::Base64Decoder(
-                                      new CryptoPP::StringSink(decoded)));
+        StringSource ss(input, true, new Base64Decoder(new StringSink(decoded)));
 
         return decrypt(decoded);
     }

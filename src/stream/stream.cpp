@@ -10,20 +10,19 @@
 
 using namespace ColorAudio;
 
-Stream::Stream(steam_type type)
+Stream::Stream(steam_type type) : type(type)
 {
-    this->type = type;
+    
 }
 
 Stream::~Stream()
 {
-    
 }
 
 uint8_t Stream::read_byte()
 {
     uint8_t byte;
-    if (this->read(&byte, 1) == 1)
+    if (read(&byte, 1) == 1)
     {
         return byte;
     }

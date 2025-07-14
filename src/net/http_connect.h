@@ -16,13 +16,13 @@
 #define HTTP_ACCEPT "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"
 #define HTTP_CACHE_CONTROL "max-age=0"
 
-struct ParsedURL
+typedef struct
 {
     std::string protocol;
     std::string host;
     std::string port;
     std::string target;
-};
+} parsed_url_t;
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
@@ -34,7 +34,7 @@ namespace ColorAudio
     class HttpStream : public IStreamHttp
     {
     private:
-        ParsedURL parsed;
+        parsed_url_t parsed;
         asio::io_context ioc;
         beast::error_code ec;
         http::request<http::empty_body> req;

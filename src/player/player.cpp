@@ -9,7 +9,7 @@
 #include "../music/music.h"
 #include "../stream/stream.h"
 #include "../ui/ui.h"
-#include "../ui/view.h"
+#include "../ui/view_state.h"
 #include "../config/config.h"
 
 #include "../lvgl/src/misc/lv_log.h"
@@ -68,23 +68,21 @@ music_type play_test_music_type(ColorAudio::Stream *st)
 
 static void *play_run(void *arg)
 {
-    Stream *st;
-
     for (;;)
     {
         play_state = MUSIC_STATE_STOP;
 
         pthread_mutex_lock(&play_mutex);
         while (play_st == NULL)
+        {
             pthread_cond_wait(&play_start, &play_mutex);
-        st = play_st;
-        play_st = NULL;
+        }
 
-        play_music_type = play_test_music_type(st);
+        play_music_type = play_test_music_type(play_st);
         if (play_music_type == MUSIC_TYPE_UNKNOW)
         {
             LV_LOG_ERROR("Unkown music file type");
-            delete st;
+            delete play_st;
             continue;
         }
 
@@ -98,17 +96,17 @@ static void *play_run(void *arg)
 
         Decoder *play_decoder;
 
-        uint32_t start_pos = st->get_pos();
+        uint32_t start_pos = play_st->get_pos();
     play:
         switch (play_music_type)
         {
         case MUSIC_TYPE_MP3:
             LV_LOG_USER("Start play mp3");
-            play_decoder = new DecoderMp3(st);
+            play_decoder = new DecoderMp3(play_st);
             break;
         case MUSIC_TYPE_FLAC:
             LV_LOG_USER("Start play flac");
-            play_decoder = new DecoderFlac(st);
+            play_decoder = new DecoderFlac(play_st);
             break;
         default:
             break;
@@ -124,7 +122,7 @@ static void *play_run(void *arg)
         if (target_time > 0 && play_now_command == MUSIC_COMMAND_UNKNOW)
         {
             alsa_clear();
-            st->seek(start_pos, SEEK_SET);
+            play_st->seek(start_pos, SEEK_SET);
             play_state = MUSIC_STATE_SEEK;
             goto play;
         }
@@ -133,7 +131,7 @@ static void *play_run(void *arg)
 
         view_music_clear();
 
-        delete st;
+        delete play_st;
 
         // 自动下一首
         if (play_state != MUSIC_STATE_STOP)
