@@ -49,7 +49,7 @@ static int quit = 0;
 static void sigterm_handler(int sig)
 {
     fprintf(stderr, "signal %d\n", sig);
-    quit = 1;
+    exit(0);
 }
 
 int main(int argc, char **argv)
