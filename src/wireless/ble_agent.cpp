@@ -46,36 +46,38 @@ static const gchar *agent_interface_xml =
     "  </interface>"
     "</node>";
 
-static void handle_authorize_service(GDBusConnection *connection,
-                                     const gchar *sender,
-                                     const gchar *object_path,
-                                     const gchar *interface_name,
-                                     const gchar *method_name,
-                                     GVariant *parameters,
-                                     GDBusMethodInvocation *invocation,
-                                     gpointer user_data)
+static void handle_authorize_service(
+    GDBusConnection *connection,
+    const gchar *sender,
+    const gchar *object_path,
+    const gchar *interface_name,
+    const gchar *method_name,
+    GVariant *parameters,
+    GDBusMethodInvocation *invocation,
+    gpointer user_data)
 {
-    LV_LOG_USER("AuthorizeService called");
-
     const gchar *device_path;
     const gchar *uuid;
-    g_variant_get(parameters, "(&s&s)", &device_path, &uuid);
+    g_variant_get(parameters, "(&o&s)", &device_path, &uuid);
 
     LV_LOG_USER("  Device: %s  Service UUID: %s", device_path, uuid);
 
-    gboolean authorized = TRUE;
+    ble_set_pairable(false);
+    ble_now_state = BLE_STATE_CONNECTED;
+    ble_log_state_change();
 
     g_dbus_method_invocation_return_value(invocation, NULL);
 }
 
-static void handle_request_confirmation(GDBusConnection *connection,
-                                        const gchar *sender,
-                                        const gchar *object_path,
-                                        const gchar *interface_name,
-                                        const gchar *method_name,
-                                        GVariant *parameters,
-                                        GDBusMethodInvocation *invocation,
-                                        gpointer user_data)
+static void handle_request_confirmation(
+    GDBusConnection *connection,
+    const gchar *sender,
+    const gchar *object_path,
+    const gchar *interface_name,
+    const gchar *method_name,
+    GVariant *parameters,
+    GDBusMethodInvocation *invocation,
+    gpointer user_data)
 {
     LV_LOG_USER("RequestConfirmation called");
 
@@ -85,26 +87,28 @@ static void handle_request_confirmation(GDBusConnection *connection,
 
     LV_LOG_USER("  Device: %s  Passkey: %06u", device_path, passkey);
 
-    gboolean confirmed = TRUE;
+    ble_now_state = BLE_STATE_PAIR;
+    ble_log_state_change();
 
     g_dbus_method_invocation_return_value(invocation, NULL);
 }
 
 // 处理 Cancel 方法调用
-static void handle_cancel(GDBusConnection *connection,
-                          const gchar *sender,
-                          const gchar *object_path,
-                          const gchar *interface_name,
-                          const gchar *method_name,
-                          GVariant *parameters,
-                          GDBusMethodInvocation *invocation,
-                          gpointer user_data)
+static void handle_cancel(
+    GDBusConnection *connection,
+    const gchar *sender,
+    const gchar *object_path,
+    const gchar *interface_name,
+    const gchar *method_name,
+    GVariant *parameters,
+    GDBusMethodInvocation *invocation,
+    gpointer user_data)
 {
     LV_LOG_USER("Pairing cancelled");
+    ble_now_state = BLE_STATE_DISCONNECTED;
     g_dbus_method_invocation_return_value(invocation, NULL);
 }
 
-// 注册 Agent 到 BlueZ
 static void register_agent(GDBusConnection *connection)
 {
     GError *error = NULL;
@@ -112,11 +116,11 @@ static void register_agent(GDBusConnection *connection)
     GDBusProxy *agent_manager = g_dbus_proxy_new_sync(
         connection,
         G_DBUS_PROXY_FLAGS_NONE,
-        NULL, // GDBusInterfaceInfo
+        NULL,
         "org.bluez",
         "/org/bluez",
         "org.bluez.AgentManager1",
-        NULL, // GCancellable
+        NULL,
         &error);
 
     if (error)
@@ -133,8 +137,8 @@ static void register_agent(GDBusConnection *connection)
         "RegisterAgent",
         g_variant_new("(os)", agent_path, capability),
         G_DBUS_CALL_FLAGS_NONE,
-        -1,   // 超时
-        NULL, // GCancellable
+        -1,
+        NULL,
         &error);
 
     if (error)
@@ -163,7 +167,7 @@ static void register_agent(GDBusConnection *connection)
     }
     else
     {
-        LV_LOG_USER("Agent set as default\n");
+        LV_LOG_USER("Agent set as default");
     }
 
     g_object_unref(agent_manager);
@@ -178,6 +182,8 @@ void ble_agent_call(GDBusConnection *conn,
                     GDBusMethodInvocation *invocation,
                     gpointer user_data)
 {
+    LV_LOG_USER("agent_call: %s", method_name);
+
     if (g_str_equal(method_name, "AuthorizeService"))
     {
         handle_authorize_service(conn, sender, obj_path, iface_name,
@@ -203,7 +209,7 @@ void ble_agent_call(GDBusConnection *conn,
 
 void ble_agent_close()
 {
-    if (ble_g_conn && registration_id)
+    if (registration_id)
     {
         g_dbus_connection_unregister_object(ble_g_conn, registration_id);
     }
@@ -242,7 +248,7 @@ void ble_agent_init()
         return;
     }
 
-    LV_LOG_USER("Agent object registered at %s\n", agent_path);
+    LV_LOG_USER("Agent object registered at %s", agent_path);
 
     register_agent(ble_g_conn);
 }

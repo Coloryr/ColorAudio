@@ -36,6 +36,8 @@
 #include "config/config.h"
 #include "wireless/wifi.h"
 #include "wireless/ble.h"
+#include "wireless/le_audio.h"
+#include "wireless/wireless.h"
 
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
@@ -60,9 +62,21 @@ int main(int argc, char **argv)
 
     alsa_init();
 
+#ifdef BUILD_ARM
+    set_wireless_power_on();
+#endif
+
     ble_init();
 
-    bluez_alsa_start();
+    // ble_run();
+
+    ble_run_loop();
+
+    // // Initialize LE Audio
+    // LE_AudioManager* le_audio = le_audio_manager_create();
+    // if (!le_audio_manager_register_profile(le_audio)) {
+    //     fprintf(stderr, "Failed to register LE Audio profile\n");
+    // }
 
     lv_port_init();
 
@@ -100,6 +114,9 @@ int main(int argc, char **argv)
         lastTick = current;
         lv_task_handler();
     }
+
+    // // Clean up LE Audio
+    // le_audio_manager_free(le_audio);
 
     return 0;
 }

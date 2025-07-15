@@ -190,7 +190,6 @@ static void bluez_register_battery_provider_finish(GObject *source,
  * Register battery provider in BlueZ. */
 static void bluez_register_battery_provider(struct bluez_adapter *b_adapter)
 {
-
 	char path[64];
 	struct ba_adapter *a = b_adapter->adapter;
 	snprintf(path, sizeof(path), "/org/bluez/%s/battery", a->hci.name);
@@ -215,7 +214,6 @@ static void bluez_register_battery_provider(struct bluez_adapter *b_adapter)
 
 static struct bluez_adapter *bluez_adapter_new(struct ba_adapter *a)
 {
-
 	struct bluez_adapter *ba = &bluez_adapters[a->hci.dev_id];
 
 	ba->adapter = a;
@@ -364,25 +362,6 @@ static uint8_t bluez_get_media_endpoint_codec(
 	if (sep->config.codec_id < A2DP_CODEC_VENDOR)
 		return sep->config.codec_id;
 	return A2DP_CODEC_VENDOR;
-}
-
-static const char *bluez_get_profile_object_path(
-	enum ba_transport_profile profile)
-{
-	switch (profile)
-	{
-	case BA_TRANSPORT_PROFILE_HFP_HF:
-		return "/org/bluez/HFP/HandsFree";
-	case BA_TRANSPORT_PROFILE_HFP_AG:
-		return "/org/bluez/HFP/AudioGateway";
-	case BA_TRANSPORT_PROFILE_HSP_HS:
-		return "/org/bluez/HSP/Headset";
-	case BA_TRANSPORT_PROFILE_HSP_AG:
-		return "/org/bluez/HSP/AudioGateway";
-	default:
-		g_assert_not_reached();
-		return "/";
-	}
 }
 
 /**
@@ -840,7 +819,7 @@ static GVariant *bluez_battery_provider_iface_skeleton_get_property(
 	if (strcmp(property, "Device") == 0)
 		return g_variant_new_object_path(d->bluez_dbus_path);
 	if (strcmp(property, "Percentage") == 0)
-		return g_variant_new_byte(d->battery.charge);
+		return g_variant_new_byte(d->charge);
 	if (strcmp(property, "Source") == 0)
 		return g_variant_new_string("BlueALSA");
 
@@ -1093,94 +1072,9 @@ fail:
 }
 
 /**
- * Register Bluetooth Hands-Free Audio Profile. */
-static void bluez_register_hfp(
-	const char *uuid,
-	enum ba_transport_profile profile,
-	uint16_t version,
-	uint16_t features)
-{
-
-	static const GDBusMethodCallDispatcher dispatchers[] = {
-		{.method = "NewConnection",
-		 .sender = bluez_dbus_unique_name,
-		 .handler = bluez_profile_new_connection},
-		{.method = "RequestDisconnection",
-		 .sender = bluez_dbus_unique_name,
-		 .handler = bluez_profile_request_disconnection},
-		{.method = "Release",
-		 .sender = bluez_dbus_unique_name,
-		 .handler = bluez_profile_release},
-		{0},
-	};
-
-	static const GDBusInterfaceSkeletonVTable vtable = {
-		.dispatchers = dispatchers,
-	};
-
-	pthread_mutex_lock(&bluez_mutex);
-
-	struct bluez_dbus_object_data *dbus_obj;
-	GError *err = NULL;
-
-	const char *path = bluez_get_profile_object_path(profile);
-	if ((dbus_obj = g_hash_table_lookup(dbus_object_data_map, path)) == NULL)
-	{
-
-		debug("Creating hands-free profile object: %s", path);
-
-		if ((dbus_obj = calloc(1, sizeof(*dbus_obj))) == NULL)
-		{
-			warn("Couldn't register hands-free profile: %s", strerror(errno));
-			goto fail;
-		}
-
-		strncpy(dbus_obj->path, path, sizeof(dbus_obj->path));
-		dbus_obj->hci_dev_id = -1;
-		dbus_obj->profile = profile;
-
-		OrgBluezProfile1Skeleton *ifs_profile;
-		if ((ifs_profile = org_bluez_profile1_skeleton_new(&vtable,
-														   dbus_obj, NULL)) == NULL)
-		{
-			free(dbus_obj);
-			goto fail;
-		}
-
-		dbus_obj->ifs = G_DBUS_INTERFACE_SKELETON(ifs_profile);
-		if (!g_dbus_interface_skeleton_export(dbus_obj->ifs, config.dbus, path, &err))
-		{
-			g_object_unref(ifs_profile);
-			free(dbus_obj);
-			goto fail;
-		}
-
-		g_hash_table_insert(dbus_object_data_map, dbus_obj->path, dbus_obj);
-	}
-
-	if (!dbus_obj->registered)
-	{
-		if (bluez_register_profile(dbus_obj, uuid, version, features, &err) == -1)
-			goto fail;
-		dbus_obj->registered = true;
-	}
-
-fail:
-
-	if (err != NULL)
-	{
-		warn("Couldn't register hands-free profile: %s", err->message);
-		g_error_free(err);
-	}
-
-	pthread_mutex_unlock(&bluez_mutex);
-}
-
-/**
  * Register to the BlueZ service. */
 static void bluez_register(void)
 {
-
 	const struct
 	{
 		const char *uuid;
@@ -1220,7 +1114,6 @@ static void bluez_register(void)
 		{
 			if (strcmp(interface, BLUEZ_IFACE_ADAPTER) == 0)
 			{
-
 				int hci_dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
 				unsigned int adapter_profiles = 0;
 				bool valid = false;
@@ -1271,9 +1164,10 @@ static void bluez_register(void)
 			warn("UUID already registered in BlueZ: %s", uuids[ii].uuid);
 }
 
-static void bluez_signal_interfaces_added(GDBusConnection *conn, const char *sender,
-										  const char *path, const char *interface_, const char *signal, GVariant *params,
-										  void *userdata)
+static void bluez_signal_interfaces_added(
+	GDBusConnection *conn, const char *sender,
+	const char *path, const char *interface_, const char *signal, GVariant *params,
+	void *userdata)
 {
 	(void)conn;
 	(void)sender;
@@ -1362,7 +1256,6 @@ static void bluez_signal_interfaces_added(GDBusConnection *conn, const char *sen
 
 	if (sep_cfg.codec_id != 0xFFFFFFFF)
 	{
-
 		bdaddr_t addr;
 		g_dbus_bluez_object_path_to_bdaddr(object_path, &addr);
 		int dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
@@ -1537,17 +1430,19 @@ static unsigned int bluez_bus_watch_id = 0;
  * Subscribe to BlueZ signals. */
 static void bluez_signals_subscribe(void)
 {
+	bluez_sig_sub_id_iface_added = g_dbus_connection_signal_subscribe(
+		config.dbus,
+		BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesAdded", NULL, NULL,
+		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_added, NULL, NULL);
+	bluez_sig_sub_id_iface_removed = g_dbus_connection_signal_subscribe(
+		config.dbus,
+		BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesRemoved", NULL, NULL,
+		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_removed, NULL, NULL);
 
-	bluez_sig_sub_id_iface_added = g_dbus_connection_signal_subscribe(config.dbus,
-																	  BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesAdded", NULL, NULL,
-																	  G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_added, NULL, NULL);
-	bluez_sig_sub_id_iface_removed = g_dbus_connection_signal_subscribe(config.dbus,
-																		BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesRemoved", NULL, NULL,
-																		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_removed, NULL, NULL);
-
-	bluez_sig_sub_id_prop_changed = g_dbus_connection_signal_subscribe(config.dbus,
-																	   BLUEZ_SERVICE, DBUS_IFACE_PROPERTIES, "PropertiesChanged", NULL, BLUEZ_IFACE_MEDIA_TRANSPORT,
-																	   G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_transport_changed, NULL, NULL);
+	bluez_sig_sub_id_prop_changed = g_dbus_connection_signal_subscribe(
+		config.dbus,
+		BLUEZ_SERVICE, DBUS_IFACE_PROPERTIES, "PropertiesChanged", NULL, BLUEZ_IFACE_MEDIA_TRANSPORT,
+		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_transport_changed, NULL, NULL);
 
 	bluez_bus_watch_id = g_bus_watch_name_on_connection(config.dbus,
 														BLUEZ_SERVICE, G_BUS_NAME_WATCHER_FLAGS_NONE, NULL, bluez_disappeared,
@@ -1568,7 +1463,6 @@ static void bluez_signals_unsubscribe(void)
  * @return On success this function returns 0. Otherwise -1 is returned. */
 int bluez_init(void)
 {
-
 	dbus_object_data_map = g_hash_table_new_full(g_str_hash, g_str_equal,
 												 NULL, (GDestroyNotify)bluez_dbus_object_data_free);
 
@@ -1587,7 +1481,6 @@ int bluez_init(void)
  * release resources before exiting the application. */
 void bluez_destroy(void)
 {
-
 	if (dbus_object_data_map == NULL)
 		return;
 
@@ -1705,8 +1598,7 @@ fail:
 void bluez_battery_provider_update(
 	struct ba_device *device)
 {
-
-	if (device->battery.charge == -1)
+	if (device->charge == -1)
 	{
 		bluez_manager_battery_remove(device);
 		return;
@@ -1718,8 +1610,7 @@ void bluez_battery_provider_update(
 	GVariantBuilder props;
 	g_variant_builder_init(&props, G_VARIANT_TYPE("a{sv}"));
 
-	g_variant_builder_add(&props, "{sv}", "Percentage",
-						  g_variant_new_byte(device->battery.charge));
+	g_variant_builder_add(&props, "{sv}", "Percentage", g_variant_new_byte(device->charge));
 
 	g_dbus_connection_emit_properties_changed(config.dbus, device->ba_battery_dbus_path,
 											  BLUEZ_IFACE_BATTERY_PROVIDER, g_variant_builder_end(&props), NULL, NULL);

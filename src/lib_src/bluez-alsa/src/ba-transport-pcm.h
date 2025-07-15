@@ -160,7 +160,6 @@ struct ba_transport_pcm {
 	int pipe[2];
 
 	/* exported PCM D-Bus API */
-	char *ba_dbus_path;
 	bool ba_dbus_exported;
 
 };

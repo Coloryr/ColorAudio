@@ -4,7 +4,11 @@
 
 #include "../player/sound.h"
 
+#include <string.h>
+
 static struct ba_transport *t;
+
+void ble_send();
 
 void ble_set_ba_transport(struct ba_device *device,
                           enum ba_transport_profile profile,
@@ -20,6 +24,8 @@ void ble_set_ba_transport(struct ba_device *device,
     }
     t = ba_transport_new_a2dp(device, profile, dbus_owner, dbus_path, sep, configuration);
     t->a2dp.pcm.fd = 0;
+
+    ble_send();
 }
 
 struct ba_transport *ble_get_ba_transport()
@@ -71,4 +77,13 @@ void ble_write(const void *buffer, size_t samples)
     // }
 
     alsa_write_buffer(buffer, samples);
+}
+
+void ble_send()
+{
+    if (t != NULL)
+    {
+        t->d->charge = 100;
+        bluez_battery_provider_update(t->d);
+    }
 }

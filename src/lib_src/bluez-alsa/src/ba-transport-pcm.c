@@ -94,10 +94,6 @@ int transport_pcm_init(
 	if (pipe(pcm->pipe) == -1)
 		return -1;
 
-	pcm->ba_dbus_path = g_strdup_printf("%s/%s/%s",
-										t->d->ba_dbus_path, transport_get_dbus_path_type(t->profile),
-										mode == BA_TRANSPORT_PCM_MODE_SOURCE ? "source" : "sink");
-
 	return 0;
 }
 
@@ -118,8 +114,6 @@ void transport_pcm_free(
 		close(pcm->pipe[0]);
 	if (pcm->pipe[1] != -1)
 		close(pcm->pipe[1]);
-
-	g_free(pcm->ba_dbus_path);
 }
 
 /**

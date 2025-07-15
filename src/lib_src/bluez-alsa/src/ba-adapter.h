@@ -34,7 +34,6 @@ struct ba_adapter {
 	pthread_t sco_dispatcher;
 
 	/* data for D-Bus management */
-	char ba_dbus_path[32];
 	char bluez_dbus_path[32];
 
 	/* collection of connected devices */

@@ -36,17 +36,10 @@ struct ba_device {
 	unsigned int seq;
 
 	/* data for D-Bus management */
-	char *ba_dbus_path;
 	char *ba_battery_dbus_path;
 	char *bluez_dbus_path;
 	/* string representation of BT address */
 	char addr_dbus_str[sizeof("dev_XX_XX_XX_XX_XX_XX")];
-
-	struct {
-		/* battery parameters in range [0, 100] or -1 */
-		int8_t charge;
-		int8_t health;
-	} battery;
 
 	/* Apple's extension used with HFP profile */
 	struct {
@@ -71,6 +64,7 @@ struct ba_device {
 	/* memory self-management */
 	int ref_count;
 
+	int16_t charge;
 };
 
 struct ba_device *ba_device_new(

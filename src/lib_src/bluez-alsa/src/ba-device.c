@@ -17,7 +17,6 @@
 #include "ba-config.h"
 #include "ba-transport.h"
 #include "hci.h"
-#include "storage.h"
 #include "shared/defs.h"
 #include "shared/log.h"
 
@@ -38,21 +37,14 @@ struct ba_device *ba_device_new(
 
 	sprintf(d->addr_dbus_str, "dev_%.2X_%.2X_%.2X_%.2X_%.2X_%.2X",
 			addr->b[5], addr->b[4], addr->b[3], addr->b[2], addr->b[1], addr->b[0]);
-	d->ba_dbus_path = g_strdup_printf("%s/%s", adapter->ba_dbus_path, d->addr_dbus_str);
 	d->bluez_dbus_path = g_strdup_printf("%s/%s", adapter->bluez_dbus_path, d->addr_dbus_str);
-
-	d->battery.charge = -1;
-	d->battery.health = -1;
-
+	
 	pthread_mutex_init(&d->transports_mutex, NULL);
 	d->transports = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
 	pthread_mutex_lock(&adapter->devices_mutex);
 	g_hash_table_insert(adapter->devices, &d->addr, d);
 	pthread_mutex_unlock(&adapter->devices_mutex);
-
-	/* load data from persistent storage */
-	storage_device_load(d);
 
 	return d;
 }
@@ -137,9 +129,6 @@ void ba_device_unref(struct ba_device *d) {
 	if (ref_count > 0)
 		return;
 
-	/* save persistent storage */
-	storage_device_save(d);
-
 	debug("Freeing device: %s", batostr_(&d->addr));
 	g_assert_cmpint(ref_count, ==, 0);
 
@@ -148,6 +137,5 @@ void ba_device_unref(struct ba_device *d) {
 	pthread_mutex_destroy(&d->transports_mutex);
 	g_free(d->bluez_dbus_path);
 	g_free(d->ba_battery_dbus_path);
-	g_free(d->ba_dbus_path);
 	free(d);
 }

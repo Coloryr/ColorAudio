@@ -41,7 +41,6 @@
 #include "bluez.h"
 #include "hci.h"
 #include "hfp.h"
-#include "storage.h"
 #include "shared/defs.h"
 #include "shared/log.h"
 #include "shared/rt.h"
@@ -439,14 +438,6 @@ struct ba_transport *ba_transport_new_a2dp(
 		goto fail;
 	}
 
-	storage_pcm_data_sync(&t->a2dp.pcm);
-	storage_pcm_data_sync(&t->a2dp.pcm_bc);
-
-	// if (t->a2dp.pcm.channels > 0)
-	// 	bluealsa_dbus_pcm_register(&t->a2dp.pcm);
-	// if (t->a2dp.pcm_bc.channels > 0)
-	// 	bluealsa_dbus_pcm_register(&t->a2dp.pcm_bc);
-
 	return t;
 
 fail:
@@ -717,12 +708,6 @@ void ba_transport_unref(struct ba_transport *t)
 	if (t->bt_fd != -1)
 		close(t->bt_fd);
 
-	if (t->profile & BA_TRANSPORT_PROFILE_MASK_A2DP)
-	{
-		storage_pcm_data_update(&t->a2dp.pcm);
-		storage_pcm_data_update(&t->a2dp.pcm_bc);
-	}
-
 	ba_device_unref(d);
 
 #if DEBUG
@@ -783,14 +768,6 @@ int ba_transport_select_codec_a2dp(
 	if (remote_sep_cfg->codec_id == t->codec_id &&
 		memcmp(configuration, &t->a2dp.configuration, remote_sep_cfg->caps_size) == 0)
 		goto final;
-
-	/* A2DP codec selection is in fact a transport recreation - new transport
-	 * with new codec is created and the current one is released. Since normally
-	 * the storage is updated only when the transport is released, we need to
-	 * update it manually here. Otherwise, new transport might be created with
-	 * stale storage data. */
-	storage_pcm_data_update(&t->a2dp.pcm);
-	storage_pcm_data_update(&t->a2dp.pcm_bc);
 
 	GError *err = NULL;
 	if (!bluez_a2dp_set_configuration(t->a2dp.bluez_dbus_sep_path,

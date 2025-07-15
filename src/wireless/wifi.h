@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <string>
 
-#define WIFI_POWER "/sys/class/leds/wifi-power/brightness"
 #define WIFI_NAME "wlan0"
 #define WIFI_PATH "/var/run/wpa_supplicant/" WIFI_NAME
 #define WIFI_RUN "wpa_supplicant -B -i " WIFI_NAME " -c /etc/wpa_supplicant.conf"

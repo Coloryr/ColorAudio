@@ -22,28 +22,6 @@
 
 static char reply[2048];
 
-#if BUILD_ARM
-static const char *wifi_open = "1";
-static const char *wifi_close = "0";
-
-bool get_wifi_power()
-{
-    uint8_t temp[2];
-    int fd = open(WIFI_POWER, O_RDONLY);
-    read(fd, temp, 2);
-    close(fd);
-
-    return temp[0] == '1';
-}
-
-void set_wifi_power(bool enable)
-{
-    int fd = open(WIFI_POWER, O_WRONLY);
-    write(fd, enable ? wifi_open : wifi_close, 2);
-    close(fd);
-}
-#endif
-
 bool have_wifi_device()
 {
     struct sockaddr_in *sin = NULL;
@@ -367,12 +345,6 @@ bool wifi_get_level(int16_t *level)
 
 void wifi_test()
 {
-#if BUILD_ARM
-    if (!get_wifi_power())
-    {
-        set_wifi_power(true);
-    }
-#endif
     while (!have_wifi_device())
     {
         usleep(500000);

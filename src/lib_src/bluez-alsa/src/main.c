@@ -39,7 +39,6 @@
 #include "bluez.h"
 #include "codec-sbc.h"
 #include "hfp.h"
-#include "storage.h"
 #include "shared/a2dp-codecs.h"
 #include "shared/defs.h"
 #include "shared/log.h"
@@ -53,77 +52,29 @@
     G_BUS_NAME_OWNER_FLAGS_NONE
 #endif
 
-static bool dbus_name_acquired = false;
-static int retval = EXIT_SUCCESS;
-static GMainLoop *loop;
-
-int bluez_alsa_start()
+void bluez_alsa_start(GDBusConnection *conn)
 {
     log_open("bluez-alsa", false);
 
-    if (ba_config_init() != 0)
-    {
-        error("Couldn't initialize configuration");
-        return EXIT_FAILURE;
-    }
+    ba_config_init();
 
     config.profile.a2dp_sink = true;
 
-    /* initialize random number generator */
-    srandom(time(NULL));
-
-    char *address;
-    GError *err;
-
-    err = NULL;
-    address = g_dbus_address_get_for_bus_sync(G_BUS_TYPE_SYSTEM, NULL, NULL);
-    if ((config.dbus = g_dbus_connection_new_for_address_sync(address,
-                                                              G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT |
-                                                                  G_DBUS_CONNECTION_FLAGS_MESSAGE_BUS_CONNECTION,
-                                                              NULL, NULL, &err)) == NULL)
-    {
-        error("Couldn't obtain D-Bus connection: %s", err->message);
-        return EXIT_FAILURE;
-    }
-
-    /* Make sure that mandatory codecs are enabled. */
+    config.dbus = conn;
 
     a2dp_opus_sink.enabled = true;
     a2dp_aptx_sink.enabled = true;
     a2dp_aac_sink.enabled = true;
     a2dp_sbc_sink.enabled = true;
 
-    config.battery.available = true;
-    config.battery.level = 100;
-
     if (a2dp_seps_init() == -1)
-        return EXIT_FAILURE;
-
-    storage_init("./bluealsa");
-
-    loop = g_main_loop_new(NULL, FALSE);
+        return;
 
     bluez_init();
-
-    /* main dispatching loop */
-    debug("Starting main dispatching loop");
-    g_main_loop_run(loop);
-
-    /* cleanup internal structures */
-    bluez_destroy();
-
-    storage_destroy();
-    g_dbus_connection_close_sync(config.dbus, NULL, NULL);
-    g_main_loop_unref(loop);
-    g_free(address);
-
-    return retval;
 }
 
-void main_loop_exit_handler()
+void bluez_alsa_close()
 {
-    if (loop)
-    {
-        g_main_loop_quit(loop);
-    }
+    bluez_destroy();
+    g_dbus_connection_close_sync(config.dbus, NULL, NULL);
 }

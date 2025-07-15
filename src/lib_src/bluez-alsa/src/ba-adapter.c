@@ -55,8 +55,6 @@ struct ba_adapter *ba_adapter_new(int dev_id) {
 	a->sco_dispatcher = config.main_thread;
 	a->ref_count = 1;
 
-	sprintf(a->ba_dbus_path, "/org/bluealsa/%s", a->hci.name);
-	g_variant_sanitize_object_path(a->ba_dbus_path);
 	sprintf(a->bluez_dbus_path, "/org/bluez/%s", a->hci.name);
 	g_variant_sanitize_object_path(a->bluez_dbus_path);
 

@@ -70,12 +70,6 @@ struct ba_config {
 	bool disable_realtek_usb_fix;
 
 	struct {
-		bool available;
-		/* host battery level (percentage) */
-		unsigned int level;
-	} battery;
-
-	struct {
 
 		/* NULL-terminated list of available A2DP codecs */
 		const struct bluez_a2dp_codec **codecs;
@@ -95,13 +89,6 @@ struct ba_config {
 
 	} a2dp;
 
-#if ENABLE_MIDI
-	struct {
-		/* advertise BLE-MIDI via LE advertisement */
-		bool advertise;
-	} midi;
-#endif
-
 	/* BlueALSA supports 5 SBC qualities: low, medium, high, XQ and XQ+. The XQ
 	 * mode uses 44.1 kHz sample rate, dual channel mode with bitpool 38, 16
 	 * blocks in frame, 8 frequency bands and allocation method Loudness, which
@@ -117,24 +104,6 @@ struct ba_config {
 	unsigned int aac_latm_version;
 #endif
 
-#if ENABLE_MP3LAME
-	uint8_t lame_quality;
-	uint8_t lame_vbr_quality;
-#endif
-
-#if ENABLE_LC3PLUS
-	unsigned int lc3plus_bitrate;
-#endif
-
-#if ENABLE_LDAC
-	bool ldac_abr;
-	uint8_t ldac_eqmid;
-#endif
-
-#if ENABLE_LHDC
-	uint8_t lhdc_eqmid;
-	// TODO: LLAC/V3/V4, bit depth, sample frequency, LLAC bitrate
-#endif
 };
 
 /* Global BlueALSA configuration. */
