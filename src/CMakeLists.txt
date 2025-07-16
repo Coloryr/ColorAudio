@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10.0)
 project(coloraudio VERSION 0.1.0)
 
 # build arm32
-set(BUILD_ARM ON)
+# set(BUILD_ARM ON)
 
 # Lvgl
 set(LV_CONF_PATH
@@ -59,6 +59,7 @@ file(GLOB_RECURSE SOURCES
 "./stream/*.*"
 "./player/*.*"
 "./net/*.*"
+"./usb/*.*"
 "./wireless/*.*"
 "./config/*.*"
 "./fft/*.*"
@@ -95,6 +96,7 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libsbc.so"
     "${CMAKE_SOURCE_DIR}/libs/libgobject-2.0.so"
     "${CMAKE_SOURCE_DIR}/libs/libgio-2.0.so"
+    "${CMAKE_SOURCE_DIR}/libs/libusb-1.0.so"
 
     #rime
     "${CMAKE_SOURCE_DIR}/libs/librime.a"
@@ -114,5 +116,6 @@ else()
         fdk-aac sbc bluetooth glib-2.0 gio-2.0 gobject-2.0 freeaptx lc3
         sbc spandsp
         boost_system boost_url ssl crypto cryptopp openh264 wpa_client
+        usb-1.0
     )
 endif()

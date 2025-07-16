@@ -38,6 +38,7 @@
 #include "wireless/ble.h"
 #include "wireless/le_audio.h"
 #include "wireless/wireless.h"
+#include "usb/usb_audio.h"
 
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
@@ -61,6 +62,10 @@ int main(int argc, char **argv)
     config::load_config();
 
     alsa_init();
+
+    usb_test();
+
+
     play_init();
     rime_init();
     music_init();

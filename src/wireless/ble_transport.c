@@ -15,6 +15,9 @@ static pthread_t tid;
 
 extern GDBusConnection *ble_g_conn;
 
+void ble_send_volume();
+void ble_send_battery();
+
 static void *later_send(void *arg)
 {
     float vol = alsa_get_volume();
