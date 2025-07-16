@@ -65,6 +65,10 @@ int main(int argc, char **argv)
 
     usb_test();
 
+    while (1)
+    {
+        sleep(1);
+    }
 
     play_init();
     rime_init();
