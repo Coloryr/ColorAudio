@@ -129,4 +129,4 @@ sudo systemctl reload dbus.service
 ./bluealsad -p a2dp-sink -B org.bluealsa
 ./bluealsa-aplay
 
-
+export LD_LIBRARY_PATH="/root"

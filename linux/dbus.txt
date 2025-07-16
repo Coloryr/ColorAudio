@@ -1,0 +1,46 @@
+dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0 org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76 org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/fd8 org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/sep1 org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0 org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0/Filesystem org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0/NowPlaying org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez \
+  --print-reply \
+  /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76 \
+  org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez \
+  --print-reply \
+  /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0/Filesystem \
+  org.freedesktop.DBus.Properties.Get \
+  string:"org.bluez.MediaItem1" \
+  string:"Metadata"
+
+dbus-send --system --dest=org.bluez \
+  --print-reply \
+  /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76 \
+  org.freedesktop.DBus.Properties.Set \
+  string:"org.bluez.Battery1" \
+  string:"Percentage"
+
+dbus-send --system --dest=org.bluez \
+  --print-reply \
+  /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/fd19 \
+  org.freedesktop.DBus.Properties.Set \
+  string:"org.bluez.MediaTransport1" \
+  string:"Volume" \
+  variant:uint16:20
+
+dbus-send --system --print-reply \
+          --dest=org.bluez \
+          /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76 \
+          org.freedesktop.DBus.Properties.GetAll \
+          string:"org.bluez.Device1"

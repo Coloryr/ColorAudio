@@ -114,8 +114,8 @@
   "project": {
     "files": [
       {
-        "name": "coloryr.kicad_sch",
-        "open": true,
+        "name": "coloryr.kicad_pcb",
+        "open": false,
         "window": {
           "display": 0,
           "maximized": true,
@@ -126,7 +126,7 @@
         }
       },
       {
-        "name": "coloryr.kicad_pcb",
+        "name": "coloryr.kicad_sch",
         "open": true,
         "window": {
           "display": 0,
