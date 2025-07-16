@@ -38,9 +38,6 @@ void play_jump_end();
 void play_clear();
 void play_init();
 
-float play_get_volume();
-void play_set_volume(float volume);
-
 bool play_set_command(music_command command);
 music_command play_get_command();
 

@@ -201,12 +201,6 @@ void play_init()
     {
         LV_LOG_ERROR("Music play thread run fail: %d", res);
     }
-
-    float volume = config::get_config_volume();
-    if (volume >= 0 && volume <= 100)
-    {
-        alsa_set_volume(volume);
-    }
 }
 
 music_command get_play_command()
@@ -257,18 +251,6 @@ void play_jump_time(float time)
     target_time = time / 1000;
     jump_time = target_time;
     play_state = MUSIC_STATE_STOP;
-}
-
-float play_get_volume()
-{
-    return alsa_get_volume();
-}
-
-void play_set_volume(float volume)
-{
-    alsa_set_volume(volume);
-    config::set_config_volume(volume);
-    config::save_config();
 }
 
 void play_jump_end()

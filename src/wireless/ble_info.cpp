@@ -30,6 +30,8 @@ static void set_device_path(const char *path)
 
     device_path = strdup(path);
     device_player_path = strdup(temp);
+
+    ble_report_volume();
 }
 
 static void clear_device_path()
@@ -90,7 +92,7 @@ static void on_property_changed(
     GVariant *parameters,
     gpointer user_data)
 {
-    LV_LOG_USER("对象接口：%s", object_path);
+    // LV_LOG_USER("对象接口：%s", object_path);
     if (!g_str_has_prefix(object_path, "/org/bluez/hci0/dev_"))
         return;
 
@@ -98,8 +100,8 @@ static void on_property_changed(
     GVariantIter *changed_props;
     g_variant_get(parameters, "(&sa{sv}as)", &interface, &changed_props, NULL);
 
-    LV_LOG_USER("设备接口：%s", interface);
-    if (g_str_equal(interface, "org.bluez.Device1"))
+    // LV_LOG_USER("设备接口：%s", interface);
+    if (g_str_equal(interface, "org.bluez.MediaControl1"))
     {
         GVariant *value;
         const gchar *key;
@@ -112,8 +114,11 @@ static void on_property_changed(
 
                 if (connected)
                 {
+                    ble_now_state = BLE_STATE_CONNECTED;
+                    ble_log_state_change();
                     set_device_path(object_path);
                     ble_set_discoverable(false);
+                    ble_set_pairable(false);
                     music_id = g_dbus_connection_signal_subscribe(
                         ble_g_conn,
                         "org.bluez",
@@ -140,22 +145,6 @@ static void on_property_changed(
                     }
                 }
             }
-
-            g_variant_unref(value);
-        }
-    }
-    else if (g_str_equal(interface, "org.bluez.MediaControl1"))
-    {
-        ble_now_state = BLE_STATE_CONNECTED;
-        ble_log_state_change();
-
-        GVariant *value;
-        const gchar *key;
-        while (g_variant_iter_next(changed_props, "{&sv}", &key, &value))
-        {
-            gchar *val_str = g_variant_print(value, TRUE);
-            LV_LOG_USER("MediaControl1属性变化: %s = %s", key, val_str);
-            g_free(val_str);
             g_variant_unref(value);
         }
     }
@@ -248,17 +237,18 @@ void ble_send_volume(guint8 value)
         G_DBUS_PROXY_FLAGS_NONE,
         NULL,
         "org.bluez",
-        device_player_path,
-        "org.bluez.MediaTransport1",
+        device_path,
+        "org.bluez.MediaControl1",
         NULL,
         &error);
     if (error)
     {
-        LV_LOG_ERROR("Failed to create MediaTransport proxy: %s", error->message);
+        LV_LOG_ERROR("Failed to create MediaControl proxy: %s", error->message);
         g_error_free(error);
         return;
     }
 
+    // Try to set absolute volume if supported
     GVariant *result = g_dbus_proxy_call_sync(
         proxy,
         "SetVolume",
@@ -267,9 +257,27 @@ void ble_send_volume(guint8 value)
         -1,
         NULL,
         &error);
+    
     if (error)
     {
-        LV_LOG_ERROR("Failed to report volume: %s", error->message);
+        g_error_free(error);
+        error = NULL;
+        
+        // Fallback to relative volume adjustment
+        const char *method = (value > 50) ? "VolumeUp" : "VolumeDown";
+        result = g_dbus_proxy_call_sync(
+            proxy,
+            method,
+            NULL,
+            G_DBUS_CALL_FLAGS_NONE,
+            -1,
+            NULL,
+            &error);
+    }
+
+    if (error)
+    {
+        LV_LOG_ERROR("Failed to adjust volume: %s", error->message);
         g_error_free(error);
     }
     else if (result)
@@ -278,25 +286,6 @@ void ble_send_volume(guint8 value)
     }
 
     g_object_unref(proxy);
-}
-
-void ble_send_media_command(music_command command)
-{
-    if (!device_path || !command)
-    {
-        return;
-    }
-
-    GError *error = NULL;
-    GDBusProxy *proxy = g_dbus_proxy_new_sync(
-        ble_g_conn,
-        G_DBUS_PROXY_FLAGS_NONE,
-        NULL,
-        "org.bluez",
-        device_path,
-        "org.bluez.MediaControl1",
-        NULL,
-        &error);
     if (error)
     {
         LV_LOG_ERROR("Failed to create MediaControl proxy: %s", error->message);

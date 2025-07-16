@@ -381,7 +381,6 @@ static enum bluez_a2dp_transport_state bluez_a2dp_transport_state_from_string(
 
 static void bluez_endpoint_select_configuration(GDBusMethodInvocation *inv, void *userdata)
 {
-
 	GVariant *params = g_dbus_method_invocation_get_parameters(inv);
 	struct bluez_dbus_object_data *dbus_obj = userdata;
 	const struct a2dp_sep *sep = dbus_obj->sep;
@@ -541,7 +540,6 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 	if (!(t->profile & BA_TRANSPORT_PROFILE_A2DP_SOURCE &&
 		  t->a2dp.pcm.soft_volume))
 	{
-
 		int level = ba_transport_pcm_volume_range_to_level(volume, BLUEZ_A2DP_VOLUME_MAX);
 
 		pthread_mutex_lock(&t->a2dp.pcm.mutex);

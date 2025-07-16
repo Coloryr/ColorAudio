@@ -61,6 +61,9 @@ int main(int argc, char **argv)
     config::load_config();
 
     alsa_init();
+    play_init();
+    rime_init();
+    music_init();
 
 #ifdef BUILD_ARM
     set_wireless_power_on();
@@ -68,26 +71,11 @@ int main(int argc, char **argv)
 
     ble_init();
 
-    // ble_run();
-
     ble_run_loop();
-
-    // // Initialize LE Audio
-    // LE_AudioManager* le_audio = le_audio_manager_create();
-    // if (!le_audio_manager_register_profile(le_audio)) {
-    //     fprintf(stderr, "Failed to register LE Audio profile\n");
-    // }
 
     lv_port_init();
 
-    wifi_test();
-    play_init();
-
-    rime_init();
-
     view_init();
-
-    music_init();
 
     local_music_init();
     // net_music_init();
@@ -114,9 +102,6 @@ int main(int argc, char **argv)
         lastTick = current;
         lv_task_handler();
     }
-
-    // // Clean up LE Audio
-    // le_audio_manager_free(le_audio);
 
     return 0;
 }

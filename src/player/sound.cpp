@@ -2,11 +2,14 @@
 #include "sound_fft.h"
 
 #include "../ui/view_state.h"
+#include "../config/config.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
 #include <alsa/asoundlib.h>
 #include <math.h>
+
+using namespace ColorAudio;
 
 // #define ALSA_DEVICE "hw:0,0"
 #define ALSA_DEVICE "default"
@@ -96,7 +99,7 @@ static bool find_controls()
             snd_ctl_elem_tlv_read(ctl_handle, ctl_id, tlv, sizeof(tlv));
             snd_tlv_parse_dB_info(tlv, sizeof(tlv), &tlvp);
             snd_tlv_get_dB_range(tlvp, min_val, max_val, &db_min, &db_max);
-            LV_LOG_USER("tlv db: %d-%d val %d-%d", db_min, db_max, min_val, max_val);
+            LV_LOG_USER("tlv db: %ld-%ld val %ld-%ld", db_min, db_max, min_val, max_val);
             found = true;
             break;
 #else
@@ -137,6 +140,12 @@ void alsa_init()
         return;
     }
     pcm_ctl = find_controls();
+
+    float volume = config::get_config_volume();
+    if (volume >= 0 && volume <= 100)
+    {
+        alsa_set_volume(volume);
+    }
 
     pcm_enable = true;
 }
@@ -201,6 +210,9 @@ void alsa_set_volume(float value)
     snd_ctl_elem_value_set_integer(control, 1, target_val);
 
     int err = snd_ctl_elem_write(ctl_handle, control);
+
+    config::set_config_volume(value);
+    config::save_config();
 }
 
 void alsa_check_buffer(uint16_t len)
@@ -211,7 +223,7 @@ void alsa_check_buffer(uint16_t len)
         {
             free(sound_buf);
         }
-        sound_buf = malloc(sizeof(int32_t) * len * 2);
+        sound_buf = static_cast<int32_t *>(malloc(sizeof(int32_t) * len * 2));
         pcm_now_size = len;
     }
 }

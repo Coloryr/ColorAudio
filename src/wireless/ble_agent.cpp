@@ -63,8 +63,6 @@ static void handle_authorize_service(
     LV_LOG_USER("  Device: %s  Service UUID: %s", device_path, uuid);
 
     ble_set_pairable(false);
-    ble_now_state = BLE_STATE_CONNECTED;
-    ble_log_state_change();
 
     g_dbus_method_invocation_return_value(invocation, NULL);
 }

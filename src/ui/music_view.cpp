@@ -366,7 +366,7 @@ static void volume_click_event_cb(lv_event_t *e)
     if (code == LV_EVENT_VALUE_CHANGED)
     {
         int sel = lv_slider_get_value(obj);
-        play_set_volume(sel);
+        alsa_set_volume(sel);
         last_mute = 0;
     }
     else if (code == LV_EVENT_PRESSED)
@@ -383,14 +383,14 @@ static void mute_click_event_cb(lv_event_t *e)
 {
     if (last_mute != 0)
     {
-        play_set_volume(last_mute);
+        alsa_set_volume(last_mute);
         lv_music_set_volume(last_mute);
         last_mute = 0;
     }
     else
     {
-        last_mute = play_get_volume();
-        play_set_volume(0);
+        last_mute = alsa_get_volume();
+        alsa_set_volume(0);
         lv_music_set_volume(0);
     }
     volume_down = LV_MUSIC_VOLUME_DISPLAY_TIME;
