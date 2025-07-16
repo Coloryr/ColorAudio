@@ -21,6 +21,9 @@ extern "C"
 
 void bluez_alsa_start(GDBusConnection *conn);
 void bluez_alsa_close();
+void ble_send_volume();
+void ble_send_battery();
+void ble_later_send_volume();
 
 #ifdef __cplusplus
 } /*extern "C"*/
@@ -40,6 +43,5 @@ void ble_set_power(bool state);
 void ble_set_discoverable(bool state);
 void ble_set_pairable(bool state);
 void ble_control_media(music_command command);
-void ble_report_volume();
 
 #endif // __BLE_H__

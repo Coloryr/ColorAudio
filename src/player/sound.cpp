@@ -210,7 +210,8 @@ void alsa_set_volume(float value)
     snd_ctl_elem_value_set_integer(control, 1, target_val);
 
     int err = snd_ctl_elem_write(ctl_handle, control);
-
+    LV_LOG_USER("now volume: %f", value);
+    
     config::set_config_volume(value);
     config::save_config();
 }

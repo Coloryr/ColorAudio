@@ -1205,7 +1205,6 @@ static void bluez_signal_interfaces_added(
 		}
 		else if (strcmp(interface, BLUEZ_IFACE_MEDIA_ENDPOINT) == 0)
 		{
-
 			/* Check whether this new media endpoint interface was added in the HCI
 			 * which exists in our local BlueZ adapter cache - HCI that matches our
 			 * HCI filter. */

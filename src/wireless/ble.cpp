@@ -15,6 +15,7 @@
 #include <string>
 #include <pthread.h>
 #include <regex.h>
+#include <stdlib.h>
 
 #define AVRCP_CMD_REGISTER_NOTIF 0x31
 #define AVRCP_EVENT_VOLUME_CHANGED 0x0D
@@ -56,6 +57,9 @@ void ble_log_state_change()
 
 void ble_set_name(const char *new_name)
 {
+    char temp[256];
+    sprintf(temp, "hciconfig hci0 name '%s'", new_name);
+    std::system(temp);
     ble_set_adapter_property("Alias", g_variant_new_string(new_name));
 }
 
@@ -90,14 +94,6 @@ void ble_set_pairable(bool state)
 void ble_control_media(music_command command)
 {
     ble_send_media_command(command);
-}
-
-void ble_report_volume()
-{
-    float vol = alsa_get_volume();
-    guint8 avrcp_vol = (guint8)(vol / 100 * 127);
-
-    ble_send_volume(avrcp_vol);
 }
 
 void ble_device_add()
