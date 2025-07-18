@@ -1,110 +1,169 @@
 #include "usb_audio.h"
+#include "usb_monitor.h"
 
 #include "../player/sound.h"
 
+#include "../lvgl/src/misc/lv_log.h"
+
 #include <errno.h>
 #include <stdio.h>
-#include <linux/usb/ch9.h>
-#include <usbg/usbg.h>
-#include <usbg/function/uac2.h>
 
-#define VENDOR 0x1d6b
-#define PRODUCT 0x0104
+#include <alsa/asoundlib.h>
+#include <thread>
+#include <atomic>
 
-int usb_test()
+#define UAC2_DEVICE "hw:UAC2Gadget"
+#define CHANNELS 2
+#define BUFFER_SIZE 1024 * 1024
+
+static std::atomic<bool> running(false);
+static snd_pcm_t *capture_handle;
+static std::thread *monitor_thread;
+
+static pthread_mutex_t usb_mutex;
+
+static void usb_audio_run()
 {
-    usbg_state *s;
-    usbg_gadget *g;
-    usbg_config *c;
-    usbg_function *f_uac2;
-    int ret = -EINVAL;
-    usbg_error usbg_ret;
+    pthread_mutex_lock(&usb_mutex);
 
-    struct usbg_gadget_attrs g_attrs = {
-        .bcdUSB = 0x0200,
-        .bDeviceClass = USB_CLASS_PER_INTERFACE,
-        .bDeviceSubClass = 0x00,
-        .bDeviceProtocol = 0x00,
-        .bMaxPacketSize0 = 64, /* Max allowed ep0 packet size */
-        .idVendor = VENDOR,
-        .idProduct = PRODUCT,
-        .bcdDevice = 0x0001, /* Verson of device */
-    };
+    int err;
+    snd_pcm_info_t *info;
+    snd_pcm_info_alloca(&info);
 
-    struct usbg_gadget_strs g_strs;
-    g_strs.serial = (char *)"0123456789";     /* Serial number */
-    g_strs.manufacturer = (char *)"Foo Inc."; /* Manufacturer */
-    g_strs.product = (char *)"Bar Gadget";    /* Product string */
-
-    struct usbg_config_strs c_strs = {
-        .configuration = (char *)"1xUAC2"};
-
-    struct usbg_f_uac2_attrs f_attrs = {
-        .c_chmask = 3,
-        .c_srate = 44100,
-        .c_ssize = 4,
-        .p_chmask = 3,
-        .p_srate = 44100,
-        .p_ssize = 4,
-    };
-
-    usbg_ret = (usbg_error)usbg_init("/sys/kernel/config", &s);
-    if (usbg_ret != USBG_SUCCESS)
+    if ((err = snd_pcm_open(&capture_handle, UAC2_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0)
     {
-        fprintf(stderr, "Error on usbg init\n");
-        fprintf(stderr, "Error: %s : %s\n", usbg_error_name(usbg_ret),
-                usbg_strerror(usbg_ret));
-        goto out1;
+        LV_LOG_ERROR("Cannot open audio device %s (%s)", UAC2_DEVICE, snd_strerror(err));
+        return;
     }
 
-    usbg_ret = (usbg_error)usbg_create_gadget(s, "g1", &g_attrs, &g_strs, &g);
-    if (usbg_ret != USBG_SUCCESS)
+    if ((err = snd_pcm_info(capture_handle, info)) < 0)
     {
-        fprintf(stderr, "Error creating gadget\n");
-        fprintf(stderr, "Error: %s : %s\n", usbg_error_name(usbg_ret),
-                usbg_strerror(usbg_ret));
-        goto out2;
-    }
-    usbg_ret = (usbg_error)usbg_create_function(g, USBG_F_UAC2, "usb0", &f_attrs, &f_uac2);
-    if (usbg_ret != USBG_SUCCESS)
-    {
-        fprintf(stderr, "Error creating function\n");
-        fprintf(stderr, "Error: %s : %s\n", usbg_error_name(usbg_ret),
-                usbg_strerror(usbg_ret));
-        goto out2;
+        LV_LOG_ERROR("info error: %s", snd_strerror(err));
+        return;
     }
 
-    usbg_ret = (usbg_error)usbg_create_config(g, 1, "The only one", NULL, &c_strs, &c);
-    if (usbg_ret != USBG_SUCCESS)
+    // 获取硬件参数
+    unsigned int rate = 48000;
+    unsigned int channel = 2;
+    snd_pcm_format_t format;
+    snd_pcm_uframes_t samples = 4096;
+
+    snd_pcm_hw_params_t *params;
+    snd_pcm_hw_params_alloca(&params);
+    snd_pcm_hw_params_any(capture_handle, params);
+    snd_pcm_hw_params_set_access(capture_handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
+    snd_pcm_hw_params_set_rate_near(capture_handle, params, &rate, NULL);
+    snd_pcm_hw_params_set_channels_near(capture_handle, params, &channel);
+    snd_pcm_hw_params_set_format_first(capture_handle, params, &format);
+    snd_pcm_hw_params_set_period_size_near(capture_handle, params, &samples, NULL);
+
+    snd_pcm_hw_params(capture_handle, params);
+    snd_pcm_prepare(capture_handle);
+
+    LV_LOG_USER("get rate: %d, samples: %d, format: %s, channel: %d", rate, (int)samples, snd_pcm_format_name(format), channel);
+    alsa_reset();
+    alsa_set(format, channel, rate);
+
+    LV_LOG_USER("Starting data read thread");
+
+    char *buffer = (char *)malloc(BUFFER_SIZE); // 2 bytes per sample
+
+    unsigned int last_rate = rate;
+    snd_pcm_format_t last_format = SND_PCM_FORMAT_S16_LE;
+    while (running)
     {
-        fprintf(stderr, "Error creating config\n");
-        fprintf(stderr, "Error: %s : %s\n", usbg_error_name(usbg_ret),
-                usbg_strerror(usbg_ret));
-        goto out2;
+        if ((err = snd_pcm_readi(capture_handle, buffer, samples)) < 0)
+        {
+            LV_LOG_ERROR("Read error: %s", snd_strerror(err));
+            break;
+        }
+
+        if (alsa_write_buffer(buffer, err) < 0)
+        {
+            LV_LOG_ERROR("Write error");
+            break;
+        }
+    }
+    free(buffer);
+    snd_pcm_close(capture_handle);
+    capture_handle = NULL;
+
+    pthread_mutex_unlock(&usb_mutex);
+}
+
+void usb_audio(bool enable)
+{
+    LV_LOG_USER("stop usb Gadget");
+    std::system("usbdevice stop");
+
+    std::system("rm /sys/kernel/config/usb_gadget/rockchip/configs/b.1/uac2.usb0");
+
+    std::system("usbdevice stop");
+
+    if (enable)
+    {
+        LV_LOG_USER("enable uac2");
+        std::system("mkdir /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0");
+
+        std::system("echo 0 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/p_chmask");
+        std::system("echo 44100,48000,96000,192000 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_srate");
+        std::system("echo 2 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_ssize");
+        std::system("echo 3 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_chmask");
+        std::system("echo -32512 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_min");
+        std::system("echo 128 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_res");
+        std::system("echo ColorAudio > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/function_name");
+
+        std::system("ln -s /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0 /sys/kernel/config/usb_gadget/rockchip/configs/b.1/");
     }
 
-    usbg_ret = (usbg_error)usbg_add_config_function(c, "some_name", f_uac2);
-    if (usbg_ret != USBG_SUCCESS)
+    LV_LOG_USER("start usb Gadget");
+    std::system("usbdevice start");
+}
+
+void usb_audio_stop()
+{
+    if (!running)
     {
-        fprintf(stderr, "Error adding function\n");
-        fprintf(stderr, "Error: %s : %s\n", usbg_error_name(usbg_ret),
-                usbg_strerror(usbg_ret));
-        goto out2;
+        return;
+    }
+    running = false;
+
+    pthread_mutex_lock(&usb_mutex);
+
+    if (monitor_thread)
+    {
+        delete monitor_thread;
+        monitor_thread = NULL;
     }
 
-    usbg_ret = (usbg_error)usbg_enable_gadget(g, DEFAULT_UDC);
-    if (usbg_ret != USBG_SUCCESS)
+    pthread_mutex_unlock(&usb_mutex);
+}
+
+void usb_audio_start_run()
+{
+    if (running)
     {
-        fprintf(stderr, "Error enabling gadget\n");
-        fprintf(stderr, "Error: %s : %s\n", usbg_error_name(usbg_ret),
-                usbg_strerror(usbg_ret));
-        goto out2;
+        return;
+    }
+    running = true;
+
+    pthread_mutex_lock(&usb_mutex);
+
+    if (monitor_thread)
+    {
+        delete monitor_thread;
+        monitor_thread = NULL;
     }
 
-    ret = 0;
-out2:
-    usbg_cleanup(s);
+    pthread_mutex_unlock(&usb_mutex);
+    monitor_thread = new std::thread(usb_audio_run);
+    monitor_thread->detach();
+}
 
-out1:
-    return ret;
+void usb_audio_test()
+{
+    pthread_mutex_init(&usb_mutex, NULL);
+    LV_LOG_USER("Starting UAC2 Gadget test...");
+    usb_audio(true);
+    usb_monitor_start();
 }

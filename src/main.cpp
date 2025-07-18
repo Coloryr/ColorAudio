@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
     alsa_init();
 
-    usb_test();
+    usb_audio_test();
 
     while (1)
     {
@@ -75,12 +75,12 @@ int main(int argc, char **argv)
     music_init();
 
 #ifdef BUILD_ARM
-    set_wireless_power_on();
+    // set_wireless_power_on();
 #endif
 
-    ble_init();
+    // ble_init();
 
-    ble_run_loop();
+    // ble_run_loop();
 
     lv_port_init();
 

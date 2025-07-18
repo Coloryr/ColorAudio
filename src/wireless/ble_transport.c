@@ -114,6 +114,7 @@ void ble_set_volume(float value)
 
 void ble_set_format(uint16_t channels, uint32_t rate)
 {
+    alsa_clear();
     alsa_reset();
     alsa_set(SND_PCM_FORMAT_S16, channels, rate);
 }

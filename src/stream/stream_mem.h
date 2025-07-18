@@ -10,7 +10,7 @@ namespace ColorAudio
     class StreamMemory : public Stream
     {
     private:
-        uint8_t *buffer;
+        uint8_t *buffer_mem;
         uint32_t buffer_pos;
         uint32_t buffer_size;
 

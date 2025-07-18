@@ -173,7 +173,7 @@ static int is_png(uint8_t *raw_data, size_t len)
 
 static void istream_png_reader(png_structp png_ptr, png_bytep png_data, png_size_t data_size)
 {
-    ColorAudio::Stream *st = static_cast<ColorAudio::Stream *>(png_get_io_ptr(png_ptr));
+    ColorAudio::StreamMemory *st = static_cast<ColorAudio::StreamMemory *>(png_get_io_ptr(png_ptr));
 
     if (st->test_read_size(data_size) == false)
     {
@@ -241,11 +241,14 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
             return false;
         }
 
+        ColorAudio::StreamMemory st = ColorAudio::StreamMemory(data, size);
+
         if (setjmp(png_jmpbuf(png_ptr)))
         {
             LV_LOG_ERROR("Png decode error");
+            return false;
         }
-        ColorAudio::StreamMemory st =  ColorAudio::StreamMemory(data, size);
+
         png_set_read_fn(png_ptr, &st, istream_png_reader);
 
         png_read_info(png_ptr, info_ptr);

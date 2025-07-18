@@ -8,7 +8,7 @@
 using namespace ColorAudio;
 
 StreamMemory::StreamMemory(uint8_t *buffer, uint32_t size) : Stream(STREAM_TYPE_MEM),
-   buffer(buffer),
+   buffer_mem(buffer),
    buffer_pos(0),
    buffer_size(size)
 {
@@ -19,7 +19,7 @@ StreamMemory::StreamMemory(uint8_t *buffer, uint32_t size) : Stream(STREAM_TYPE_
 }
 
 StreamMemory::StreamMemory(data_item *item) : Stream(STREAM_TYPE_MEM),
-    buffer(item->data),
+    buffer_mem(item->data),
     buffer_pos(0),
     buffer_size(item->size)
 {
@@ -37,7 +37,7 @@ uint32_t StreamMemory::read(uint8_t* buffer, uint32_t len)
     {
         len = buffer_size - buffer_pos;
     }
-    memcpy(buffer, buffer + buffer_pos, len);
+    memcpy(buffer, buffer_mem + buffer_pos, len);
     buffer_pos += len;
     return len;
 }
@@ -49,7 +49,7 @@ uint32_t StreamMemory::write(uint8_t* buffer, uint32_t len)
     {
         len = remain;
     }
-    memcpy(buffer + buffer_pos, buffer, len);
+    memcpy(buffer_mem + buffer_pos, buffer, len);
     buffer_pos += len;
     return len;
 }
@@ -60,7 +60,7 @@ uint32_t StreamMemory::peek(uint8_t* buffer, uint32_t len)
     {
         len = buffer_size - buffer_pos;
     }
-    memcpy(buffer, buffer + buffer_pos, len);
+    memcpy(buffer, buffer_mem + buffer_pos, len);
     return len;
 }
 
