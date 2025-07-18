@@ -86,6 +86,7 @@ static void *play_run(void *arg)
             continue;
         }
 
+        alsa_clear();
         alsa_reset();
 
         time_now = 0;

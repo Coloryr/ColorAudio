@@ -263,10 +263,10 @@
 #define VERSION "v4.3.1-70-g8f99300"
 
 /* Define to 1 if libfreeaptx shall be used. */
-#define WITH_LIBFREEAPTX 1
+/* #undef WITH_LIBFREEAPTX */
 
 /* Define to 1 if libopenaptx shall be used. */
-/* #undef WITH_LIBOPENAPTX */
+#define WITH_LIBOPENAPTX 1
 
 /* Define to 1 if libsamplerate shall be used. */
 /* #undef WITH_LIBSAMPLERATE */

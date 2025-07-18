@@ -91,7 +91,7 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libopenh264.so"
     "${CMAKE_SOURCE_DIR}/libs/libwpa_client.so"
     "${CMAKE_SOURCE_DIR}/libs/libfdk-aac.so"
-    "${CMAKE_SOURCE_DIR}/libs/libfreeaptx.so"
+    "${CMAKE_SOURCE_DIR}/libs/libopenaptx.so"
     "${CMAKE_SOURCE_DIR}/libs/libopus.so"
     "${CMAKE_SOURCE_DIR}/libs/libbluetooth.so"
     "${CMAKE_SOURCE_DIR}/libs/libdbus-1.so"
@@ -99,9 +99,8 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libsbc.so"
     "${CMAKE_SOURCE_DIR}/libs/libgobject-2.0.so"
     "${CMAKE_SOURCE_DIR}/libs/libgio-2.0.so"
+    # "${CMAKE_SOURCE_DIR}/libs/libusb-1.0.so"
     "${CMAKE_SOURCE_DIR}/libs/libudev.so"
-    "${CMAKE_SOURCE_DIR}/libs/libusb-1.0.so"
-    "${CMAKE_SOURCE_DIR}/libs/libusbgx.so"
 
     #rime
     "${CMAKE_SOURCE_DIR}/libs/librime.a"
@@ -110,8 +109,6 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libleveldb.a"
     "${CMAKE_SOURCE_DIR}/libs/libopencc.a"
     "${CMAKE_SOURCE_DIR}/libs/libyaml-cpp.a"
-
-    "${CMAKE_SOURCE_DIR}/libs/liblc3.a"
     )
 else()
     add_library(boost_beast INTERFACE)
@@ -119,8 +116,8 @@ else()
     target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES}
         drm asound mad freetype m turbojpeg FLAC++ FLAC rime dbus-1 opus
         fdk-aac sbc bluetooth glib-2.0 gio-2.0 gobject-2.0 freeaptx lc3
-        sbc spandsp
+        sbc spandsp openaptx
         boost_system boost_url ssl crypto cryptopp openh264 wpa_client
-        usb-1.0 usbgx
+        udev
     )
 endif()

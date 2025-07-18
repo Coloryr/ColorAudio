@@ -24,6 +24,7 @@ void alsa_clear();
 void alsa_ready();
 int alsa_write();
 int alsa_write_buffer(const void *buffer, size_t samples);
+void alsa_set_volume_db(long value);
 
 #ifdef __cplusplus
 } /*extern "C"*/

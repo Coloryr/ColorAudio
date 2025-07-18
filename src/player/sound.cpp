@@ -208,12 +208,32 @@ void alsa_set_volume(float value)
 
     snd_ctl_elem_value_set_integer(control, 0, target_val);
     snd_ctl_elem_value_set_integer(control, 1, target_val);
-
+    LV_LOG_USER("now volume: %ld", target_val);
     int err = snd_ctl_elem_write(ctl_handle, control);
     LV_LOG_USER("now volume: %f", value);
     
     config::set_config_volume(value);
     config::save_config();
+}
+
+void alsa_set_volume_db(long value)
+{
+    if (!pcm_ctl)
+    {
+        return;
+    }
+    snd_ctl_elem_value_t *control;
+    snd_ctl_elem_value_alloca(&control);
+    snd_ctl_elem_value_set_id(control, ctl_id);
+
+    snd_ctl_elem_value_set_integer(control, 0, value);
+    snd_ctl_elem_value_set_integer(control, 1, value);
+
+    int err = snd_ctl_elem_write(ctl_handle, control);
+    LV_LOG_USER("now volume: %ld", value);
+
+    // config::set_config_volume(value);
+    // config::save_config();
 }
 
 void alsa_check_buffer(uint16_t len)
@@ -279,8 +299,6 @@ void alsa_ready()
 void alsa_reset()
 {
     isset = false;
-
-    snd_pcm_reset(pcm_handle);
 }
 
 int alsa_write()
