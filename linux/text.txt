@@ -130,3 +130,12 @@ sudo systemctl reload dbus.service
 ./bluealsa-aplay
 
 export LD_LIBRARY_PATH="/root"
+
+arecord -f dat -t wav -D hw:2,0 | aplay -D hw:0
+
+udevadm monitor --property --udev
+
+echo 'SUBSYSTEM=="power_supply", KERNEL=="bq25890-charger", ACTION=="change", OPTIONS="ignore_device"' > /etc/udev/rules.d/99-ignore-charger.rules
+udevadm control --reload
+
+udevadm test -action=add /devices/platform/ff480000.mmc/mmc_host/mmc0/mmc0:e624/block/mmcblk0/mmcblk0p1

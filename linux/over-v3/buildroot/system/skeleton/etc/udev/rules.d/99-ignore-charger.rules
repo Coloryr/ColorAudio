@@ -1,0 +1,1 @@
+SUBSYSTEM=="power_supply", KERNEL=="bq25890-charger", ACTION=="change", OPTIONS="ignore_device"

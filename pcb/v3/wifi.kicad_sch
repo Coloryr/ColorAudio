@@ -1592,6 +1592,12 @@
 		(uuid "24ee9959-ec27-4a97-9bde-cabc30f03b45")
 	)
 	(junction
+		(at 147.32 77.47)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "2bbde6b4-cc99-48b2-85d2-9adf441f2a9a")
+	)
+	(junction
 		(at 232.41 72.39)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1852,6 +1858,16 @@
 			(type default)
 		)
 		(uuid "19d60680-d788-402d-803a-13197d22297a")
+	)
+	(wire
+		(pts
+			(xy 148.59 74.93) (xy 147.32 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1e2bbb7d-8daa-47cb-bf8c-b8ac56d0c58c")
 	)
 	(wire
 		(pts
@@ -2295,6 +2311,26 @@
 	)
 	(wire
 		(pts
+			(xy 147.32 77.47) (xy 142.24 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8086af0a-8ec7-4f17-a6e7-d37054912e16")
+	)
+	(wire
+		(pts
+			(xy 142.24 77.47) (xy 142.24 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "81a55fbb-519b-4995-99ec-6ebb59eeaff6")
+	)
+	(wire
+		(pts
 			(xy 232.41 76.2) (xy 232.41 72.39)
 		)
 		(stroke
@@ -2495,6 +2531,16 @@
 	)
 	(wire
 		(pts
+			(xy 147.32 74.93) (xy 147.32 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "afac4714-de3f-4d09-8806-58f0a8f768f6")
+	)
+	(wire
+		(pts
 			(xy 231.14 83.82) (xy 240.03 83.82)
 		)
 		(stroke
@@ -2665,6 +2711,16 @@
 	)
 	(wire
 		(pts
+			(xy 156.21 74.93) (xy 163.83 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dd467108-0c7d-4f1a-8683-a6da4be8348c")
+	)
+	(wire
+		(pts
 			(xy 207.01 86.36) (xy 207.01 87.63)
 		)
 		(stroke
@@ -2725,6 +2781,16 @@
 	)
 	(wire
 		(pts
+			(xy 148.59 77.47) (xy 147.32 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f2a4f9e5-2885-4796-9669-05f15f6a65c4")
+	)
+	(wire
+		(pts
 			(xy 185.42 30.48) (xy 185.42 35.56)
 		)
 		(stroke
@@ -2753,27 +2819,15 @@
 		)
 		(uuid "fd45ea36-2ea6-4cd8-87ef-833d993f9c6f")
 	)
-	(global_label "USB1_DP_"
-		(shape input)
-		(at 184.15 53.34 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
+	(wire
+		(pts
+			(xy 156.21 77.47) (xy 163.83 77.47)
 		)
-		(uuid "0c433bfe-69dd-4df1-9a8c-79927c2014a2")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 196.6299 53.34 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
+		(stroke
+			(width 0)
+			(type default)
 		)
+		(uuid "fe0d1ae1-2b98-4911-8a6f-bf1b9e86000d")
 	)
 	(global_label "DAC_INT_B"
 		(shape input)
@@ -2788,28 +2842,6 @@
 		(uuid "15a00a47-043b-4532-a134-f85da57e8b84")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 101.6219 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "USB1_DM_"
-		(shape input)
-		(at 184.15 50.8 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "21fad32b-e172-473a-b970-17b4136d276a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 196.8113 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2881,6 +2913,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "USB1_DP"
+		(shape input)
+		(at 184.15 53.34 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "57fd1f44-84ae-4c7c-b27f-9fd846e6e31e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 195.6623 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
@@ -2973,6 +3027,28 @@
 			)
 		)
 	)
+	(global_label "USB1_DM_"
+		(shape input)
+		(at 166.37 88.9 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "79643179-bc28-423e-89d1-49dab19b9407")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 179.0313 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "USB1_DM"
 		(shape input)
 		(at 240.03 86.36 0)
@@ -2986,6 +3062,28 @@
 		(uuid "82b1954e-4747-438f-b4ff-f6ff544bb91a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 251.7237 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "USB1_DM"
+		(shape input)
+		(at 163.83 74.93 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "83566b1a-bde4-4a0d-85e9-13e974696a10")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 175.5237 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3096,6 +3194,72 @@
 		(uuid "c4857e08-3ac6-4499-a2c2-673cde5b02e2")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 101.4405 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "USB1_DP"
+		(shape input)
+		(at 163.83 77.47 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e2032f74-0090-4e74-a274-86807ac23acb")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 175.3423 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "USB1_DP_"
+		(shape input)
+		(at 166.37 91.44 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e3f36297-60fc-4da3-9a9b-57c8d9e387e8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 178.8499 91.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "USB1_DM"
+		(shape input)
+		(at 184.15 50.8 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ee84b1b9-4b6d-4a2b-aee9-16280e40a2ee")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 195.8437 50.8 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3397,6 +3561,75 @@
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/948902b6-b2f7-4c71-911b-e81cfbf71b50"
 					(reference "R54")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 152.4 74.93 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "21b619be-5af1-4192-ac73-28844ae195c0")
+		(property "Reference" "R94"
+			(at 148.082 72.644 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "15K"
+			(at 153.416 72.644 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric_Pad0.74x0.62mm_HandSolder"
+			(at 152.4 76.708 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 152.4 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 152.4 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "41fb0d58-d6ea-4957-a94f-f00f7887198b")
+		)
+		(pin "1"
+			(uuid "e05e135b-dd51-4c1d-8e8e-b89b569dee61")
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/948902b6-b2f7-4c71-911b-e81cfbf71b50"
+					(reference "R94")
 					(unit 1)
 				)
 			)
@@ -4150,6 +4383,72 @@
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/948902b6-b2f7-4c71-911b-e81cfbf71b50"
 					(reference "C42")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 142.24 78.74 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "512a0466-ff13-45bd-be05-04f875bc10fd")
+		(property "Reference" "#PWR068"
+			(at 142.24 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 142.24 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 142.24 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 142.24 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 142.24 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9f022ff7-25c6-4227-96dc-7609c041310f")
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/948902b6-b2f7-4c71-911b-e81cfbf71b50"
+					(reference "#PWR068")
 					(unit 1)
 				)
 			)
@@ -5045,6 +5344,75 @@
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/948902b6-b2f7-4c71-911b-e81cfbf71b50"
 					(reference "#PWR064")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 152.4 77.47 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b2139d4c-140e-4b50-9f11-e7334ff2630f")
+		(property "Reference" "R96"
+			(at 148.336 79.756 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "15K"
+			(at 153.924 79.756 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric_Pad0.74x0.62mm_HandSolder"
+			(at 152.4 79.248 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 152.4 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 152.4 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "b72ff3cc-43ba-4f48-a106-c09d49192207")
+		)
+		(pin "1"
+			(uuid "e9d1d2c8-5c67-457f-bf67-2dbd68466a4c")
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/948902b6-b2f7-4c71-911b-e81cfbf71b50"
+					(reference "R96")
 					(unit 1)
 				)
 			)

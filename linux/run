@@ -1,0 +1,4 @@
+#!/bin/bash
+chmod a+x coloraudio
+export LD_LIBRARY_PATH="/root"
+./coloraudio
