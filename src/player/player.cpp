@@ -133,6 +133,7 @@ static void *play_run(void *arg)
         view_music_clear();
 
         delete play_st;
+        play_st = NULL;
 
         // 自动下一首
         if (play_state != MUSIC_STATE_STOP)

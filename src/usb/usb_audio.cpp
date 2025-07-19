@@ -166,4 +166,9 @@ void usb_audio_test()
     LV_LOG_USER("Starting UAC2 Gadget test...");
     usb_audio(true);
     usb_monitor_start();
+
+    for(;;)
+    {
+        sleep(1);
+    }
 }

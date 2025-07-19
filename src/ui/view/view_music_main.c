@@ -42,7 +42,6 @@ static lv_obj_t *handle_box;
 static lv_obj_t *volume_slider_obj;
 static lv_obj_t *volume_pan_obj;
 static lv_obj_t *image_bg;
-static lv_obj_t *image_bg1;
 
 static bool playing;
 static bool is_display_volume = false;
@@ -516,18 +515,13 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     image_bg = lv_obj_create(cont);
     lv_obj_remove_style_all(image_bg);
     lv_obj_set_size(image_bg, PIC_SIZE, PIC_SIZE);
-    lv_obj_set_style_bg_color(image_bg, lv_color_hex(0x8199f7), 0);
-    lv_obj_set_style_bg_opa(image_bg, 60, 0);
-    lv_obj_set_style_bg_grad_color(image_bg, lv_color_hex(0x81f6e9), 0);
-    lv_obj_set_style_bg_grad_dir(image_bg, LV_GRAD_DIR_HOR, 0);
-
-    image_bg1 = lv_obj_create(cont);
-    lv_obj_remove_style_all(image_bg1);
-    lv_obj_set_size(image_bg1, PIC_SIZE, PIC_SIZE);
-    lv_obj_set_style_bg_color(image_bg1, lv_color_hex(0x81d7f6), 0);
-    lv_obj_set_style_bg_opa(image_bg1, 60, 0);
-    lv_obj_set_style_bg_grad_color(image_bg1, lv_color_hex(0x81adf6), 0);
-    lv_obj_set_style_bg_grad_dir(image_bg1, LV_GRAD_DIR_HOR, 0);
+    lv_obj_set_style_bg_color(image_bg, lv_color_hex(0xaf93f6), 0);
+    // lv_obj_set_style_bg_opa(image_bg, 200, 0);
+    lv_obj_set_style_radius(image_bg, 5, 0);
+    lv_obj_set_style_shadow_width(image_bg, 15, 0);
+    lv_obj_set_style_shadow_spread(image_bg, 7, 0);
+    lv_obj_set_style_shadow_color(image_bg, lv_color_hex(0xaf93f6), 0);
+    // lv_obj_set_style_shadow_opa(image_bg, 200, 0);
 
     album_image_obj = create_album_image_obj(cont);
 
@@ -548,8 +542,7 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
 
     lv_obj_set_grid_cell(title_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
     lv_obj_set_grid_cell(album_image_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-    lv_obj_set_grid_cell(image_bg, LV_GRID_ALIGN_START, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
-    lv_obj_set_grid_cell(image_bg1, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
+    lv_obj_set_grid_cell(image_bg, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 2, 1);
 
     lv_obj_set_style_pad_top(ctrl_box, 70, 0);
     lv_obj_set_style_margin_top(ctrl_box, 35, 0);
@@ -560,12 +553,6 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     lv_obj_set_grid_cell(spectrum_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 4, 1);
 
     lv_obj_set_grid_cell(handle_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 6, 1);
-
-    lv_obj_set_style_margin_top(image_bg, 40, 0);
-    lv_obj_set_style_margin_left(image_bg, 60, 0);
-
-    lv_obj_set_style_margin_bottom(image_bg1, 40, 0);
-    lv_obj_set_style_margin_right(image_bg1, 60, 0);
 
     lv_obj_update_layout(main_cont);
 

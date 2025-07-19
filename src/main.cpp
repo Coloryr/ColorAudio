@@ -65,11 +65,6 @@ int main(int argc, char **argv)
 
     usb_audio_test();
 
-    while (1)
-    {
-        sleep(1);
-    }
-
     play_init();
     rime_init();
     music_init();
@@ -86,7 +81,7 @@ int main(int argc, char **argv)
 
     view_init();
 
-    local_music_init();
+    // local_music_init();
     // net_music_init();
 
 #ifdef BUILD_ARM
