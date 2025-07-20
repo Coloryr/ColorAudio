@@ -417,7 +417,7 @@ static int uac_pcm_open(struct snd_pcm_substream *substream)
 	c_chmask = params->c_chmask;
 	uac->p_residue_mil = 0;
 
-	dev_dev(audio_dev->device, "uac pcm open p_ssize:%d c_ssize:%d", p_ssize, c_ssize);
+	dev_dbg(audio_dev->device, "uac pcm open p_ssize:%d c_ssize:%d", p_ssize, c_ssize);
 
 	runtime->hw = uac_pcm_hardware;
 

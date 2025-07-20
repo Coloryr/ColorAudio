@@ -1580,7 +1580,7 @@ afunc_bind(struct usb_configuration *cfg, struct usb_function *fn)
 
 	strings_fn[STR_ASSOC].s = uac2_opts->function_name;
 
-	dev_info(dev,
+	dev_dbg(dev,
 				"dump function_name: %s\n", uac2_opts->function_name);
 
 	us = usb_gstrings_attach(cdev, fn_strings, ARRAY_SIZE(strings_fn));
@@ -1630,7 +1630,6 @@ afunc_bind(struct usb_configuration *cfg, struct usb_function *fn)
 		*i_feature = us[STR_FU_IN].id;
 	}
 
-
 	/* Initialize the configurable parameters */
 	usb_out_it_desc.bNrChannels = num_channels(uac2_opts->c_chmask);
 	usb_out_it_desc.bmChannelConfig = cpu_to_le32(uac2_opts->c_chmask);
@@ -1642,7 +1641,7 @@ afunc_bind(struct usb_configuration *cfg, struct usb_function *fn)
 	as_in_hdr_desc.bmChannelConfig = cpu_to_le32(uac2_opts->p_chmask);
 
 	for(i = 0; i < UAC_MAX_RATES; i++) {
-		dev_info(dev,
+		dev_dbg(dev,
 				"dump size[%d]: %d, %d\n", i, uac2_opts->c_ssizes[i], uac2_opts->p_ssizes[i]);
 		as_out_fmtx_desc[i]->bSubslotSize = uac2_opts->c_ssizes[i];
 		as_out_fmtx_desc[i]->bBitResolution = uac2_opts->c_ssizes[i] * 8;
@@ -1986,7 +1985,7 @@ afunc_set_alt(struct usb_function *fn, unsigned intf, unsigned alt)
 	// 	return -EINVAL;
 	// }
 
-	dev_dev(dev, "intf:%d alt:%d!\n", intf, alt);
+	dev_dbg(dev, "intf:%d alt:%d!\n", intf, alt);
 
 	if (intf == uac2->ac_intf) {
 		/* Control I/f has only 1 AltSetting - 0 */
