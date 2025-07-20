@@ -12,6 +12,7 @@
 #include <thread>
 #include <atomic>
 
+#define UAC1_DEVICE "hw:UAC1Gadget"
 #define UAC2_DEVICE "hw:UAC2Gadget"
 #define CHANNELS 2
 #define BUFFER_SIZE 1024 * 1024
@@ -22,23 +23,18 @@ static std::thread *monitor_thread;
 
 static pthread_mutex_t usb_mutex;
 
+static bool uac2;
+
 static void usb_audio_run()
 {
     pthread_mutex_lock(&usb_mutex);
 
     int err;
-    snd_pcm_info_t *info;
-    snd_pcm_info_alloca(&info);
 
-    if ((err = snd_pcm_open(&capture_handle, UAC2_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0)
+run:
+    if ((err = snd_pcm_open(&capture_handle, uac2 ? UAC2_DEVICE : UAC1_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0)
     {
-        LV_LOG_ERROR("Cannot open audio device %s (%s)", UAC2_DEVICE, snd_strerror(err));
-        return;
-    }
-
-    if ((err = snd_pcm_info(capture_handle, info)) < 0)
-    {
-        LV_LOG_ERROR("info error: %s", snd_strerror(err));
+        LV_LOG_ERROR("Cannot open audio device %s (%s)", uac2 ? UAC2_DEVICE : UAC1_DEVICE, snd_strerror(err));
         return;
     }
 
@@ -88,32 +84,57 @@ static void usb_audio_run()
     snd_pcm_close(capture_handle);
     capture_handle = NULL;
 
+    if (running)
+    {
+        goto run;
+    }
+
     pthread_mutex_unlock(&usb_mutex);
 }
 
-void usb_audio(bool enable)
+void usb_audio(bool enable, bool isuac2)
 {
     LV_LOG_USER("stop usb Gadget");
     std::system("usbdevice stop");
 
+    std::system("rm /sys/kernel/config/usb_gadget/rockchip/configs/b.1/uac1.usb0");
     std::system("rm /sys/kernel/config/usb_gadget/rockchip/configs/b.1/uac2.usb0");
 
     std::system("usbdevice stop");
 
     if (enable)
     {
-        LV_LOG_USER("enable uac2");
-        std::system("mkdir /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0");
+        if (isuac2)
+        {
+            LV_LOG_USER("enable uac2");
+            std::system("mkdir /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0");
 
-        std::system("echo 0 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/p_chmask");
-        std::system("echo 44100,48000,96000,192000 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_srate");
-        std::system("echo 2 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_ssize");
-        std::system("echo 3 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_chmask");
-        std::system("echo -32512 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_min");
-        std::system("echo 128 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_res");
-        std::system("echo ColorAudio > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/function_name");
+            std::system("echo 0 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/p_chmask");
+            std::system("echo 44100,48000,96000,192000 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_srate");
+            std::system("echo 2,3,4 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_ssize");
+            std::system("echo 3 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_chmask");
+            std::system("echo -32512 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_min");
+            std::system("echo 128 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_res");
+            std::system("echo ColorAudio > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/function_name");
 
-        std::system("ln -s /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0 /sys/kernel/config/usb_gadget/rockchip/configs/b.1/");
+            std::system("ln -s /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0 /sys/kernel/config/usb_gadget/rockchip/configs/b.1/");
+        }
+        else
+        {
+            LV_LOG_USER("enable uac1");
+            std::system("mkdir /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0");
+
+            std::system("echo 0 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/p_chmask");
+            std::system("echo 44100,48000,96000 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_srate");
+            std::system("echo 2 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_ssize");
+            std::system("echo 3 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_chmask");
+            std::system("echo -32512 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_volume_min");
+            std::system("echo 128 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_volume_res");
+            std::system("echo ColorAudio > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/function_name");
+
+            std::system("ln -s /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0 /sys/kernel/config/usb_gadget/rockchip/configs/b.1/");
+        }
+        uac2 = isuac2;
     }
 
     LV_LOG_USER("start usb Gadget");
@@ -164,10 +185,10 @@ void usb_audio_test()
 {
     pthread_mutex_init(&usb_mutex, NULL);
     LV_LOG_USER("Starting UAC2 Gadget test...");
-    usb_audio(true);
+    usb_audio(true, true);
     usb_monitor_start();
 
-    for(;;)
+    for (;;)
     {
         sleep(1);
     }

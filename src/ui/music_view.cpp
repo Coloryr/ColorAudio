@@ -37,6 +37,8 @@ static void lyric_tick(lv_timer_t *timer)
         view_music_set_lyric(nullptr, nullptr);
         lv_lyric_set_text("无歌词");
         lv_lyric_tr_set_text("");
+        lv_lyric_k_set_text("");
+        lv_lyric_k_now_set_text("");
         ly_state = LYRIC_UNKNOW;
         return;
     }
@@ -45,6 +47,8 @@ static void lyric_tick(lv_timer_t *timer)
         view_music_set_lyric(nullptr, nullptr);
         lv_lyric_set_text("歌词获取失败");
         lv_lyric_tr_set_text("");
+        lv_lyric_k_set_text("");
+        lv_lyric_k_now_set_text("");
         ly_state = LYRIC_UNKNOW;
         return;
     }

@@ -13,7 +13,8 @@
 #include <poll.h>
 #include <thread>
 
-#define TARGET_DEVPATH "/devices/virtual/u_audio/UAC2_Gadget 0"
+#define UAC1_DEVPATH "/devices/virtual/u_audio/UAC1_Gadget 0"
+#define UAC2_DEVPATH "/devices/virtual/u_audio/UAC2_Gadget 0"
 
 static struct udev *udev;
 static struct udev_monitor *mon;
@@ -25,7 +26,7 @@ void usb_monitor_run()
 {
     while (running)
     {
-        int ret = poll(fds, 1, -1); // 无限等待
+        int ret = poll(fds, 1, -1);
         if (ret < 0)
         {
             LV_LOG_ERROR("poll 错误");
@@ -37,13 +38,11 @@ void usb_monitor_run()
             struct udev_device *dev = udev_monitor_receive_device(mon);
             if (dev)
             {
-                // 获取设备属性
                 const char *devpath = udev_device_get_devpath(dev);
                 const char *action = udev_device_get_action(dev);
                 const char *subsystem = udev_device_get_subsystem(dev);
 
-                // 检查目标设备路径
-                if (devpath && strcmp(devpath, TARGET_DEVPATH) == 0)
+                if (devpath && (strcmp(devpath, UAC1_DEVPATH) == 0 || strcmp(devpath, UAC2_DEVPATH) == 0))
                 {
                     const char *state = udev_device_get_property_value(dev, "USB_STATE");
                     if (state != NULL)
@@ -56,7 +55,7 @@ void usb_monitor_run()
                                 int16_t num;
                                 sscanf(volume, "0x%hx", &num);
                                 num /= -128;
-                                num = 220 - num;
+                                num = 255 - num;
                                 alsa_set_volume_db(num);
                             }
                         }
@@ -82,6 +81,7 @@ void usb_monitor_run()
                                 }
                                 else if (strcmp(ststate, "ON") == 0)
                                 {
+                                    usb_audio_stop();
                                     usb_audio_start_run();
                                 }
                             }
@@ -106,7 +106,6 @@ void usb_monitor_start()
         return;
     }
 
-    // 创建监控对象
     mon = udev_monitor_new_from_netlink(udev, "udev");
     if (!mon)
     {
