@@ -134,8 +134,16 @@ export LD_LIBRARY_PATH="/root"
 arecord -f dat -t wav -D hw:2,0 | aplay -D hw:0
 
 udevadm monitor --property --udev
+udevadm monitor --kernel --property
 
-echo 'SUBSYSTEM=="power_supply", KERNEL=="bq25890-charger", ACTION=="change", OPTIONS="ignore_device"' > /etc/udev/rules.d/99-ignore-charger.rules
+echo 'SUBSYSTEM=="power_supply", ENV{INTERFACE}=="bq25890*", OPTIONS+="ignore_remove"
+SUBSYSTEM=="power_supply", ENV{INTERFACE}=="bq25890*", OPTIONS+="ignore_add"
+SUBSYSTEM=="power_supply", ENV{INTERFACE}=="bq25890*", OPTIONS+="ignore_change"' > /etc/udev/rules.d/99-ignore-charger.rules
 udevadm control --reload
+udevadm control --reload-rules
 
-udevadm test -action=add /devices/platform/ff480000.mmc/mmc_host/mmc0/mmc0:e624/block/mmcblk0/mmcblk0p1
+udevadm monitor --property | awk -F= '/^DEVNAME/ {print $2}' | sort | uniq -c | sort -n
+udevadm control --log-priority=debug
+
+udevadm test -a=add /devices/platform/ff480000.mmc/mmc_host/mmc0/mmc0:e624/block/mmcblk0/mmcblk0p1
+udevadm test -a change /devices/platform/ff050000.i2c/i2c-1/1-006a/power_supply/bq25890-charger

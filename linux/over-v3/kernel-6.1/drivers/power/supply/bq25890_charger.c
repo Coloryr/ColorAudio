@@ -750,7 +750,7 @@ static irqreturn_t __bq25890_handle_irq(struct bq25890_device *bq)
 	}
 
 	bq->state = new_state;
-	power_supply_changed(bq->charger);
+	// power_supply_changed(bq->charger);
 
 	return IRQ_HANDLED;
 error:
