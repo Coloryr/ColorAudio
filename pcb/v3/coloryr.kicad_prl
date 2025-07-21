@@ -112,7 +112,32 @@
   },
   "open_jobsets": [],
   "project": {
-    "files": []
+    "files": [
+      {
+        "name": "coloryr.kicad_sch",
+        "open": true,
+        "window": {
+          "display": 0,
+          "maximized": true,
+          "pos_x": -8,
+          "pos_y": -8,
+          "size_x": 2576,
+          "size_y": 1568
+        }
+      },
+      {
+        "name": "coloryr.kicad_pcb",
+        "open": true,
+        "window": {
+          "display": 0,
+          "maximized": true,
+          "pos_x": -8,
+          "pos_y": -8,
+          "size_x": 2576,
+          "size_y": 1568
+        }
+      }
+    ]
   },
   "schematic": {
     "selection_filter": {

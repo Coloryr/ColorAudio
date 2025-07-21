@@ -32,10 +32,10 @@ struct f_uac1_opts {
 	struct usb_function_instance	func_inst;
 	int				c_chmask;
 	int				c_srates[UAC_MAX_RATES];
-	int				c_ssizes[UAC_MAX_RATES];
+	int				c_ssize;
 	int				p_chmask;
 	int				p_srates[UAC_MAX_RATES];
-	int				p_ssizes[UAC_MAX_RATES];
+	int				p_ssize;
 
 	bool			p_mute_present;
 	bool			p_volume_present;

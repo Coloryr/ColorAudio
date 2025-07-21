@@ -180,100 +180,6 @@ static struct usb_interface_descriptor as_out_interface_alt_1_desc = {
 	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
 };
 
-static struct usb_interface_descriptor as_out_interface_alt_2_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	2,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_3_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	3,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_4_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	4,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_5_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	5,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_6_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	6,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_7_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	7,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_8_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	8,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_9_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	9,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_out_interface_alt_10_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	10,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor* as_out_interface_alt_x_desc[] = {
-	&as_out_interface_alt_1_desc,
-	&as_out_interface_alt_2_desc,
-	&as_out_interface_alt_3_desc,
-	&as_out_interface_alt_4_desc,
-	&as_out_interface_alt_5_desc,
-	&as_out_interface_alt_6_desc,
-	&as_out_interface_alt_7_desc,
-	&as_out_interface_alt_8_desc,
-	&as_out_interface_alt_9_desc,
-	&as_out_interface_alt_10_desc,
-};
-
 static struct usb_interface_descriptor as_in_interface_alt_0_desc = {
 	.bLength =		USB_DT_INTERFACE_SIZE,
 	.bDescriptorType =	USB_DT_INTERFACE,
@@ -290,100 +196,6 @@ static struct usb_interface_descriptor as_in_interface_alt_1_desc = {
 	.bNumEndpoints =	1,
 	.bInterfaceClass =	USB_CLASS_AUDIO,
 	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_2_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	2,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_3_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	3,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_4_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	4,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_5_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	5,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_6_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	6,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_7_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	7,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_8_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	8,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_9_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	9,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor as_in_interface_alt_10_desc = {
-	.bLength =		USB_DT_INTERFACE_SIZE,
-	.bDescriptorType =	USB_DT_INTERFACE,
-	.bAlternateSetting =	1,
-	.bNumEndpoints =	10,
-	.bInterfaceClass =	USB_CLASS_AUDIO,
-	.bInterfaceSubClass =	USB_SUBCLASS_AUDIOSTREAMING,
-};
-
-static struct usb_interface_descriptor* as_in_interface_alt_x_desc[] = {
-	&as_in_interface_alt_1_desc,
-	&as_in_interface_alt_2_desc,
-	&as_in_interface_alt_3_desc,
-	&as_in_interface_alt_4_desc,
-	&as_in_interface_alt_5_desc,
-	&as_in_interface_alt_6_desc,
-	&as_in_interface_alt_7_desc,
-	&as_in_interface_alt_8_desc,
-	&as_in_interface_alt_9_desc,
-	&as_in_interface_alt_10_desc,
 };
 
 /* B.4.2  Class-Specific AS Interface Descriptor */
@@ -415,91 +227,6 @@ static struct uac_format_type_i_discrete_descriptor as_out_type_i1_desc = {
 	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
 	.bFormatType =		UAC_FORMAT_TYPE_I,
 	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i2_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i3_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i4_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i5_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i6_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i7_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i8_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i9_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_out_type_i10_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor* as_out_type_ix_desc[] = {
-	&as_out_type_i1_desc,
-	&as_out_type_i2_desc,
-	&as_out_type_i3_desc,
-	&as_out_type_i4_desc,
-	&as_out_type_i5_desc,
-	&as_out_type_i6_desc,
-	&as_out_type_i7_desc,
-	&as_out_type_i8_desc,
-	&as_out_type_i9_desc,
-	&as_out_type_i10_desc,
 };
 
 /* Standard ISO OUT Endpoint Descriptor */
@@ -545,91 +272,6 @@ static struct uac_format_type_i_discrete_descriptor as_in_type_i1_desc = {
 	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
 	.bFormatType =		UAC_FORMAT_TYPE_I,
 	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i2_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i3_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i4_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i5_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i6_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i7_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i8_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i9_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor as_in_type_i10_desc = {
-	.bLength =		0, /* filled on rate setup */
-	.bDescriptorType =	USB_DT_CS_INTERFACE,
-	.bDescriptorSubtype =	UAC_FORMAT_TYPE,
-	.bFormatType =		UAC_FORMAT_TYPE_I,
-	.bSamFreqType =		0, /* filled on rate setup */
-};
-
-static struct uac_format_type_i_discrete_descriptor* as_in_type_ix_desc[] = {
-	&as_in_type_i1_desc,
-	&as_in_type_i2_desc,
-	&as_in_type_i3_desc,
-	&as_in_type_i4_desc,
-	&as_in_type_i5_desc,
-	&as_in_type_i6_desc,
-	&as_in_type_i7_desc,
-	&as_in_type_i8_desc,
-	&as_in_type_i9_desc,
-	&as_in_type_i10_desc,
 };
 
 /* Standard ISO IN Endpoint Descriptor */
@@ -686,54 +328,18 @@ static struct usb_descriptor_header *fs_audio_desc[] = {
 
 	(struct usb_descriptor_header *)&as_out_interface_alt_0_desc,
 	(struct usb_descriptor_header *)&as_out_interface_alt_1_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_2_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_3_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_4_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_5_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_6_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_7_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_8_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_9_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_10_desc,
 	(struct usb_descriptor_header *)&as_out_header_desc,
 
 	(struct usb_descriptor_header *)&as_out_type_i1_desc,
-	(struct usb_descriptor_header *)&as_out_type_i2_desc,
-	(struct usb_descriptor_header *)&as_out_type_i3_desc,
-	(struct usb_descriptor_header *)&as_out_type_i4_desc,
-	(struct usb_descriptor_header *)&as_out_type_i5_desc,
-	(struct usb_descriptor_header *)&as_out_type_i6_desc,
-	(struct usb_descriptor_header *)&as_out_type_i7_desc,
-	(struct usb_descriptor_header *)&as_out_type_i8_desc,
-	(struct usb_descriptor_header *)&as_out_type_i9_desc,
-	(struct usb_descriptor_header *)&as_out_type_i10_desc,
 
 	(struct usb_descriptor_header *)&fs_out_ep_desc,
 	(struct usb_descriptor_header *)&as_iso_out_desc,
 
 	(struct usb_descriptor_header *)&as_in_interface_alt_0_desc,
 	(struct usb_descriptor_header *)&as_in_interface_alt_1_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_2_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_3_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_4_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_5_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_6_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_7_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_8_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_9_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_10_desc,
 	(struct usb_descriptor_header *)&as_in_header_desc,
 
 	(struct usb_descriptor_header *)&as_in_type_i1_desc,
-	(struct usb_descriptor_header *)&as_in_type_i2_desc,
-	(struct usb_descriptor_header *)&as_in_type_i3_desc,
-	(struct usb_descriptor_header *)&as_in_type_i4_desc,
-	(struct usb_descriptor_header *)&as_in_type_i5_desc,
-	(struct usb_descriptor_header *)&as_in_type_i6_desc,
-	(struct usb_descriptor_header *)&as_in_type_i7_desc,
-	(struct usb_descriptor_header *)&as_in_type_i8_desc,
-	(struct usb_descriptor_header *)&as_in_type_i9_desc,
-	(struct usb_descriptor_header *)&as_in_type_i10_desc,
 
 	(struct usb_descriptor_header *)&fs_in_ep_desc,
 	(struct usb_descriptor_header *)&as_iso_in_desc,
@@ -757,54 +363,18 @@ static struct usb_descriptor_header *hs_audio_desc[] = {
 
 	(struct usb_descriptor_header *)&as_out_interface_alt_0_desc,
 	(struct usb_descriptor_header *)&as_out_interface_alt_1_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_2_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_3_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_4_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_5_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_6_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_7_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_8_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_9_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_10_desc,
 	(struct usb_descriptor_header *)&as_out_header_desc,
 
 	(struct usb_descriptor_header *)&as_out_type_i1_desc,
-	(struct usb_descriptor_header *)&as_out_type_i2_desc,
-	(struct usb_descriptor_header *)&as_out_type_i3_desc,
-	(struct usb_descriptor_header *)&as_out_type_i4_desc,
-	(struct usb_descriptor_header *)&as_out_type_i5_desc,
-	(struct usb_descriptor_header *)&as_out_type_i6_desc,
-	(struct usb_descriptor_header *)&as_out_type_i7_desc,
-	(struct usb_descriptor_header *)&as_out_type_i8_desc,
-	(struct usb_descriptor_header *)&as_out_type_i9_desc,
-	(struct usb_descriptor_header *)&as_out_type_i10_desc,
 
 	(struct usb_descriptor_header *)&as_out_ep_desc,
 	(struct usb_descriptor_header *)&as_iso_out_desc,
 
 	(struct usb_descriptor_header *)&as_in_interface_alt_0_desc,
 	(struct usb_descriptor_header *)&as_in_interface_alt_1_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_2_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_3_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_4_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_5_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_6_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_7_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_8_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_9_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_10_desc,
 	(struct usb_descriptor_header *)&as_in_header_desc,
 
 	(struct usb_descriptor_header *)&as_in_type_i1_desc,
-	(struct usb_descriptor_header *)&as_in_type_i2_desc,
-	(struct usb_descriptor_header *)&as_in_type_i3_desc,
-	(struct usb_descriptor_header *)&as_in_type_i4_desc,
-	(struct usb_descriptor_header *)&as_in_type_i5_desc,
-	(struct usb_descriptor_header *)&as_in_type_i6_desc,
-	(struct usb_descriptor_header *)&as_in_type_i7_desc,
-	(struct usb_descriptor_header *)&as_in_type_i8_desc,
-	(struct usb_descriptor_header *)&as_in_type_i9_desc,
-	(struct usb_descriptor_header *)&as_in_type_i10_desc,
 
 	(struct usb_descriptor_header *)&as_in_ep_desc,
 	(struct usb_descriptor_header *)&as_iso_in_desc,
@@ -829,27 +399,9 @@ static struct usb_descriptor_header *ss_audio_desc[] = {
 
 	(struct usb_descriptor_header *)&as_out_interface_alt_0_desc,
 	(struct usb_descriptor_header *)&as_out_interface_alt_1_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_2_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_3_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_4_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_5_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_6_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_7_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_8_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_9_desc,
-	(struct usb_descriptor_header *)&as_out_interface_alt_10_desc,
 	(struct usb_descriptor_header *)&as_out_header_desc,
 
 	(struct usb_descriptor_header *)&as_out_type_i1_desc,
-	(struct usb_descriptor_header *)&as_out_type_i2_desc,
-	(struct usb_descriptor_header *)&as_out_type_i3_desc,
-	(struct usb_descriptor_header *)&as_out_type_i4_desc,
-	(struct usb_descriptor_header *)&as_out_type_i5_desc,
-	(struct usb_descriptor_header *)&as_out_type_i6_desc,
-	(struct usb_descriptor_header *)&as_out_type_i7_desc,
-	(struct usb_descriptor_header *)&as_out_type_i8_desc,
-	(struct usb_descriptor_header *)&as_out_type_i9_desc,
-	(struct usb_descriptor_header *)&as_out_type_i10_desc,
 
 	(struct usb_descriptor_header *)&as_out_ep_desc,
 	(struct usb_descriptor_header *)&as_out_ep_desc_comp,
@@ -857,27 +409,9 @@ static struct usb_descriptor_header *ss_audio_desc[] = {
 
 	(struct usb_descriptor_header *)&as_in_interface_alt_0_desc,
 	(struct usb_descriptor_header *)&as_in_interface_alt_1_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_2_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_3_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_4_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_5_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_6_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_7_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_8_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_9_desc,
-	(struct usb_descriptor_header *)&as_in_interface_alt_10_desc,
 	(struct usb_descriptor_header *)&as_in_header_desc,
 
 	(struct usb_descriptor_header *)&as_in_type_i1_desc,
-	(struct usb_descriptor_header *)&as_in_type_i2_desc,
-	(struct usb_descriptor_header *)&as_in_type_i3_desc,
-	(struct usb_descriptor_header *)&as_in_type_i4_desc,
-	(struct usb_descriptor_header *)&as_in_type_i5_desc,
-	(struct usb_descriptor_header *)&as_in_type_i6_desc,
-	(struct usb_descriptor_header *)&as_in_type_i7_desc,
-	(struct usb_descriptor_header *)&as_in_type_i8_desc,
-	(struct usb_descriptor_header *)&as_in_type_i9_desc,
-	(struct usb_descriptor_header *)&as_in_type_i10_desc,
 
 	(struct usb_descriptor_header *)&as_in_ep_desc,
 	(struct usb_descriptor_header *)&as_in_ep_desc_comp,
@@ -898,26 +432,8 @@ enum {
 	STR_FU_OUT,
 	STR_AS_OUT_IF_ALT0,
 	STR_AS_OUT_IF_ALT1,
-	STR_AS_OUT_IF_ALT2,
-	STR_AS_OUT_IF_ALT3,
-	STR_AS_OUT_IF_ALT4,
-	STR_AS_OUT_IF_ALT5,
-	STR_AS_OUT_IF_ALT6,
-	STR_AS_OUT_IF_ALT7,
-	STR_AS_OUT_IF_ALT8,
-	STR_AS_OUT_IF_ALT9,
-	STR_AS_OUT_IF_ALT10,
 	STR_AS_IN_IF_ALT0,
 	STR_AS_IN_IF_ALT1,
-	STR_AS_IN_IF_ALT2,
-	STR_AS_IN_IF_ALT3,
-	STR_AS_IN_IF_ALT4,
-	STR_AS_IN_IF_ALT5,
-	STR_AS_IN_IF_ALT6,
-	STR_AS_IN_IF_ALT7,
-	STR_AS_IN_IF_ALT8,
-	STR_AS_IN_IF_ALT9,
-	STR_AS_IN_IF_ALT10,
 };
 
 static struct usb_string strings_uac1[] = {
@@ -932,27 +448,9 @@ static struct usb_string strings_uac1[] = {
 	[STR_FU_IN].s = "Capture Volume",
 	[STR_FU_OUT].s = "Playback Volume",
 	[STR_AS_OUT_IF_ALT0].s = "Playback Inactive",
-	[STR_AS_OUT_IF_ALT1].s = "Playback Active 1",
-	[STR_AS_OUT_IF_ALT2].s = "Playback Active 2",
-	[STR_AS_OUT_IF_ALT3].s = "Playback Active 3",
-	[STR_AS_OUT_IF_ALT4].s = "Playback Active 4",
-	[STR_AS_OUT_IF_ALT5].s = "Playback Active 5",
-	[STR_AS_OUT_IF_ALT6].s = "Playback Active 6",
-	[STR_AS_OUT_IF_ALT7].s = "Playback Active 7",
-	[STR_AS_OUT_IF_ALT8].s = "Playback Active 8",
-	[STR_AS_OUT_IF_ALT9].s = "Playback Active 9",
-	[STR_AS_OUT_IF_ALT10].s = "Playback Active 10",
+	[STR_AS_OUT_IF_ALT1].s = "Playback Active",
 	[STR_AS_IN_IF_ALT0].s = "Capture Inactive",
-	[STR_AS_IN_IF_ALT1].s = "Capture Active 1",
-	[STR_AS_IN_IF_ALT2].s = "Capture Active 2",
-	[STR_AS_IN_IF_ALT3].s = "Capture Active 3",
-	[STR_AS_IN_IF_ALT4].s = "Capture Active 4",
-	[STR_AS_IN_IF_ALT5].s = "Capture Active 5",
-	[STR_AS_IN_IF_ALT6].s = "Capture Active 6",
-	[STR_AS_IN_IF_ALT7].s = "Capture Active 7",
-	[STR_AS_IN_IF_ALT8].s = "Capture Active 8",
-	[STR_AS_IN_IF_ALT9].s = "Capture Active 9",
-	[STR_AS_IN_IF_ALT10].s = "Capture Active 10",
+	[STR_AS_IN_IF_ALT1].s = "Capture Active",
 	{ },
 };
 
@@ -1029,33 +527,23 @@ static void setup_headers(struct f_uac1_opts *opts,
 
 	if (EPOUT_EN(opts)) {
 		headers[i++] = USBDHDR(&as_out_interface_alt_0_desc);
-
-		for (j = 0; j < UAC_MAX_RATES; j++) {
-			if (as_out_type_ix_desc[j]->bBitResolution > 0) {
-				headers[i++] = USBDHDR(as_out_interface_alt_x_desc[j]);
-				headers[i++] = USBDHDR(&as_out_header_desc);
-				headers[i++] = USBDHDR(as_out_type_ix_desc[j]);
-				headers[i++] = USBDHDR(epout_desc);
-				if (epout_desc_comp)
-					headers[i++] = USBDHDR(epout_desc_comp);
-				headers[i++] = USBDHDR(&as_iso_out_desc);
-			}
-		}
+		headers[i++] = USBDHDR(&as_out_interface_alt_1_desc);
+		headers[i++] = USBDHDR(&as_out_header_desc);
+		headers[i++] = USBDHDR(&as_out_type_i1_desc);
+		headers[i++] = USBDHDR(epout_desc);
+		if (epout_desc_comp)
+			headers[i++] = USBDHDR(epout_desc_comp);
+		headers[i++] = USBDHDR(&as_iso_out_desc);
 	}
 	if (EPIN_EN(opts)) {
 		headers[i++] = USBDHDR(&as_in_interface_alt_0_desc);
-
-		for (j = 0; j < UAC_MAX_RATES; j++) {
-			if (as_in_type_ix_desc[j]->bBitResolution > 0) {
-				headers[i++] = USBDHDR(as_in_interface_alt_x_desc[j]);
-				headers[i++] = USBDHDR(&as_in_header_desc);
-				headers[i++] = USBDHDR(as_in_type_ix_desc[j]);
-				headers[i++] = USBDHDR(epout_desc);
-				if (epout_desc_comp)
-					headers[i++] = USBDHDR(epout_desc_comp);
-				headers[i++] = USBDHDR(&as_iso_in_desc);
-			}
-		}
+		headers[i++] = USBDHDR(&as_in_interface_alt_1_desc);
+		headers[i++] = USBDHDR(&as_in_header_desc);
+		headers[i++] = USBDHDR(&as_in_type_i1_desc);
+		headers[i++] = USBDHDR(epout_desc);
+		if (epout_desc_comp)
+			headers[i++] = USBDHDR(epout_desc_comp);
+		headers[i++] = USBDHDR(&as_iso_in_desc);
 	}
 	headers[i] = NULL;
 }
@@ -1639,12 +1127,10 @@ static int f_audio_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 	int ret = 0;
 
 	/* No i/f has more than 2 alt settings */
-	// if (alt > 1) {
-	// 	dev_err(dev, "%s:%d Error!\n", __func__, __LINE__);
-	// 	return -EINVAL;
-	// }
-
-	dev_dbg(dev, "intf:%d alt:%d!\n", intf, alt);
+	if (alt > 1) {
+		dev_err(dev, "%s:%d Error!\n", __func__, __LINE__);
+		return -EINVAL;
+	}
 
 	if (intf == uac1->ac_intf) {
 		/* Control I/f has only 1 AltSetting - 0 */
@@ -1667,26 +1153,16 @@ static int f_audio_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 		uac1->as_out_alt = alt;
 		audio->out_alt = alt;
 
-		if (alt) {
-			if (as_out_type_ix_desc[alt - 1]->bBitResolution == 0) {
-				dev_err(dev, "%s:%d Error, desc bsize is zero!\n", __func__, __LINE__);
-				return -EINVAL;
-			}
+		if (alt)
 			ret = u_audio_start_capture(&uac1->g_audio);
-		}
 		else
 			u_audio_stop_capture(&uac1->g_audio);
 	} else if (intf == uac1->as_in_intf) {
 		uac1->as_in_alt = alt;
 		audio->in_alt = alt;
 
-		if (alt) {
-			if (as_in_type_ix_desc[alt - 1]->bBitResolution == 0) {
-				dev_err(dev, "%s:%d Error, desc bsize is zero!\n", __func__, __LINE__);
-				return -EINVAL;
-			}
+		if (alt)
 			ret = u_audio_start_playback(&uac1->g_audio);
-		}
 		else
 			u_audio_stop_playback(&uac1->g_audio);
 	} else {
@@ -1867,10 +1343,10 @@ static int f_audio_validate_opts(struct g_audio *audio, struct device *dev)
 	} else if (opts->c_chmask & ~UAC1_CHANNEL_MASK) {
 		dev_err(dev, "Error: unsupported capture channels mask\n");
 		return -EINVAL;
-	} else if ((opts->p_ssizes[0] < 1) || (opts->p_ssizes[0] > 4)) {
+	} else if ((opts->p_ssize < 1) || (opts->p_ssize > 4)) {
 		dev_err(dev, "Error: incorrect playback sample size\n");
 		return -EINVAL;
-	} else if ((opts->c_ssizes[0] < 1) || (opts->c_ssizes[0] > 4)) {
+	} else if ((opts->c_ssize < 1) || (opts->c_ssize > 4)) {
 		dev_err(dev, "Error: incorrect capture sample size\n");
 		return -EINVAL;
 	} else if (!opts->p_srates[0]) {
@@ -1940,12 +1416,7 @@ static int set_ep_max_packet_size(const struct f_uac1_opts *opts,
 			if (opts->p_srates[i] > srate)
 				srate = opts->p_srates[i];
 		}
-		for (i = 0; i < UAC_MAX_RATES; i++) {
-			if (opts->p_ssizes[i] == 0)
-				break;
-			if (opts->p_ssizes[i] > ssize)
-				ssize = opts->p_ssizes[i];
-		}
+		ssize = opts->p_ssize;
 	} else {
 		chmask = opts->c_chmask;
 		for (i = 0; i < UAC_MAX_RATES; i++) {
@@ -1954,12 +1425,7 @@ static int set_ep_max_packet_size(const struct f_uac1_opts *opts,
 			if (opts->c_srates[i] > srate)
 				srate = opts->c_srates[i];
 		}
-		for (i = 0; i < UAC_MAX_RATES; i++) {
-			if (opts->c_ssizes[i] == 0)
-				break;
-			if (opts->c_ssizes[i] > ssize)
-				ssize = opts->c_ssizes[i];
-		}
+		ssize = opts->c_ssize;
 	}
 
 	max_size_bw = num_channels(chmask) * ssize *
@@ -1983,7 +1449,7 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 	struct usb_string		*us;
 	int				ba_iface_id;
 	int				status;
-	int				idx, i, j;
+	int				idx, i;
 
 	status = f_audio_validate_opts(audio, dev);
 	if (status)
@@ -2023,18 +1489,14 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 	io_out_ot_desc.iTerminal = us[STR_IO_OUT_OT].id;
 
 	as_out_interface_alt_0_desc.iInterface = us[STR_AS_OUT_IF_ALT0].id;
-	for (i = 0; i < UAC_MAX_RATES; i++) {
-		as_out_interface_alt_x_desc[i]->iInterface = us[STR_AS_OUT_IF_ALT1 + i].id;
-	}
+	as_out_interface_alt_1_desc.iInterface = us[STR_AS_OUT_IF_ALT1].id;
 
 	io_in_it_desc.iTerminal = us[STR_IO_IN_IT].id;
 	io_in_it_desc.iChannelNames = us[STR_IO_IN_IT_CH_NAMES].id;
 	usb_in_ot_desc.iTerminal = us[STR_USB_IN_OT].id;
 
 	as_in_interface_alt_0_desc.iInterface = us[STR_AS_IN_IF_ALT0].id;
-	for (i = 0; i < UAC_MAX_RATES; i++) {
-		as_in_interface_alt_x_desc[i]->iInterface = us[STR_AS_IN_IF_ALT1 + i].id;
-	}
+	as_in_interface_alt_1_desc.iInterface = us[STR_AS_IN_IF_ALT1].id;
 
 	if (FUOUT_EN(audio_opts)) {
 		u8 *i_feature;
@@ -2056,15 +1518,12 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 	usb_out_it_desc.wChannelConfig = cpu_to_le16(audio_opts->c_chmask);
 	io_in_it_desc.bNrChannels = num_channels(audio_opts->p_chmask);
 	io_in_it_desc.wChannelConfig = cpu_to_le16(audio_opts->p_chmask);
-
-	for(i = 0; i < UAC_MAX_RATES; i++) {
-		as_out_type_ix_desc[i]->bNrChannels = num_channels(audio_opts->c_chmask);
-		as_out_type_ix_desc[i]->bSubframeSize = audio_opts->c_ssizes[i];
-		as_out_type_ix_desc[i]->bBitResolution = audio_opts->c_ssizes[i] * 8;
-		as_in_type_ix_desc[i]->bNrChannels = num_channels(audio_opts->p_chmask);
-		as_in_type_ix_desc[i]->bSubframeSize = audio_opts->p_ssizes[i];
-		as_in_type_ix_desc[i]->bBitResolution = audio_opts->p_ssizes[i] * 8;
-	}
+	as_out_type_i1_desc.bNrChannels = num_channels(audio_opts->c_chmask);
+	as_out_type_i1_desc.bSubframeSize = audio_opts->c_ssize;
+	as_out_type_i1_desc.bBitResolution = audio_opts->c_ssize * 8;
+	as_in_type_i1_desc.bNrChannels = num_channels(audio_opts->p_chmask);
+	as_in_type_i1_desc.bSubframeSize = audio_opts->p_ssize;
+	as_in_type_i1_desc.bBitResolution = audio_opts->p_ssize * 8;
 
 	if (FUOUT_EN(audio_opts)) {
 		__le16 *bma = (__le16 *)&out_feature_unit_desc->bmaControls[0];
@@ -2091,11 +1550,8 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 	for (i = 0, idx = 0; i < UAC_MAX_RATES; i++) {
 		if (audio_opts->c_srates[i] == 0)
 			break;
-		for (j = 0; j < UAC_MAX_RATES; j++) {
-			memcpy(as_out_type_ix_desc[j]->tSamFreq[idx],
-					&audio_opts->c_srates[i], 3);
-		}
-		idx++;
+		memcpy(as_out_type_i1_desc.tSamFreq[idx++],
+				&audio_opts->c_srates[i], 3);
 	}
 
 	/*
@@ -2134,24 +1590,17 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 
 	as_out_ep_desc_comp.wBytesPerInterval = as_out_ep_desc.wMaxPacketSize;
 	as_in_ep_desc_comp.wBytesPerInterval = as_in_ep_desc.wMaxPacketSize;
-	for (j = 0; j < UAC_MAX_RATES; j++) {
-		as_out_type_ix_desc[j]->bLength = UAC_FORMAT_TYPE_I_DISCRETE_DESC_SIZE(idx);
-		as_out_type_ix_desc[j]->bSamFreqType = idx;
-	}
+	as_out_type_i1_desc.bLength = UAC_FORMAT_TYPE_I_DISCRETE_DESC_SIZE(idx);
+	as_out_type_i1_desc.bSamFreqType = idx;
 
 	for (i = 0, idx = 0; i < UAC_MAX_RATES; i++) {
 		if (audio_opts->p_srates[i] == 0)
 			break;
-		for (j = 0; j < UAC_MAX_RATES; j++) {
-			memcpy(as_in_type_ix_desc[j]->tSamFreq[idx],
-					&audio_opts->p_srates[i], 3);
-		}
-		idx++;
+		memcpy(as_in_type_i1_desc.tSamFreq[idx++],
+				&audio_opts->p_srates[i], 3);
 	}
-	for (j = 0; j < UAC_MAX_RATES; j++) {
-		as_in_type_ix_desc[j]->bLength = UAC_FORMAT_TYPE_I_DISCRETE_DESC_SIZE(idx);
-		as_in_type_ix_desc[j]->bSamFreqType = idx;
-	}
+	as_in_type_i1_desc.bLength = UAC_FORMAT_TYPE_I_DISCRETE_DESC_SIZE(idx);
+	as_in_type_i1_desc.bSamFreqType = idx;
 	uac1->p_srate = audio_opts->p_srates[0];
 	uac1->c_srate = audio_opts->c_srates[0];
 
@@ -2171,9 +1620,7 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 		if (status < 0)
 			goto err_free_fu;
 		as_out_interface_alt_0_desc.bInterfaceNumber = status;
-		for (j = 0; j < UAC_MAX_RATES; j++) {
-			as_out_interface_alt_x_desc[j]->bInterfaceNumber = status;
-		}
+		as_out_interface_alt_1_desc.bInterfaceNumber = status;
 		ac_header_desc->baInterfaceNr[ba_iface_id++] = status;
 		uac1->as_out_intf = status;
 		uac1->as_out_alt = 0;
@@ -2184,9 +1631,7 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 		if (status < 0)
 			goto err_free_fu;
 		as_in_interface_alt_0_desc.bInterfaceNumber = status;
-		for (j = 0; j < UAC_MAX_RATES; j++) {
-			as_in_interface_alt_x_desc[j]->bInterfaceNumber = status;
-		}
+		as_in_interface_alt_1_desc.bInterfaceNumber = status;
 		ac_header_desc->baInterfaceNr[ba_iface_id++] = status;
 		uac1->as_in_intf = status;
 		uac1->as_in_alt = 0;
@@ -2245,8 +1690,7 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 	audio->params.c_chmask = audio_opts->c_chmask;
 	memcpy(audio->params.c_srates, audio_opts->c_srates,
 			sizeof(audio->params.c_srates));
-	memcpy(audio->params.c_ssizes, audio_opts->c_ssizes,
-			sizeof(audio->params.c_ssizes));
+	audio->params.c_ssizes[0] = audio_opts->c_ssize;
 	if (FUIN_EN(audio_opts)) {
 		audio->params.p_fu.id = USB_IN_FU_ID;
 		audio->params.p_fu.mute_present = audio_opts->p_mute_present;
@@ -2259,8 +1703,7 @@ static int f_audio_bind(struct usb_configuration *c, struct usb_function *f)
 	audio->params.p_chmask = audio_opts->p_chmask;
 	memcpy(audio->params.p_srates, audio_opts->p_srates,
 			sizeof(audio->params.p_srates));
-	memcpy(audio->params.p_ssizes, audio_opts->p_ssizes,
-			sizeof(audio->params.p_ssizes));
+	audio->params.p_ssizes[0] = audio_opts->p_ssize;
 	if (FUOUT_EN(audio_opts)) {
 		audio->params.c_fu.id = USB_OUT_FU_ID;
 		audio->params.c_fu.mute_present = audio_opts->c_mute_present;
@@ -2461,10 +1904,10 @@ CONFIGFS_ATTR(f_uac1_opts_, name)
 
 UAC1_ATTRIBUTE(u32, c_chmask);
 UAC1_RATE_ATTRIBUTE(c_srate);
-UAC1_RATE_ATTRIBUTE(c_ssize);
+UAC1_ATTRIBUTE(u32, c_ssize);
 UAC1_ATTRIBUTE(u32, p_chmask);
 UAC1_RATE_ATTRIBUTE(p_srate);
-UAC1_RATE_ATTRIBUTE(p_ssize);
+UAC1_ATTRIBUTE(u32, p_ssize);
 UAC1_ATTRIBUTE(u32, req_number);
 
 UAC1_ATTRIBUTE(bool, p_mute_present);
@@ -2536,10 +1979,10 @@ static struct usb_function_instance *f_audio_alloc_inst(void)
 
 	opts->c_chmask = UAC1_DEF_CCHMASK;
 	opts->c_srates[0] = UAC1_DEF_CSRATE;
-	opts->c_ssizes[0] = UAC1_DEF_CSSIZE;
+	opts->c_ssize = UAC1_DEF_CSSIZE;
 	opts->p_chmask = UAC1_DEF_PCHMASK;
 	opts->p_srates[0] = UAC1_DEF_PSRATE;
-	opts->p_ssizes[0] = UAC1_DEF_PSSIZE;
+	opts->p_ssize = UAC1_DEF_PSSIZE;
 
 	opts->p_mute_present = UAC1_DEF_MUTE_PRESENT;
 	opts->p_volume_present = UAC1_DEF_VOLUME_PRESENT;
