@@ -3,10 +3,9 @@
 #include "music_view.h"
 #include "info_view.h"
 #include "view_state.h"
-#include "view/view_main.h"
+#include "main_view.h"
 #include "view/view_input.h"
 #include "view/view_top_info.h"
-#include "view/view_keyborad.h"
 
 #include "../player/player_info.h"
 #include "../player/player.h"
@@ -35,7 +34,7 @@ void view_init()
 {
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);
 
-    // main_view = lv_main_create(lv_screen_active());
+    main_view = lv_main_view_create(lv_screen_active());
 
     music_view = lv_music_view_create(lv_screen_active());
 

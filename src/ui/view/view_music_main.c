@@ -309,7 +309,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     /*Create the titles*/
     lv_obj_t *cont = lv_obj_create(parent);
     lv_obj_remove_style_all(cont);
-    lv_obj_set_height(cont, 130);
+    lv_obj_set_height(cont, 120);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_refresh_ext_draw_size(cont);
@@ -516,12 +516,10 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     lv_obj_remove_style_all(image_bg);
     lv_obj_set_size(image_bg, PIC_SIZE, PIC_SIZE);
     lv_obj_set_style_bg_color(image_bg, lv_color_hex(0xaf93f6), 0);
-    // lv_obj_set_style_bg_opa(image_bg, 200, 0);
     lv_obj_set_style_radius(image_bg, 5, 0);
     lv_obj_set_style_shadow_width(image_bg, 15, 0);
     lv_obj_set_style_shadow_spread(image_bg, 7, 0);
     lv_obj_set_style_shadow_color(image_bg, lv_color_hex(0xaf93f6), 0);
-    // lv_obj_set_style_shadow_opa(image_bg, 200, 0);
 
     album_image_obj = create_album_image_obj(cont);
 
@@ -557,7 +555,7 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     lv_obj_update_layout(main_cont);
 
     volume_pan_obj = create_volume_slider(cont, volume, mute);
-    lv_obj_align_to(volume_pan_obj, image_bg, LV_ALIGN_OUT_RIGHT_MID, 70, 0);
+    lv_obj_align_to(volume_pan_obj, image_bg, LV_ALIGN_OUT_RIGHT_MID, 30, 0);
 
     lv_obj_t *lyric = lv_lyric_create(cont);
     lv_obj_set_grid_cell(lyric, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 3, 1);

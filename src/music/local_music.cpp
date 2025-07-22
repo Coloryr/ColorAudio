@@ -282,14 +282,12 @@ static void local_music_run()
 
 static void *play_read_run(void *arg)
 {
-    top_info_display("正在读取列表");
     play_list_close();
     play_read_list(READ_DIR);
     view_init_list();
 
     if (play_list.empty())
     {
-        top_error_display("没有音乐文件");
         return NULL;
     }
 
@@ -324,10 +322,6 @@ static void *play_read_run(void *arg)
     {
         LV_LOG_ERROR("Music play list scan thread run fail: %d", res);
     }
-
-    top_info_close();
-
-    local_music_run();
 
     return NULL;
 }
