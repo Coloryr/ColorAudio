@@ -19,16 +19,19 @@ make install
 
 using gcc : arm : /home/coloryr/arm-none-linux-gnueabihf/bin/arm-none-linux-gnueabihf-g++ ;
 
-
 sudo apt update
 sudo apt install bluez dbus
 
 sudo service dbus start
 sudo service bluetooth start
 
+export DISPLAY=":0"
 export DISPLAY="192.168.112.1:0.0"
 
 echo 1 > /sys/class/leds/wifi-power/brightness
+
+echo 0 > /sys/class/leds/wifi-power/brightness
+echo 1 > /sys/bus/usb/devices/2-1/remove
 
 #启动脚本
 wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant.conf
