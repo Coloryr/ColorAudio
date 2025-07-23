@@ -2,7 +2,7 @@
 
 #include "../common/data_item.h"
 #include "../stream/stream_mem.h"
-#include "view_state.h"
+
 #include "ui.h"
 #include "music_view.h"
 
@@ -181,7 +181,7 @@ void load_mp4(data_item *item)
                 if (dec.Decode(temp, size, &out))
                 {
                     cov.Convert(&out, rgb);
-                    view_mp4_update();
+                    view_music_mp4_update();
                     usleep(300000);
                     LV_LOG_USER("decoder frame: %d", frame++);
                 }

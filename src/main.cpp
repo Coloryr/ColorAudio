@@ -25,7 +25,6 @@
 #include "sys/timestamp.h"
 
 #include "main.h"
-#include "ui/view_state.h"
 #include "ui/ui.h"
 #include "player/sound.h"
 #include "player/player.h"
@@ -63,25 +62,14 @@ int main(int argc, char **argv)
 
     alsa_init();
 
-    usb_audio_test();
-
     play_init();
     rime_init();
-    music_init();
-
-#ifdef BUILD_ARM
-    // set_wireless_power_on();
-#endif
-
-    // ble_init();
-
-    // ble_run_loop();
-
     lv_port_init();
 
     view_init();
-
     local_music_init();
+    music_init();
+
     // net_music_init();
 
 #ifdef BUILD_ARM

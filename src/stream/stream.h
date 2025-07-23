@@ -10,6 +10,7 @@ typedef enum
     STREAM_TYPE_MEM,
     STREAM_TYPE_CIR,
     STREAM_TYPE_HTTP,
+    STREAM_TYPE_NCM,
     STREAM_TYPE_UNKNOW = -1
 } steam_type;
 

@@ -37,7 +37,7 @@ lv_obj_t *lv_main_create(lv_obj_t *parent)
     lv_obj_remove_style_all(obj);
     lv_obj_set_style_bg_color(obj, lv_color_hex(0xffffff), 0);
     lv_obj_set_style_bg_opa(obj, 255, 0);
-    lv_obj_set_size(obj, LV_HOR_RES, LV_HOR_RES);
+    lv_obj_set_size(obj, LV_HOR_RES, LV_VER_RES);
 
     lv_obj_t *cout = lv_obj_create(obj);
     lv_obj_remove_style_all(cout);

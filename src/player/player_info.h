@@ -21,6 +21,7 @@ typedef enum
     MUSIC_TYPE_WAV = 0,
     MUSIC_TYPE_MP3,
     MUSIC_TYPE_FLAC,
+    MUSIC_TYPE_NCM,
     MUSIC_TYPE_UNKNOW = -1
 } music_type;
 
@@ -41,7 +42,6 @@ typedef enum
     MUSIC_STATE_PLAY = 0,
     MUSIC_STATE_PAUSE,
     MUSIC_STATE_STOP,
-    MUSIC_STATE_SEEK,
     MUSIC_STATE_UNKNOW = -1
 } music_state;
 
@@ -54,7 +54,6 @@ typedef enum
     MUSIC_INFO_UNKNOW = -1
 } music_info_type;
 
-extern music_run_type music_run;
 extern music_type play_music_type;
 extern music_state play_state;
 extern music_mode play_music_mode;

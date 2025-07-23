@@ -188,18 +188,6 @@ bool DecoderFlac::decode_start()
 
     for (;;)
     {
-        if (play_state == MUSIC_STATE_PAUSE)
-        {
-            usleep(10000);
-            continue;
-        }
-        if (play_state == MUSIC_STATE_STOP)
-        {
-            break;
-        }
-
-        uint64_t pos;
-
         if (target_time > 0)
         {
             uint64_t target_sample = (uint64_t)(target_time * sample_rate);
@@ -208,6 +196,17 @@ bool DecoderFlac::decode_start()
 
             target_time = 0;
             play_jump_end();
+        }
+
+        if (play_state == MUSIC_STATE_STOP || play_need_seek)
+        {
+            break;
+        }
+
+        if (play_state == MUSIC_STATE_PAUSE)
+        {
+            usleep(10000);
+            continue;
         }
 
         if (!process_single())

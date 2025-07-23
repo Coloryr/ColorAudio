@@ -25,6 +25,7 @@ public:
      * @param size 存储大小
      */
     data_item(uint32_t size);
+    data_item(uint8_t* buffer, uint32_t size);
     /**
      * 销毁数据存储
      */

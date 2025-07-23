@@ -27,7 +27,6 @@ void music_lyric_163(uint64_t id);
 void music_start();
 void music_end();
 void music_next();
-void music_test_run(music_run_type type);
 void music_go_local();
 void music_go_net();
 

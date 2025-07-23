@@ -34,4 +34,18 @@ void set_wireless_power_on()
     }
 }
 
+void set_wireless_power_off()
+{
+    if (get_wireless_power())
+    {
+        set_wireless_power(false);
+    }
+    if (access(DEVICE_USB, F_OK) == 0)
+    {
+        int fd = open(DEVICE_USB, O_WRONLY);
+        write(fd, wireless_open, 2);
+        close(fd);
+    }
+}
+
 #endif

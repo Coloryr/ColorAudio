@@ -23,12 +23,19 @@ void view_music_set_check(uint32_t index, bool enable);
 void view_music_set_lyric(LyricParser *lyric, LyricParser *tlyric);
 void view_music_set_display(bool display);
 
-lv_obj_t *lv_music_view_create(lv_obj_t *parent);
-void lv_music_view_tick();
+void view_muisc_list_clear();
+void view_muisc_list_reload(play_item *item);
+void view_muisc_list_add(play_item *item);
+void view_music_list_check(uint32_t index, bool state);
 
-void lv_list_clear();
-void lv_muisc_list_item_reload(play_item *item);
-void lv_list_add_item(play_item *item);
-void view_music_list_button_check(uint32_t index, bool state);
+void view_music_create(lv_obj_t *parent);
+void view_music_tick();
+void view_music_update_info();
+void view_music_clear_info();
+void view_music_update_img();
+void view_music_mp4_update();
+void view_music_update_state();
+void view_music_update_list();
+void view_music_init_list();
 
 #endif // __MUSIC_VIEW_H__

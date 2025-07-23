@@ -16,6 +16,13 @@ data_item::data_item(uint32_t size)
     }
 }
 
+data_item::data_item(uint8_t* buffer, uint32_t size)
+{
+    this->size = size;
+    data = static_cast<uint8_t *>(malloc(size));
+    memcpy(data, buffer, size);
+}
+
 data_item::~data_item()
 {
     if (data)
@@ -24,9 +31,9 @@ data_item::~data_item()
     }
 }
 
-data_item* data_item::copy()
+data_item *data_item::copy()
 {
-    data_item* item = new data_item(size);
+    data_item *item = new data_item(size);
     memcpy(item->data, data, size);
 
     return item;

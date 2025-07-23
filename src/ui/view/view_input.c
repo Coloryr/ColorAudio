@@ -31,16 +31,16 @@ static lv_obj_t *input_text_obj;
 static lv_style_t style_select_scrollbar;
 static lv_style_t style_select_btn;
 
-static uint8_t *input_done_text;
 static uint8_t input_temp[256] = {0};
 static uint32_t input_max_page;
 static uint32_t input_now_page;
 static uint16_t input_max_len;
-static input_done_t input_call;
+
 static bool input_have_data = false;
 static bool is_ch_mode;
 
 static uint8_t *input_char_table[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+static void(*close)();
 
 static void create_select(lv_obj_t *parent)
 {
@@ -339,53 +339,34 @@ static void keyboard_event_cb(lv_event_t *e)
     }
     else if (code == LV_EVENT_READY)
     {
-        input_close();
+        close();
     }
 }
 
-void input_close()
+void lv_input_set_max_size(uint16_t size)
 {
-    anim_set_display(input_obj, false);
-
-    if (input_done_text != NULL)
-    {
-        const char *text = lv_textarea_get_text(input_text_obj);
-        uint16_t len = strlen(text);
-        memcpy(input_done_text, text, len);
-        input_done_text[len] = 0;
-    }
-    if (input_call != NULL)
-    {
-        input_call(false);
-    }
-    lv_textarea_set_text(input_text_obj, "");
-    input_done_text = NULL;
-    input_call = NULL;
+    input_max_len = size;
 }
 
-void input_show(char *input, uint16_t max_len, input_done_t call)
+void lv_input_set_text(const char *text)
 {
-    if (input == NULL)
-    {
-        return;
-    }
-    input_call = call;
-    input_max_len = max_len;
-    input_done_text = input;
-    if (strlen(input) > 0)
-    {
-        lv_textarea_set_text(input_text_obj, input);
-    }
-    else
-    {
-        lv_textarea_set_text(input_text_obj, "");
-    }
-
-    anim_set_display(input_obj, true);
+    lv_textarea_set_text(input_text_obj, text);
 }
 
-lv_obj_t *lv_input_create(lv_obj_t *parent)
+const char *lv_input_get_text()
 {
+    return lv_textarea_get_text(input_text_obj);
+}
+
+void lv_input_display(bool display)
+{
+    anim_set_display(input_obj, display);
+}
+
+void lv_input_create(lv_obj_t *parent, void(*close_cb)())
+{
+    close = close_cb;
+
     lv_style_init(&style_select_scrollbar);
     // lv_style_set_width(&style_select_scrollbar, 4);
     // lv_style_set_bg_opa(&style_select_scrollbar, LV_OPA_COVER);
@@ -424,6 +405,4 @@ lv_obj_t *lv_input_create(lv_obj_t *parent)
     lv_obj_align_to(input_select_obj, kb, LV_ALIGN_OUT_TOP_MID, 0, 10);
 
     lv_obj_add_flag(input_obj, LV_OBJ_FLAG_HIDDEN);
-
-    return input_obj;
 }

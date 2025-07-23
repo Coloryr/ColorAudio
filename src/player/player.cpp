@@ -8,8 +8,7 @@
 #include "../music/mp3_id3.h"
 #include "../music/music.h"
 #include "../stream/stream.h"
-#include "../ui/ui.h"
-#include "../ui/view_state.h"
+#include "../ui/music_view.h"
 #include "../config/config.h"
 
 #include "../lvgl/src/misc/lv_log.h"
@@ -41,9 +40,11 @@ ColorAudio::Stream *play_st;
 pthread_mutex_t play_mutex;
 pthread_cond_t play_start;
 
+bool play_need_seek;
+
 music_type play_test_music_type(ColorAudio::Stream *st)
 {
-    uint8_t buffer[4];
+    uint8_t buffer[8];
     st->peek(buffer, sizeof(buffer));
 
     if (buffer[0] == 'R' && buffer[1] == 'I' && buffer[2] == 'F' && buffer[3] == 'F')
@@ -61,6 +62,11 @@ music_type play_test_music_type(ColorAudio::Stream *st)
     else if (buffer[0] == 0xFF && buffer[1] == 0xFB)
     {
         return MUSIC_TYPE_MP3;
+    }
+    else if (buffer[0] == 'C' && buffer[1] == 'T' && buffer[2] == 'E' && buffer[3] == 'N' &&
+             buffer[4] == 'F' && buffer[5] == 'D' && buffer[6] == 'A' && buffer[7] == 'M')
+    {
+        return MUSIC_TYPE_NCM;   
     }
 
     return MUSIC_TYPE_UNKNOW;
@@ -93,7 +99,7 @@ static void *play_run(void *arg)
 
         play_state = MUSIC_STATE_PLAY;
 
-        view_update_state();
+        view_music_update_state();
 
         Decoder *play_decoder;
 
@@ -115,7 +121,7 @@ static void *play_run(void *arg)
 
         if (!play_decoder->decode_start())
         {
-            view_update_state();
+            view_music_update_state();
             LV_LOG_USER("play decoder run fail");
         }
         delete play_decoder;
@@ -124,13 +130,13 @@ static void *play_run(void *arg)
         {
             alsa_clear();
             play_st->seek(start_pos, SEEK_SET);
-            play_state = MUSIC_STATE_SEEK;
+            play_need_seek = false;
             goto play;
         }
 
         target_time = 0;
 
-        view_music_clear();
+        view_music_clear_info();
 
         delete play_st;
         play_st = NULL;
@@ -173,8 +179,8 @@ void play_clear()
 
     play_update_image(nullptr, MUSIC_INFO_IMAGE);
 
-    view_update_info();
-    view_update_img();
+    view_music_update_info();
+    view_music_update_img();
 }
 
 void play_update_image(data_item *data, music_info_type type)
@@ -238,7 +244,7 @@ bool play_set_command(music_command command)
         play_music_mode = static_cast<music_mode>((play_music_mode + 1) % 2);
         config::set_config_music_code(play_music_mode);
         config::save_config();
-        view_update_state();
+        view_music_update_state();
         return true;
     case MUSIC_COMMAND_UNKNOW:
         play_now_command = MUSIC_COMMAND_UNKNOW;
@@ -250,14 +256,14 @@ bool play_set_command(music_command command)
 
 void play_jump_time(float time)
 {
+    play_need_seek = true;
     target_time = time / 1000;
     jump_time = target_time;
-    play_state = MUSIC_STATE_STOP;
 }
 
 void play_jump_end()
 {
-    play_state = MUSIC_STATE_PLAY;
+    play_need_seek = false;
     time_now = jump_time - target_time;
     jump_time = 0;
     target_time = 0;

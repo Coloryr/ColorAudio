@@ -1,12 +1,12 @@
 #include "music.h"
 
 #include "lyric.h"
+#include "local_music.h"
 
 #include "../player/player.h"
 #include "../net/music_api.h"
-#include "../ui/view_state.h"
-#include "../ui/ui.h"
 #include "../ui/music_view.h"
+#include "../ui/info_view.h"
 #include "../config/config.h"
 #include "../common/utils.h"
 
@@ -17,12 +17,39 @@
 
 using namespace ColorAudio;
 
-// pthread_mutex_t play_mutex;
-// pthread_cond_t play_start;
+static music_run_type music_run = MUSIC_RUN_UNKNOW;
+
+static pthread_t rtid;
 
 static uint32_t jump_index = UINT32_MAX;
 
 static std::deque<uint32_t> play_last_stack;
+
+static void *music_run_loop(void *arg)
+{
+    for (;;)
+    {
+        usleep(500);
+        if (music_run == MUSIC_RUN_LOCAL)
+        {
+            if (local_music_scan_now)
+            {
+                if (!view_top_info_is_display())
+                {
+                    view_top_info_display("正在扫描音乐");
+                }
+            }
+            else
+            {
+                if (view_top_info_is_display())
+                {
+                    view_top_info_close();
+                }
+                local_music_run();
+            }
+        }
+    }
+}
 
 void music_lyric_163(uint64_t id)
 {
@@ -52,14 +79,6 @@ void music_lyric_163(uint64_t id)
         {
             view_music_set_lyric_state(LYRIC_NONE);
         }
-    }
-}
-
-void music_test_run(music_run_type type)
-{
-    if (type == music_run)
-    {
-        return;
     }
 }
 
@@ -200,6 +219,11 @@ void music_init()
 
     play_music_mode = config::get_config_music_mode();
 
-    // pthread_mutex_init(&play_mutex, NULL);
-    // pthread_cond_init(&play_start, NULL);
+    music_run = MUSIC_RUN_LOCAL;
+
+    int res = pthread_create(&rtid, NULL, music_run_loop, NULL);
+    if (res)
+    {
+        LV_LOG_ERROR("Music thread run fail: %d", res);
+    }
 }

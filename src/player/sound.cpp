@@ -1,13 +1,13 @@
 #include "sound.h"
 #include "sound_fft.h"
 
-#include "../ui/view_state.h"
 #include "../config/config.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
 #include <alsa/asoundlib.h>
 #include <math.h>
+#include "../ui/music_view.h"
 
 using namespace ColorAudio;
 
@@ -281,7 +281,7 @@ void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate)
 
     LV_LOG_USER("ALSA change, ch:%d, rate:%d, format:%s", channels, rate, snd_pcm_format_name(format));
 
-    view_update_info();
+    view_music_update_info();
 
     isset = true;
 }

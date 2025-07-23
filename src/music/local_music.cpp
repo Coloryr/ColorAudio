@@ -8,15 +8,15 @@
 
 #include "../player/player.h"
 #include "../stream/stream_file.h"
+#include "../stream/stream_ncm.h"
 #include "../net/music_api.h"
-#include "../ui/ui.h"
 #include "../ui/music_view.h"
-#include "../ui/view_state.h"
 #include "../ui/info_view.h"
 #include "../config/config.h"
 #include "../common/utilspp.h"
 
 #include "../lvgl/src/misc/lv_log.h"
+#include "ncmcrypt.h"
 
 #include <unistd.h>
 #include <stdbool.h>
@@ -32,6 +32,10 @@
 #include <json/json.hpp>
 
 using namespace ColorAudio;
+
+bool local_music_scan_now;
+
+static pthread_t rtid;
 
 static void play_list_close()
 {
@@ -88,8 +92,8 @@ static void play_read_list(const char *path)
             play_item *t = new play_item();
             t->path = full_path;
             t->index = play_list_count++;
-            t->auther = "";
-            t->title = "";
+            t->auther = "读取中...";
+            t->title = "读取中...";
             t->time = 0;
 
             play_list[t->index] = t;
@@ -99,7 +103,7 @@ static void play_read_list(const char *path)
     closedir(dp);
 }
 
-static void *play_list_info_scan(void *arg)
+static void play_list_info_scan()
 {
     play_item *t;
     for (const auto &it : play_list)
@@ -140,12 +144,20 @@ static void *play_list_info_scan(void *arg)
             }
             break;
         }
+        case MUSIC_TYPE_NCM:
+        {
+            NeteaseCrypt cry = NeteaseCrypt(&st, true);
+            if (cry.mMetaData != nullptr)
+            {
+                t->title = cry.mMetaData->name();
+                t->auther = cry.mMetaData->artist();
+                t->time = cry.mMetaData->duration();
+            }
+        }
         }
     }
 
-    view_update_list();
-
-    return NULL;
+    view_music_update_list();
 }
 
 static void get_music_lyric(std::string &comment)
@@ -181,113 +193,16 @@ static void get_music_lyric(std::string &comment)
     }
 }
 
-static void local_music_run()
+static void *play_scan_run(void *arg)
 {
-    for (;;)
-    {
-        music_test_run(MUSIC_RUN_LOCAL);
-
-        pthread_mutex_lock(&play_mutex);
-        play_item *item = play_list[play_now_index];
-
-        StreamFile st = StreamFile(item->path);
-        music_type type = play_test_music_type(&st);
-        if (type == MUSIC_TYPE_UNKNOW)
-        {
-            LV_LOG_ERROR("Unkown music file type");
-            continue;
-        }
-
-        music_start();
-
-        if (type == MUSIC_TYPE_MP3)
-        {
-            Mp3Id3 id3 = Mp3Id3(&st);
-            if (id3.get_info())
-            {
-                comment = id3.comment;
-
-                play_update_text(id3.title, MUSIC_INFO_TITLE);
-                play_update_text(id3.auther, MUSIC_INFO_AUTHER);
-                play_update_text(id3.album, MUSIC_INFO_ALBUM);
-                play_update_image(id3.image->copy(), MUSIC_INFO_IMAGE);
-
-                view_update_img();
-            }
-
-            play_st = st.copy();
-            pthread_cond_signal(&play_start);
-            pthread_mutex_unlock(&play_mutex);
-
-            time_all = 0;
-            float scan_time = mp3_get_time_len(&st);
-
-            if (scan_time == 0)
-            {
-                LV_LOG_USER("time is 0");
-            }
-
-            time_all = scan_time;
-
-            view_update_info();
-        }
-        else if (type == MUSIC_TYPE_FLAC)
-        {
-            play_st = st.copy();
-            pthread_cond_signal(&play_start);
-            pthread_mutex_unlock(&play_mutex);
-
-            FlacMetadata flac = FlacMetadata(&st);
-            if (flac.decode_get_info())
-            {
-                comment = flac.info.comment;
-
-                play_update_text(flac.info.title, MUSIC_INFO_TITLE);
-                play_update_text(flac.info.auther, MUSIC_INFO_AUTHER);
-                play_update_text(flac.info.album, MUSIC_INFO_ALBUM);
-                play_update_image(flac.info.image->copy(), MUSIC_INFO_IMAGE);
-
-                time_all = flac.info.time;
-
-                view_update_info();
-                view_update_img();
-            }
-        }
-
-        if (!comment.empty())
-        {
-            get_music_lyric(comment);
-        }
-        else
-        {
-            view_music_set_lyric_state(LYRIC_NONE);
-        }
-
-        usleep(1000);
-
-        std::string name;
-        getfilename(item->path, name);
-        config::set_config_music_name(name);
-        config::set_config_music_index(play_now_index);
-        config::save_config();
-
-        // 等待播放结束
-        pthread_mutex_lock(&play_mutex);
-
-        music_end();
-
-        pthread_mutex_unlock(&play_mutex);
-    }
-}
-
-static void *play_read_run(void *arg)
-{
+    local_music_scan_now = true;
     play_list_close();
     play_read_list(READ_DIR);
-    view_init_list();
+    view_music_init_list();
 
     if (play_list.empty())
     {
+        local_music_scan_now = false;
         return NULL;
     }
 
@@ -316,22 +231,137 @@ static void *play_read_run(void *arg)
         }
     }
 
-    pthread_t sid;
-    int res = pthread_create(&sid, NULL, play_list_info_scan, NULL);
-    if (res)
-    {
-        LV_LOG_ERROR("Music play list scan thread run fail: %d", res);
-    }
+    local_music_scan_now = false;
 
+    play_list_info_scan();
     return NULL;
 }
 
 void local_music_init()
 {
-    pthread_t rtid;
-    int res = pthread_create(&rtid, NULL, play_read_run, NULL);
+    int res = pthread_create(&rtid, NULL, play_scan_run, NULL);
     if (res)
     {
         LV_LOG_ERROR("Music play list read thread run fail: %d", res);
     }
+}
+
+void local_music_run()
+{
+    pthread_mutex_lock(&play_mutex);
+    play_item *item = play_list[play_now_index];
+
+    StreamFile st = StreamFile(item->path);
+    music_type type = play_test_music_type(&st);
+    if (type == MUSIC_TYPE_UNKNOW)
+    {
+        LV_LOG_ERROR("Unkown music file type");
+        return;
+    }
+
+    music_start();
+
+    if (type == MUSIC_TYPE_MP3)
+    {
+        Mp3Id3 id3 = Mp3Id3(&st);
+        if (id3.get_info())
+        {
+            comment = id3.comment;
+
+            play_update_text(id3.title, MUSIC_INFO_TITLE);
+            play_update_text(id3.auther, MUSIC_INFO_AUTHER);
+            play_update_text(id3.album, MUSIC_INFO_ALBUM);
+            play_update_image(id3.image->copy(), MUSIC_INFO_IMAGE);
+
+            view_music_update_img();
+        }
+
+        play_st = st.copy();
+        pthread_cond_signal(&play_start);
+        pthread_mutex_unlock(&play_mutex);
+
+        time_all = 0;
+        float scan_time = mp3_get_time_len(&st);
+
+        if (scan_time == 0)
+        {
+            LV_LOG_USER("time is 0");
+        }
+
+        time_all = scan_time;
+
+        view_music_update_info();
+    }
+    else if (type == MUSIC_TYPE_FLAC)
+    {
+        play_st = st.copy();
+        pthread_cond_signal(&play_start);
+        pthread_mutex_unlock(&play_mutex);
+
+        FlacMetadata flac = FlacMetadata(&st);
+        if (flac.decode_get_info())
+        {
+            comment = flac.info.comment;
+
+            play_update_text(flac.info.title, MUSIC_INFO_TITLE);
+            play_update_text(flac.info.auther, MUSIC_INFO_AUTHER);
+            play_update_text(flac.info.album, MUSIC_INFO_ALBUM);
+            play_update_image(flac.info.image->copy(), MUSIC_INFO_IMAGE);
+
+            time_all = flac.info.time;
+
+            view_music_update_info();
+            view_music_update_img();
+        }
+    }
+    else if (type == MUSIC_TYPE_NCM)
+    {
+        NeteaseCrypt *cry = new NeteaseCrypt(&st, true);
+        play_st = new StreamNcm(st.copy(), cry);
+
+        pthread_cond_signal(&play_start);
+        pthread_mutex_unlock(&play_mutex);
+
+        if (cry->mMetaData != nullptr)
+        {
+            comment = cry->modify;
+
+            play_update_text(cry->mMetaData->name(), MUSIC_INFO_TITLE);
+            play_update_text(cry->mMetaData->artist(), MUSIC_INFO_AUTHER);
+            play_update_text(cry->mMetaData->album(), MUSIC_INFO_ALBUM);
+            if (cry->mImageData)
+            {
+                play_update_image(new data_item(cry->mImageData, cry->imageSize), MUSIC_INFO_IMAGE);
+            }
+
+            time_all = cry->mMetaData->duration() / 1000;
+
+            view_music_update_info();
+            view_music_update_img();
+        }
+    }
+
+    if (!comment.empty())
+    {
+        get_music_lyric(comment);
+    }
+    else
+    {
+        view_music_set_lyric_state(LYRIC_NONE);
+    }
+
+    usleep(1000);
+
+    std::string name;
+    getfilename(item->path, name);
+    config::set_config_music_name(name);
+    config::set_config_music_index(play_now_index);
+    config::save_config();
+
+    // 等待播放结束
+    pthread_mutex_lock(&play_mutex);
+
+    music_end();
+
+    pthread_mutex_unlock(&play_mutex);
 }

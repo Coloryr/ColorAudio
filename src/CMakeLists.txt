@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 17)
 
 # build arm32
-set(BUILD_ARM ON)
+# set(BUILD_ARM ON)
 
 # Lvgl
 set(LV_CONF_PATH
@@ -41,6 +41,7 @@ endif()
 
 include_directories(./lib_src)
 include_directories(./lib_src/bluez-alsa/src)
+include_directories(./lib_src/ncmdump/include)
 
 #def
 add_definitions(-DHAVE_CONFIG_H -DMINIMP4_IMPLEMENTATION)
@@ -49,6 +50,7 @@ add_definitions(-DHAVE_CONFIG_H -DMINIMP4_IMPLEMENTATION)
 
 file(GLOB_RECURSE LIB_SOURCES
 "./lib_src/bluez-alsa/src/*.*"
+"./lib_src/ncmdump/*.*"
 )
 
 file(GLOB_RECURSE SOURCES 

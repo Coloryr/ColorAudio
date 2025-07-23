@@ -1,7 +1,6 @@
 #include "view_lyric.h"
 
 #include "../font.h"
-#include "../view_state.h"
 #include "../../common/utils.h"
 
 #include "lvgl.h"
@@ -30,6 +29,17 @@ static bool have_k;
 #include "../lvgl/src/misc/lv_area_private.h"
 #include "../lvgl/src/misc/lv_text_private.h"
 
+typedef enum
+{
+    LYRIC_TEST1,
+    LYRIC_TEST2,
+    LYRIC_TEST3,
+    LYRIC_TEST4,
+    LYRIC_TEST5,
+    LYRIC_TEST6,
+    LYRIC_TEST7,
+} view_lyric_test;
+
 typedef struct
 {
     uint32_t x;
@@ -42,6 +52,8 @@ typedef struct
 
 static void lv_lyric_render(lv_event_t *e)
 {
+    view_lyric_test test_time = LYRIC_TEST1;
+
     lv_obj_t *obj = lv_event_get_current_target(e);
     lv_layer_t *layer = lv_event_get_layer(e);
 
@@ -94,8 +106,48 @@ static void lv_lyric_render(lv_event_t *e)
         strcpy(text + len2, text_lyric_k_now);
     }
     strcpy(text + len2 + len3, text_lyric);
-    // lv_text_get_size(&size_lyric, text, font_22, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
-    lv_text_get_size(&size_lyric_tr, text_lyric_tr, font_18, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
+
+    const lv_font_t *ly_font;
+    const lv_font_t *ty_font;
+
+test_next:
+    if (test_time == LYRIC_TEST1)
+    {
+        ly_font = font_22;
+        ty_font = font_18;
+    }
+    else if (test_time == LYRIC_TEST2)
+    {
+        ly_font = font_18;
+        ty_font = font_18;
+    }
+    else if (test_time == LYRIC_TEST3)
+    {
+        ly_font = font_18;
+        ty_font = font_16;
+    }
+    else if (test_time == LYRIC_TEST4)
+    {
+        ly_font = font_16;
+        ty_font = font_16;
+    }
+    else if (test_time == LYRIC_TEST5)
+    {
+        ly_font = font_16;
+        ty_font = font_12;
+    }
+    else if (test_time == LYRIC_TEST6)
+    {
+        ly_font = font_14;
+        ty_font = font_14;
+    }
+    else if (test_time == LYRIC_TEST7)
+    {
+        ly_font = font_14;
+        ty_font = font_12;
+    }
+
+    lv_text_get_size(&size_lyric_tr, text_lyric_tr, ty_font, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
     view_lyric_item k_lyric_pos[2] = {0};
 
     {
@@ -104,10 +156,10 @@ static void lv_lyric_render(lv_event_t *e)
 
         uint32_t line_start = 0;
         uint32_t new_line_start = 0;
-        uint16_t letter_height = lv_font_get_line_height(font_22);
+        uint16_t letter_height = lv_font_get_line_height(ly_font);
         while (text[line_start] != '\0')
         {
-            new_line_start += lv_text_get_next_line(&text[line_start], LV_TEXT_LEN_MAX, font_22, letter_space, max_w, NULL, LV_TEXT_FLAG_NONE);
+            new_line_start += lv_text_get_next_line(&text[line_start], LV_TEXT_LEN_MAX, ly_font, letter_space, max_w, NULL, LV_TEXT_FLAG_NONE);
 
             if ((unsigned long)size_lyric.y + (unsigned long)letter_height + (unsigned long)line_space > LV_MAX_OF(int32_t))
             {
@@ -120,7 +172,7 @@ static void lv_lyric_render(lv_event_t *e)
                 size_lyric.y += line_space;
             }
 
-            int32_t act_line_length = lv_text_get_width_with_flags(&text[line_start], new_line_start - line_start, font_22,
+            int32_t act_line_length = lv_text_get_width_with_flags(&text[line_start], new_line_start - line_start, ly_font,
                                                                    letter_space, LV_TEXT_FLAG_NONE);
 
             size_lyric.x = LV_MAX(act_line_length, size_lyric.x);
@@ -132,7 +184,7 @@ static void lv_lyric_render(lv_event_t *e)
                     k_lyric_pos[0].y = size_lyric.y - letter_height;
                     memcpy(temp_text, text + line_start, len);
                     temp_text[len] = 0;
-                    int32_t left_width = lv_text_get_width_with_flags(temp_text, new_line_start - line_start, font_22,
+                    int32_t left_width = lv_text_get_width_with_flags(temp_text, new_line_start - line_start, ly_font,
                                                                       letter_space, LV_TEXT_FLAG_NONE);
                     k_lyric_pos[0].x = ((max_w - act_line_length) / 2) + left_width;
                     k_lyric_pos[0].have = true;
@@ -143,7 +195,7 @@ static void lv_lyric_render(lv_event_t *e)
                     memcpy(temp_text, text + len2, len);
                     temp_text[len] = 0;
 
-                    lv_text_get_size(&k_lyric_pos[0].size, temp_text, font_22, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
+                    lv_text_get_size(&k_lyric_pos[0].size, temp_text, ly_font, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
                 }
                 else if (line_start >= len2 + len3 && line_start <= len2 + len3 && new_line_start <= len2 + len3)
                 {
@@ -157,7 +209,7 @@ static void lv_lyric_render(lv_event_t *e)
                     memcpy(temp_text, text + line_start, len);
                     temp_text[len] = 0;
 
-                    lv_text_get_size(&k_lyric_pos[1].size, temp_text, font_22, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
+                    lv_text_get_size(&k_lyric_pos[1].size, temp_text, ly_font, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
                 }
             }
             line_start = new_line_start;
@@ -174,6 +226,12 @@ static void lv_lyric_render(lv_event_t *e)
             size_lyric.y = letter_height;
         else
             size_lyric.y -= line_space;
+    }
+
+    if (test_time != LYRIC_TEST7 && size_lyric.y + size_lyric_tr.y > max_h)
+    {
+        test_time++;
+        goto test_next;
     }
 
     uint32_t pos = (max_h - size_lyric.y - size_lyric_tr.y) / 2;
@@ -201,7 +259,7 @@ static void lv_lyric_render(lv_event_t *e)
         lv_obj_init_draw_label_dsc(obj, LV_PART_MAIN, &lyric_draw_dsc);
         lv_bidi_calculate_align(&lyric_draw_dsc.align, &lyric_draw_dsc.bidi_dir, text);
 
-        lyric_draw_dsc.font = font_22;
+        lyric_draw_dsc.font = ly_font;
         lyric_draw_dsc.sel_color = lv_color_hex(0x5172f7);
         lyric_draw_dsc.sel_bg_color = lv_color_hex(0xffffff);
         lyric_draw_dsc.color = have_k ? lv_color_hex(0xaf93f6) : lv_color_hex(0x8199f7);
@@ -221,7 +279,7 @@ static void lv_lyric_render(lv_event_t *e)
 
         klyric_draw_dsc.align = LV_TEXT_ALIGN_LEFT;
 
-        klyric_draw_dsc.font = font_22;
+        klyric_draw_dsc.font = ly_font;
         klyric_draw_dsc.color = lv_color_hex(0x5172f7);
 
         uint32_t temp = k_lyric_pos[0].size.x * text_lyric_kp;
@@ -262,7 +320,7 @@ static void lv_lyric_render(lv_event_t *e)
 
         klyric1_draw_dsc.align = LV_TEXT_ALIGN_LEFT;
 
-        klyric1_draw_dsc.font = font_22;
+        klyric1_draw_dsc.font = ly_font;
         klyric1_draw_dsc.color = lv_color_hex(0x5172f7);
 
         uint32_t temp = k_lyric_pos[1].size.x * text_lyric_kp;
@@ -303,7 +361,7 @@ static void lv_lyric_render(lv_event_t *e)
         lv_obj_init_draw_label_dsc(obj, LV_PART_MAIN, &tlyric_draw_dsc);
         lv_bidi_calculate_align(&tlyric_draw_dsc.align, &tlyric_draw_dsc.bidi_dir, text_lyric_tr);
 
-        tlyric_draw_dsc.font = font_18;
+        tlyric_draw_dsc.font = ty_font;
         tlyric_draw_dsc.color = lv_color_hex(0x8199f7);
 
         lv_draw_label(layer, &tlyric_draw_dsc, &txt_coords);
@@ -321,7 +379,9 @@ lv_obj_t *lv_lyric_create(lv_obj_t *parent)
 
     pan = lv_obj_create(parent);
     lv_obj_remove_style_all(pan);
-    lv_obj_set_size(pan, wid, 110);
+    lv_obj_set_size(pan, wid, 115);
+    // lv_obj_set_style_bg_color(pan, lv_color_hex(0xFF0000), 0);
+    // lv_obj_set_style_bg_opa(pan, 50, 0);
     lv_obj_set_style_pad_left(pan, 20, 0);
     lv_obj_set_style_pad_right(pan, 20, 0);
     lv_obj_add_event_cb(pan, lv_lyric_render, LV_EVENT_DRAW_MAIN, NULL);

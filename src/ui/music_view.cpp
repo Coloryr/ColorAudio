@@ -1,8 +1,8 @@
 #include "music_view.h"
 
-#include "view_state.h"
+#include "input_view.h"
+#include "view_setting.h"
 #include "view/view_lyric.h"
-#include "view/view_input.h"
 #include "view/view_music_main.h"
 #include "view/view_music_list.h"
 
@@ -29,6 +29,14 @@ static uint32_t check_list_button, uncheck_list_button;
 static uint8_t *image_d;
 
 static float last_mute;
+
+static bool update_info;
+static bool clear_info;
+static bool update_img;
+static bool update_state;
+static bool update_list;
+static bool init_list;
+static bool mp4_have_update;
 
 static void lyric_tick(lv_timer_t *timer)
 {
@@ -63,7 +71,7 @@ static void lyric_tick(lv_timer_t *timer)
         return;
     }
 
-    if (play_state != MUSIC_STATE_PLAY)
+    if (play_state != MUSIC_STATE_PLAY && play_state != MUSIC_STATE_PAUSE)
     {
         return;
     }
@@ -120,6 +128,7 @@ static void lyric_tick(lv_timer_t *timer)
 static void timer_tick(lv_timer_t *timer)
 {
     lv_music_set_now_time(time_now);
+    lv_music_volume_timer_tick();
 
     if (clear_info)
     {
@@ -173,14 +182,14 @@ static void timer_tick(lv_timer_t *timer)
 
     if (init_list)
     {
-        lv_list_clear();
+        view_muisc_list_clear();
 
         for (auto it = play_list.begin(); it != play_list.end(); ++it)
         {
-            lv_list_add_item(it->second);
+            view_muisc_list_add(it->second);
         }
 
-        view_music_list_button_check(play_now_index, true);
+        view_music_list_check(play_now_index, true);
 
         init_list = false;
     }
@@ -189,31 +198,22 @@ static void timer_tick(lv_timer_t *timer)
     {
         for (auto it = play_list.begin(); it != play_list.end(); ++it)
         {
-            lv_muisc_list_item_reload(it->second);
+            view_muisc_list_reload(it->second);
         }
         update_list = false;
     }
 
     if (check_list_button != UINT32_MAX)
     {
-        view_music_list_button_check(check_list_button, true);
+        view_music_list_check(check_list_button, true);
 
         check_list_button = UINT32_MAX;
     }
     if (uncheck_list_button != UINT32_MAX)
     {
-        view_music_list_button_check(uncheck_list_button, false);
+        view_music_list_check(uncheck_list_button, false);
 
         uncheck_list_button = UINT32_MAX;
-    }
-
-    if (volume_down > 0)
-    {
-        volume_down--;
-        if (volume_down <= 0)
-        {
-            lv_music_volume_close();
-        }
     }
 
     if (enable_mp4)
@@ -233,7 +233,7 @@ static void search_done(bool iscancel);
 static void clear_click_event_cb(lv_event_t *e);
 static void search_click_event_cb(lv_event_t *e);
 static void play_click_event_cb(lv_event_t *e);
-static void list_delete_event_cb(lv_event_t *e);
+static void list_event_cb(lv_event_t *e);
 
 static char view_list_search_data[512] = {0};
 
@@ -301,7 +301,7 @@ static void clear_click_event_cb(lv_event_t *e)
 static void search_click_event_cb(lv_event_t *e)
 {
     lv_memset(view_list_search_data, 0, sizeof(view_list_search_data));
-    input_show(view_list_search_data, sizeof(view_list_search_data), search_done);
+    view_input_show(view_list_search_data, sizeof(view_list_search_data), search_done);
 }
 
 static void play_click_event_cb(lv_event_t *e)
@@ -375,11 +375,11 @@ static void volume_click_event_cb(lv_event_t *e)
     }
     else if (code == LV_EVENT_PRESSED)
     {
-        volume_down = INT32_MAX;
+        lv_music_set_volume_timer(UINT8_MAX);
     }
     else if (code == LV_EVENT_RELEASED)
     {
-        volume_down = LV_MUSIC_VOLUME_DISPLAY_TIME;
+        lv_music_set_volume_timer(LV_MUSIC_VOLUME_DISPLAY_TIME);
     }
 }
 
@@ -397,23 +397,23 @@ static void mute_click_event_cb(lv_event_t *e)
         alsa_set_volume(0);
         lv_music_set_volume(0);
     }
-    volume_down = LV_MUSIC_VOLUME_DISPLAY_TIME;
+    lv_music_set_volume_timer(LV_MUSIC_VOLUME_DISPLAY_TIME);
 }
 
 static lv_obj_t *list_create(lv_obj_t *parent)
 {
-    return view_music_list_create(parent, clear_click_event_cb, search_click_event_cb);
+    return lv_music_list_create(parent, clear_click_event_cb, search_click_event_cb);
 }
 
 static lv_obj_t *main_create(lv_obj_t *parent)
 {
-    return view_music_main_create(parent, time_change_event_cb,
-                                  volume_click_event_cb, mode_click_event_cb,
-                                  prev_click_event_cb, play_event_click_cb,
-                                  next_click_event_cb, mute_click_event_cb);
+    return lv_music_main_create(parent, time_change_event_cb,
+                                volume_click_event_cb, mode_click_event_cb,
+                                prev_click_event_cb, play_event_click_cb,
+                                next_click_event_cb, mute_click_event_cb);
 }
 
-void view_music_list_button_check(uint32_t index, bool state)
+void view_music_list_check(uint32_t index, bool state)
 {
     if (!view_play_list.contains(index))
     {
@@ -426,7 +426,7 @@ void view_music_list_button_check(uint32_t index, bool state)
     }
 }
 
-void lv_list_clear()
+void view_muisc_list_clear()
 {
     for (const auto &pair : view_play_list)
     {
@@ -437,7 +437,7 @@ void lv_list_clear()
     view_play_list.clear();
 }
 
-void lv_muisc_list_item_reload(play_item *item)
+void view_muisc_list_reload(play_item *item)
 {
     view_play_item_t *view = view_play_list[item->index];
     if (view != NULL)
@@ -449,7 +449,7 @@ void lv_muisc_list_item_reload(play_item *item)
     }
 }
 
-void lv_list_add_item(play_item *item)
+void view_muisc_list_add(play_item *item)
 {
     view_play_item_t *view = view_list_add_item(item->title.c_str(), item->auther.c_str(),
                                                 static_cast<uint32_t>(item->time), play_click_event_cb);
@@ -515,7 +515,7 @@ void view_music_set_display(bool display)
     }
 }
 
-lv_obj_t *lv_music_view_create(lv_obj_t *parent)
+void view_music_create(lv_obj_t *parent)
 {
     pthread_mutex_init(&lyric_mutex, NULL);
 
@@ -528,14 +528,47 @@ lv_obj_t *lv_music_view_create(lv_obj_t *parent)
 
     lv_timer_create(timer_tick, 500, NULL);
     lv_timer_create(lyric_tick, 50, NULL);
-
-    return obj;
 }
 
-void lv_music_view_tick()
+void view_music_tick()
 {
     if (play_state == MUSIC_STATE_PLAY)
     {
         lv_music_fft_load();
     }
+}
+
+void view_music_update_info()
+{
+    update_info = true;
+}
+
+void view_music_clear_info()
+{
+    clear_info = true;
+}
+
+void view_music_update_img()
+{
+    update_img = true;
+}
+
+void view_music_mp4_update()
+{
+    mp4_have_update = true;
+}
+
+void view_music_update_state()
+{
+    update_state = true;
+}
+
+void view_music_update_list()
+{
+    update_list = true;
+}
+
+void view_music_init_list()
+{
+    init_list = true;
 }

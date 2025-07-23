@@ -388,7 +388,7 @@
 
     /** - 1: Enable printing timestamp;
      *  - 0: Disable printing timestamp. */
-    #define LV_LOG_USE_TIMESTAMP 1
+    #define LV_LOG_USE_TIMESTAMP 0
 
     /** - 1: Print file and line number of the log;
      *  - 0: Do not print file and line number of the log. */

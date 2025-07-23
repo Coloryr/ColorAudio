@@ -1,7 +1,7 @@
 #include "view_music_main.h"
 #include "view_lyric.h"
 
-#include "../view_state.h"
+#include "../view_setting.h"
 #include "../font.h"
 #include "../anim.h"
 #include "../common/utils.h"
@@ -47,6 +47,8 @@ static bool playing;
 static bool is_display_volume = false;
 static uint32_t spectrum[20] = {0};
 static lv_image_dsc_t img_dsc;
+
+static uint8_t volume_down;
 
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_loop);
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_rnd);
@@ -196,7 +198,7 @@ static lv_obj_t *create_volume_slider(lv_obj_t *parent, lv_event_cb_t volume, lv
     lv_obj_add_event_cb(volume_slider_obj, volume, LV_EVENT_ALL, NULL);
 
     LV_IMAGE_DECLARE(lv_img_mute);
-    lv_obj_t * icon = lv_image_create(obj);
+    lv_obj_t *icon = lv_image_create(obj);
     lv_image_set_src(icon, &lv_img_mute);
     lv_obj_set_style_margin_top(icon, 20, 0);
     lv_obj_set_grid_cell(icon, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
@@ -218,8 +220,8 @@ static lv_obj_t *create_cont(lv_obj_t *parent)
 
     /*Create a container for the player*/
     lv_obj_t *player = lv_obj_create(main_cont);
-    lv_obj_set_y(player, -LV_DEMO_MUSIC_HANDLE_SIZE);
-    lv_obj_set_size(player, LV_HOR_RES, LV_VER_RES + LV_DEMO_MUSIC_HANDLE_SIZE * 2);
+    lv_obj_set_y(player, -LV_MUSIC_HANDLE_SIZE);
+    lv_obj_set_size(player, LV_HOR_RES, LV_VER_RES + LV_MUSIC_HANDLE_SIZE * 2);
     lv_obj_remove_flag(player, LV_OBJ_FLAG_SNAPPABLE);
 
     lv_obj_set_style_bg_color(player, lv_color_hex(0xffffff), 0);
@@ -240,8 +242,8 @@ static lv_obj_t *create_cont(lv_obj_t *parent)
     lv_obj_set_size(placeholder1, lv_pct(100), LV_VER_RES);
     lv_obj_set_y(placeholder1, 0);
 
-    lv_obj_set_size(placeholder2, lv_pct(100), LV_VER_RES - 2 * LV_DEMO_MUSIC_HANDLE_SIZE);
-    lv_obj_set_y(placeholder2, LV_VER_RES + LV_DEMO_MUSIC_HANDLE_SIZE);
+    lv_obj_set_size(placeholder2, lv_pct(100), LV_VER_RES - 2 * LV_MUSIC_HANDLE_SIZE);
+    lv_obj_set_y(placeholder2, LV_VER_RES + LV_MUSIC_HANDLE_SIZE);
 
     lv_obj_update_layout(main_cont);
 
@@ -320,7 +322,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_style_text_font(title_label, font_32, 0);
     lv_obj_set_height(title_label, lv_font_get_line_height(font_32));
     lv_obj_set_style_text_color(title_label, lv_color_hex(0x504d6d), 0);
-    lv_obj_set_width(title_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
+    lv_obj_set_width(title_label, wid - LV_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(title_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_add_style(title_label, &label_style, LV_STATE_DEFAULT);
     lv_label_set_long_mode(title_label, LV_LABEL_LONG_MODE_SCROLL);
@@ -332,7 +334,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_style_text_font(artist_label, font_22, 0);
     lv_obj_set_height(artist_label, lv_font_get_line_height(font_22));
     lv_obj_set_style_text_color(artist_label, lv_color_hex(0x504d6d), 0);
-    lv_obj_set_width(artist_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
+    lv_obj_set_width(artist_label, wid - LV_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(artist_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(artist_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
     lv_label_set_text(artist_label, "");
@@ -341,7 +343,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_style_text_font(genre_label, font_22, 0);
     lv_obj_set_height(genre_label, lv_font_get_line_height(font_22));
     lv_obj_set_style_text_color(genre_label, lv_color_hex(0x8a86b8), 0);
-    lv_obj_set_width(genre_label, wid - LV_DEMO_MUSIC_HANDLE_SIZE);
+    lv_obj_set_width(genre_label, wid - LV_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(genre_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_add_style(genre_label, &label_style, LV_STATE_DEFAULT);
     lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_DOTS);
@@ -360,7 +362,7 @@ static lv_obj_t *create_spectrum_obj(lv_obj_t *parent)
 
     uint32_t wid = lv_obj_get_width(parent);
 
-    lv_obj_set_width(obj, wid - LV_DEMO_MUSIC_HANDLE_SIZE - LV_DEMO_MUSIC_HANDLE_SIZE);
+    lv_obj_set_width(obj, wid - LV_MUSIC_HANDLE_SIZE - LV_MUSIC_HANDLE_SIZE);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_add_event_cb(obj, spectrum_draw_event_cb, LV_EVENT_ALL, NULL);
     lv_obj_refresh_ext_draw_size(obj);
@@ -497,10 +499,10 @@ static lv_obj_t *create_handle(lv_obj_t *parent)
     return cont;
 }
 
-lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
-                                 lv_event_cb_t volume, lv_event_cb_t mode,
-                                 lv_event_cb_t prev, lv_event_cb_t play, 
-                                 lv_event_cb_t next, lv_event_cb_t mute)
+lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
+                               lv_event_cb_t volume, lv_event_cb_t mode,
+                               lv_event_cb_t prev, lv_event_cb_t play,
+                               lv_event_cb_t next, lv_event_cb_t mute)
 {
     /*Create the content of the music player*/
     lv_obj_t *cont = create_cont(parent);
@@ -525,14 +527,14 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
 
     /*Arrange the content into a grid*/
     static const int32_t grid_cols[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
-    static const int32_t grid_rows[] = {LV_DEMO_MUSIC_HANDLE_SIZE, /*Spacing*/
+    static const int32_t grid_rows[] = {LV_MUSIC_HANDLE_SIZE, /*Spacing*/
                                         LV_GRID_CONTENT,
                                         LV_GRID_CONTENT,
                                         LV_GRID_CONTENT,
                                         LV_GRID_CONTENT,
                                         LV_GRID_CONTENT,
                                         LV_GRID_FR(1),
-                                        LV_DEMO_MUSIC_HANDLE_SIZE, /*Spacing*/
+                                        LV_MUSIC_HANDLE_SIZE, /*Spacing*/
                                         LV_GRID_TEMPLATE_LAST};
 
     lv_obj_set_grid_dsc_array(cont, grid_cols, grid_rows);
@@ -559,7 +561,7 @@ lv_obj_t *view_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
 
     lv_obj_t *lyric = lv_lyric_create(cont);
     lv_obj_set_grid_cell(lyric, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 3, 1);
-    lv_obj_set_style_margin_top(lyric, 10, 0);
+    // lv_obj_set_style_margin_top(lyric, 5, 0);
 
     return main_cont;
 }
@@ -610,10 +612,14 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
     {
         free((uint8_t *)img_dsc.data);
         img_dsc.data = NULL;
+        img_dsc.data_size = 0;
+        img_dsc.header.w = 0;
+        img_dsc.header.h = 0;
+        img_dsc.header.stride = 0;
     }
     if (data == NULL)
     {
-        lv_image_set_src(album_image_obj, NULL);
+        lv_image_set_src(album_image_obj, &img_dsc);
         return;
     }
 
@@ -623,6 +629,15 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
     }
     else
     {
+        if (img_dsc.data)
+        {
+            free((uint8_t *)img_dsc.data);
+            img_dsc.data = NULL;
+            img_dsc.data_size = 0;
+            img_dsc.header.w = 0;
+            img_dsc.header.h = 0;
+            img_dsc.header.stride = 0;
+        }
         lv_image_set_src(album_image_obj, NULL);
     }
 }
@@ -640,7 +655,7 @@ void lv_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data)
     img_dsc.header.stride = width * 3;
     img_dsc.header.cf = LV_COLOR_FORMAT_RGB888;
 
-    lv_image_set_src(album_image_obj, &img_dsc);
+    lv_image_set_bitmap_map_src(album_image_obj, &img_dsc);
 }
 
 void lv_music_set_fft_data(uint16_t index, uint16_t value, uint32_t size)
@@ -722,4 +737,21 @@ void lv_music_fadein()
     lv_obj_fade_in(image_bg, 1000, INTRO_TIME);
     lv_obj_fade_in(album_image_obj, 1000, INTRO_TIME);
     lv_obj_fade_in(spectrum_obj, 0, INTRO_TIME);
+}
+
+void lv_music_volume_timer_tick()
+{
+    if (volume_down > 0)
+    {
+        volume_down--;
+        if (volume_down <= 0)
+        {
+            lv_music_volume_close();
+        }
+    }
+}
+
+void lv_music_set_volume_timer(uint8_t time)
+{
+    volume_down = time;
 }

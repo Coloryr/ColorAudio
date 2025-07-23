@@ -22,7 +22,6 @@ static void scroll_event_cb(lv_event_t *e)
     }
 }
 
-// 动画回调函数
 static void anim_cb(void *bar, int32_t value)
 {
     int32_t min = lv_bar_get_min_value(bar);
@@ -66,7 +65,7 @@ static lv_obj_t *create_bar(lv_obj_t *parent)
     return bar;
 }
 
-lv_obj_t *lv_info_create(lv_obj_t *parent)
+void lv_info_create(lv_obj_t *parent)
 {
     info_obj = lv_obj_create(parent);
     lv_obj_remove_style_all(info_obj);
@@ -86,8 +85,6 @@ lv_obj_t *lv_info_create(lv_obj_t *parent)
     lv_obj_align_to(bar_obj, text_obj, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     lv_obj_add_flag(info_obj, LV_OBJ_FLAG_HIDDEN);
-
-    return info_obj;
 }
 
 void lv_info_scr_display(bool display)

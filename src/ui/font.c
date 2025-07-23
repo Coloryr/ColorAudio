@@ -1,6 +1,8 @@
 #include "font.h"
 #include "lvgl.h"
 
+const lv_font_t *font_12;
+const lv_font_t *font_14;
 const lv_font_t *font_16;
 const lv_font_t *font_18;
 const lv_font_t *font_22;
@@ -22,6 +24,20 @@ void load_font()
                                    &lv_freetype_font_class);
 
     /* Create font from font manager */
+    font_12 = lv_font_manager_create_font(font_manager,
+                                          "MiSans",
+                                          LV_FREETYPE_FONT_RENDER_MODE_BITMAP,
+                                          12,
+                                          LV_FREETYPE_FONT_STYLE_NORMAL,
+                                          LV_FONT_KERNING_NONE);
+
+    font_14 = lv_font_manager_create_font(font_manager,
+                                          "MiSans",
+                                          LV_FREETYPE_FONT_RENDER_MODE_BITMAP,
+                                          14,
+                                          LV_FREETYPE_FONT_STYLE_NORMAL,
+                                          LV_FONT_KERNING_NONE);
+
     font_16 = lv_font_manager_create_font(font_manager,
                                           "MiSans",
                                           LV_FREETYPE_FONT_RENDER_MODE_BITMAP,

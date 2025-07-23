@@ -41,7 +41,22 @@ static uint32_t get_channels(enum mad_mode mode)
 
 static enum mad_flow play_mp3_header(void *data, struct mad_header const *header)
 {
-    if (play_state == MUSIC_STATE_STOP)
+    if (target_time > 0)
+    {
+        if (play_state == MUSIC_STATE_STOP)
+        {
+            return MAD_FLOW_STOP;
+        }
+        target_time -= (float)header->duration.fraction / MAD_TIMER_RESOLUTION;
+        if (target_time < 0.05)
+        {
+            play_jump_end();
+            return MAD_FLOW_CONTINUE;
+        }
+        return MAD_FLOW_IGNORE;
+    }
+
+    if (play_state == MUSIC_STATE_STOP || play_need_seek)
     {
         return MAD_FLOW_STOP;
     }
@@ -52,31 +67,21 @@ static enum mad_flow play_mp3_header(void *data, struct mad_header const *header
 
     alsa_set(SND_PCM_FORMAT_S24, get_channels(header->mode), samplerate);
 
-    if (target_time > 0)
-    {
-        target_time -= (float)header->duration.fraction / MAD_TIMER_RESOLUTION;
-        if (target_time < 0.05)
-        {
-            play_jump_end();
-            return MAD_FLOW_CONTINUE;
-        }
-        return MAD_FLOW_IGNORE;
-    }
-
     return MAD_FLOW_CONTINUE;
 }
 
 static enum mad_flow play_mp3_input(void *data, struct mad_stream *st)
 {
+    if (play_state == MUSIC_STATE_STOP || play_need_seek)
+    {
+        return MAD_FLOW_STOP;
+    }
+
     if (play_state == MUSIC_STATE_PAUSE)
     {
         return MAD_FLOW_IGNORE;
     }
-
-    if (play_state == MUSIC_STATE_STOP)
-    {
-        return MAD_FLOW_STOP;
-    }
+    
     enum mad_flow ret_code;
     int unproc_data_size;
     int copy_size;

@@ -1,6 +1,6 @@
 #include "view_music_list.h"
 
-#include "../view_state.h"
+#include "../view_setting.h"
 #include "../font.h"
 
 #include <stdbool.h>
@@ -10,7 +10,9 @@ static lv_obj_t *list_obj;
 static lv_obj_t *search_obj;
 static lv_obj_t *search_text_obj;
 static lv_obj_t *top_obj;
+static lv_obj_t *down_obj;
 static lv_obj_t *clear_obj;
+
 static lv_style_t style_scrollbar;
 static lv_style_t style_btn;
 static lv_style_t style_button_pr;
@@ -19,6 +21,8 @@ static lv_style_t style_button_dis;
 static lv_style_t style_title;
 static lv_style_t style_artist;
 static lv_style_t style_time;
+
+static lv_obj_t *now_play_obj;
 
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_list_play);
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_list_pause);
@@ -41,7 +45,22 @@ void view_music_list_search_text(char *data)
     lv_label_set_text_fmt(search_text_obj, "搜索包含“%s”的结果", data);
 }
 
-static void list_delete_event_cb(lv_event_t *e)
+static void button_move()
+{
+    if (!lv_obj_has_flag(down_obj, LV_OBJ_FLAG_HIDDEN))
+    {
+        if (lv_obj_has_flag(top_obj, LV_OBJ_FLAG_HIDDEN))
+        {
+            lv_obj_align(down_obj, LV_ALIGN_BOTTOM_RIGHT, -20, -100);
+        }
+        else
+        {
+            lv_obj_align(down_obj, LV_ALIGN_BOTTOM_RIGHT, -20, -180);
+        }
+    }
+}
+
+static void list_event_cb(lv_event_t *e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
@@ -66,12 +85,46 @@ static void list_delete_event_cb(lv_event_t *e)
         {
             lv_obj_add_flag(top_obj, LV_OBJ_FLAG_HIDDEN);
         }
+
+        if (now_play_obj != NULL)
+        {
+            lv_obj_t *p = lv_obj_get_parent(now_play_obj);
+            if (p != list_obj)
+            {
+                return;
+            }
+
+            lv_display_t *dis = lv_obj_get_display(now_play_obj);
+            int32_t y = lv_display_get_vertical_resolution(dis);
+
+            lv_area_t area;
+            lv_obj_get_coords(now_play_obj, &area);
+
+            if (area.y2 < LV_MUSIC_HANDLE_SIZE * 2 || area.y1 > y - LV_MUSIC_HANDLE_SIZE)
+            {
+                lv_obj_remove_flag(down_obj, LV_OBJ_FLAG_HIDDEN);
+            }
+            else
+            {
+                lv_obj_add_flag(down_obj, LV_OBJ_FLAG_HIDDEN);
+            }
+        }
+
+        button_move();
     }
 }
 
 static void list_top_event_cb(lv_event_t *e)
 {
     lv_obj_scroll_to_view(search_obj, LV_ANIM_ON);
+}
+
+static void list_down_event_cb(lv_event_t *e)
+{
+    if (now_play_obj != NULL)
+    {
+        lv_obj_scroll_to_view(now_play_obj, LV_ANIM_ON);
+    }
 }
 
 void item_check(view_play_item_t *item, bool state)
@@ -81,6 +134,7 @@ void item_check(view_play_item_t *item, bool state)
 
     if (state)
     {
+        now_play_obj = item->view;
         lv_obj_add_state(btn, LV_STATE_CHECKED);
         lv_image_set_src(icon, &img_lv_demo_music_btn_list_pause);
         lv_obj_scroll_to_view(btn, LV_ANIM_ON);
@@ -92,8 +146,13 @@ void item_check(view_play_item_t *item, bool state)
     }
 }
 
-lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event_cb_t search)
+lv_obj_t *lv_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event_cb_t search)
 {
+    lv_obj_t *parent_obj = lv_obj_create(parent);
+    lv_obj_remove_style_all(parent_obj);
+    lv_obj_set_size(parent_obj, LV_HOR_RES, LV_VER_RES);
+    lv_obj_refr_size(parent_obj);
+
     lv_style_init(&style_scrollbar);
     lv_style_set_width(&style_scrollbar, 4);
     lv_style_set_bg_opa(&style_scrollbar, LV_OPA_COVER);
@@ -124,7 +183,7 @@ lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event
     lv_style_set_text_opa(&style_button_dis, LV_OPA_40);
     lv_style_set_image_opa(&style_button_dis, LV_OPA_40);
 
-    uint32_t wid = lv_obj_get_width(parent);
+    uint32_t wid = lv_obj_get_width(parent_obj);
 
     lv_style_init(&style_title);
     lv_style_set_text_font(&style_title, font_22);
@@ -139,11 +198,11 @@ lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event
     lv_style_set_text_color(&style_time, lv_color_hex(0xffffff));
 
     /*Create an empty transparent container*/
-    list_obj = lv_obj_create(parent);
-    lv_obj_add_event_cb(list_obj, list_delete_event_cb, LV_EVENT_ALL, NULL);
+    list_obj = lv_obj_create(parent_obj);
+    lv_obj_add_event_cb(list_obj, list_event_cb, LV_EVENT_ALL, NULL);
     lv_obj_remove_style_all(list_obj);
-    lv_obj_set_size(list_obj, LV_HOR_RES, LV_VER_RES - LV_DEMO_MUSIC_HANDLE_SIZE);
-    lv_obj_set_y(list_obj, LV_DEMO_MUSIC_HANDLE_SIZE);
+    lv_obj_set_size(list_obj, LV_HOR_RES, LV_VER_RES - LV_MUSIC_HANDLE_SIZE);
+    lv_obj_set_y(list_obj, LV_MUSIC_HANDLE_SIZE);
     lv_obj_add_style(list_obj, &style_scrollbar, LV_PART_SCROLLBAR);
     lv_obj_set_flex_flow(list_obj, LV_FLEX_FLOW_COLUMN);
 
@@ -155,37 +214,42 @@ lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event
     lv_obj_set_size(search_obj, LV_HOR_RES, LV_SIZE_CONTENT);
     lv_obj_add_flag(search_obj, LV_OBJ_FLAG_HIDDEN);
 
-    lv_obj_t *obj = lv_obj_create(search_obj);
-    lv_obj_remove_style_all(obj);
-    lv_obj_set_size(obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_align(obj, LV_ALIGN_CENTER);
-    lv_obj_set_style_grid_column_dsc_array(obj, grid_cols, 0);
-    lv_obj_set_style_grid_row_dsc_array(obj, grid_rows, 0);
-    lv_obj_set_style_grid_column_align(obj, LV_GRID_ALIGN_CENTER, 0);
-    lv_obj_set_style_grid_row_align(obj, LV_GRID_ALIGN_CENTER, 0);
-    lv_obj_set_style_layout(obj, LV_LAYOUT_GRID, 0);
+    lv_obj_t *search_in_obj = lv_obj_create(search_obj);
+    lv_obj_remove_style_all(search_in_obj);
+    lv_obj_set_size(search_in_obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_align(search_in_obj, LV_ALIGN_CENTER);
+    lv_obj_set_style_grid_column_dsc_array(search_in_obj, grid_cols_search, 0);
+    lv_obj_set_style_grid_row_dsc_array(search_in_obj, grid_rows_search, 0);
+    lv_obj_set_style_grid_column_align(search_in_obj, LV_GRID_ALIGN_CENTER, 0);
+    lv_obj_set_style_grid_row_align(search_in_obj, LV_GRID_ALIGN_CENTER, 0);
+    lv_obj_set_style_layout(search_in_obj, LV_LAYOUT_GRID, 0);
 
-    search_text_obj = lv_label_create(obj);
+    search_text_obj = lv_label_create(search_in_obj);
     lv_obj_remove_style_all(search_text_obj);
-    lv_obj_set_size(search_text_obj, wid - LV_DEMO_MUSIC_HANDLE_SIZE, LV_SIZE_CONTENT);
-    lv_obj_set_style_margin_all(search_text_obj, 10, 0);
+    lv_obj_set_size(search_text_obj, wid - LV_MUSIC_HANDLE_SIZE, LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_top(search_text_obj, 10, 0);
+    lv_obj_set_style_pad_bottom(search_text_obj, 15, 0);
     lv_obj_set_style_text_font(search_text_obj, font_22, 0);
     lv_obj_set_style_text_color(search_text_obj, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_opa(search_text_obj, 255, 0);
+    // lv_obj_set_style_bg_color(search_text_obj, lv_color_hex(0xFF0000), 0);
+    // lv_obj_set_style_bg_opa(search_text_obj, 255, 0);
     lv_label_set_text(search_text_obj, "搜索包含的结果");
     lv_obj_set_style_text_align(search_text_obj, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(search_text_obj, LV_LABEL_LONG_MODE_WRAP);
     lv_obj_set_grid_cell(search_text_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
-    clear_obj = lv_button_create(obj);
+    clear_obj = lv_button_create(search_in_obj);
     lv_obj_remove_style_all(clear_obj);
     lv_obj_set_size(clear_obj, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
-    lv_obj_set_style_margin_bottom(clear_obj, 10, 0);
+    lv_obj_set_style_margin_bottom(clear_obj, 15, 0);
     lv_obj_set_style_bg_color(clear_obj, lv_color_hex(0xffffff), 0);
     lv_obj_set_style_bg_opa(clear_obj, 255, 0);
     lv_obj_set_style_radius(clear_obj, 5, 0);
-    lv_obj_set_style_pad_left(clear_obj, 5, 0);
-    lv_obj_set_style_pad_right(clear_obj, 5, 0);
+    lv_obj_set_style_pad_left(clear_obj, 10, 0);
+    lv_obj_set_style_pad_right(clear_obj, 10, 0);
+    lv_obj_set_style_pad_top(clear_obj, 5, 0);
+    lv_obj_set_style_pad_bottom(clear_obj, 5, 0);
     lv_obj_set_style_border_color(clear_obj, lv_color_hex(0x4c4965), 0);
     lv_obj_set_style_border_opa(clear_obj, 255, 0);
     lv_obj_add_event_cb(clear_obj, clear, LV_EVENT_CLICKED, NULL);
@@ -203,21 +267,29 @@ lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event
 
     LV_IMAGE_DECLARE(img_lv_list_search);
     LV_IMAGE_DECLARE(img_lv_list_top);
+    LV_IMAGE_DECLARE(lv_img_local);
 
-    lv_obj_t *button = lv_image_create(parent);
+    lv_obj_t *button = lv_image_create(parent_obj);
     lv_image_set_src(button, &img_lv_list_search);
     lv_obj_add_event_cb(button, search, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -20, -20);
 
-    top_obj = lv_image_create(parent);
+    top_obj = lv_image_create(parent_obj);
     lv_image_set_src(top_obj, &img_lv_list_top);
     lv_obj_add_event_cb(top_obj, list_top_event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_flag(top_obj, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_flag(top_obj, LV_OBJ_FLAG_HIDDEN);
     lv_obj_align(top_obj, LV_ALIGN_BOTTOM_RIGHT, -20, -100);
 
-    return list_obj;
+    down_obj = lv_image_create(parent_obj);
+    lv_image_set_src(down_obj, &lv_img_local);
+    lv_obj_add_event_cb(down_obj, list_down_event_cb, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(down_obj, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(down_obj, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_align(down_obj, LV_ALIGN_BOTTOM_RIGHT, -20, -180);
+
+    return parent_obj;
 }
 
 view_play_item_t *view_list_add_item(const char *title, const char *artist, uint32_t time, lv_event_cb_t click)

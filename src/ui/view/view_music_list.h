@@ -19,7 +19,7 @@ typedef struct
 extern "C" {
 #endif
 
-lv_obj_t *view_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event_cb_t search);
+lv_obj_t *lv_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event_cb_t search);
 view_play_item_t * view_list_add_item(const char *title, const char *artist, uint32_t time, lv_event_cb_t click);
 
 void view_music_list_search_display(bool display);

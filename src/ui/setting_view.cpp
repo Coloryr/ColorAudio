@@ -1,0 +1,1 @@
+#include "setting_view.h"

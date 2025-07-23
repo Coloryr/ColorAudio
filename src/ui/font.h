@@ -9,6 +9,9 @@
 #define TTF_FONT "/home/coloryr/MiSans-Regular.ttf"
 #endif
 
+extern const lv_font_t *font_12;
+extern const lv_font_t *font_14;
+extern const lv_font_t *font_16;
 extern const lv_font_t *font_18;
 extern const lv_font_t *font_22;
 extern const lv_font_t *font_32;

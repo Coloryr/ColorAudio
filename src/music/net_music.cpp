@@ -5,7 +5,6 @@
 #include "../music/mp3_id3.h"
 #include "../player/player.h"
 #include "../player/player_info.h"
-#include "../ui/view_state.h"
 #include "../ui/music_view.h"
 #include "../ui/ui.h"
 #include "../ui/mp4.h"
@@ -40,7 +39,7 @@ static void *net_pic_run(void *arg)
     if (data != NULL)
     {
         play_update_image(data, MUSIC_INFO_IMAGE);
-        view_update_img();
+        view_music_update_img();
     }
     return NULL;
     // }
@@ -126,7 +125,7 @@ static void *play_run(void *arg)
     play_update_text(item->artist, MUSIC_INFO_AUTHER);
     play_update_text(item->album, MUSIC_INFO_ALBUM);
 
-    view_update_info();
+    view_music_update_info();
 
     pthread_t pid1, pid2;
     pthread_create(&pid1, NULL, net_pic_run, item);
@@ -164,7 +163,7 @@ static void *play_run(void *arg)
             time_all = (float)time / 1000;
         }
 
-        view_update_info();
+        view_music_update_info();
 
         play_st = st;
         pthread_cond_signal(&play_start);

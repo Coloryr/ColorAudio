@@ -27,6 +27,8 @@ extern pthread_cond_t play_start;
 
 extern ColorAudio::Stream *play_st;
 
+extern bool play_need_seek;
+
 music_type play_test_music_type(ColorAudio::Stream *st);
 
 void play_update_text(std::string text, music_info_type type);

@@ -2,10 +2,8 @@
 
 #include "music_view.h"
 #include "info_view.h"
-#include "view_state.h"
 #include "main_view.h"
-#include "view/view_input.h"
-#include "view/view_top_info.h"
+#include "input_view.h"
 
 #include "../player/player_info.h"
 #include "../player/player.h"
@@ -18,33 +16,17 @@
 #include <stack>
 #include <string>
 
-static lv_obj_t *main_view;
-static lv_obj_t *music_view;
-
-static void timer_tick(lv_timer_t *timer)
-{
-    if (update_top_info)
-    {
-        top_info_update();
-        update_top_info = false;
-    }
-}
-
 void view_init()
 {
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);
 
-    main_view = lv_main_view_create(lv_screen_active());
+    // view_main_create(lv_screen_active());
+    view_music_create(lv_screen_active());
 
-    music_view = lv_music_view_create(lv_screen_active());
+    view_input_create(lv_screen_active());
+    view_top_info_create(lv_screen_active());
 
-    lv_input_create(lv_screen_active());
-    lv_info_create(lv_screen_active());
-
-    // lv_obj_add_flag(list_view, LV_OBJ_FLAG_HIDDEN);
-    // lv_obj_add_flag(ctrl_view, LV_OBJ_FLAG_HIDDEN);
-
-    lv_timer_create(timer_tick, 500, NULL);
+    // view_music_set_display(false);
 }
 
 void view_go_music()
@@ -65,5 +47,5 @@ void view_go_main()
 
 void view_tick()
 {
-    lv_music_view_tick();
+    view_music_tick();
 }
