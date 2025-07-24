@@ -40,8 +40,8 @@
 		regulator-name = "vcc5v0_otg1";
 		regulator-boot-on;
 		regulator-always-on;
-		regulator-min-microvolt = <5000000>;
-		regulator-max-microvolt = <5000000>;
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
 		enable-active-high;
     };
 
