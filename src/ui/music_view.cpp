@@ -6,12 +6,14 @@
 #include "view/view_music_main.h"
 #include "view/view_music_list.h"
 
-#include "../player/player_info.h"
-#include "../player/player.h"
-#include "../player/sound.h"
+#include "../music/player_info.h"
+#include "../music/music_player.h"
+#include "../sound/sound.h"
 #include "../music/lyric.h"
 
 #include "lvgl.h"
+
+#include <boost/container/flat_map.hpp>
 
 static LyricParser *lyric_data = NULL;
 static LyricParser *lyric_tr_data = NULL;
@@ -128,6 +130,7 @@ static void lyric_tick(lv_timer_t *timer)
 static void timer_tick(lv_timer_t *timer)
 {
     lv_music_set_now_time(time_now);
+    lv_music_set_list_info(play_list_count, play_now_index);
     lv_music_volume_timer_tick();
 
     if (clear_info)
@@ -184,9 +187,9 @@ static void timer_tick(lv_timer_t *timer)
     {
         view_muisc_list_clear();
 
-        for (auto it = play_list.begin(); it != play_list.end(); ++it)
+        for (const auto &it : play_list)
         {
-            view_muisc_list_add(it->second);
+            view_muisc_list_add(it);
         }
 
         view_music_list_check(play_now_index, true);
@@ -196,9 +199,9 @@ static void timer_tick(lv_timer_t *timer)
 
     if (update_list)
     {
-        for (auto it = play_list.begin(); it != play_list.end(); ++it)
+         for (const auto &it : play_list)
         {
-            view_muisc_list_reload(it->second);
+            view_muisc_list_reload(it);
         }
         update_list = false;
     }

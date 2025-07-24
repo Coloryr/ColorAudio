@@ -1,12 +1,13 @@
 #include "local_music.h"
 
 #include "music.h"
-#include "mp3_id3.h"
-#include "mp3_header.h"
-#include "flac_metadata.h"
-#include "dep.h"
+#include "music_player.h"
+#include "mp3/mp3_id3.h"
+#include "mp3/mp3_header.h"
+#include "flac/flac_metadata.h"
+#include "163/music163.h"
 
-#include "../player/player.h"
+#include "../common/timestamp.h"
 #include "../stream/stream_file.h"
 #include "../stream/stream_ncm.h"
 #include "../net/music_api.h"
@@ -18,8 +19,11 @@
 #include "../lvgl/src/misc/lv_log.h"
 #include "ncmcrypt.h"
 
+#include <boost/container/vector.hpp>
+#include <boost/locale.hpp>
 #include <unistd.h>
 #include <stdbool.h>
+#include <execution>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -39,9 +43,9 @@ static pthread_t rtid;
 
 static void play_list_close()
 {
-    for (auto it = play_list.begin(); it != play_list.end(); ++it)
+    for (const auto &it : play_list)
     {
-        delete it->second;
+        delete it;
     }
 
     play_list.clear();
@@ -91,99 +95,78 @@ static void play_read_list(const char *path)
             }
             play_item *t = new play_item();
             t->path = full_path;
-            t->index = play_list_count++;
-            t->auther = "读取中...";
-            t->title = "读取中...";
-            t->time = 0;
 
-            play_list[t->index] = t;
+            if (type == MUSIC_TYPE_MP3)
+            {
+                Mp3Id3 id3 = Mp3Id3(&st);
+                if (id3.get_info())
+                {
+                    t->title = id3.title;
+                    t->auther = id3.auther;
+                }
+                else
+                {
+                    t->title = "...";
+                    t->auther = "...";
+                    st.seek(0, SEEK_SET);
+                }
+                t->time = mp3_get_time_len(&st);
+            }
+            else if (type == MUSIC_TYPE_FLAC)
+            {
+                FlacMetadata data = FlacMetadata(&st);
+                if (data.decode_get_info())
+                {
+                    t->title = data.info.title;
+                    t->auther = data.info.auther;
+                    t->time = data.info.time;
+                }
+                else
+                {
+                    t->title = "...";
+                    t->auther = "...";
+                    t->time = 0;
+                }
+            }
+            else if (type == MUSIC_TYPE_NCM)
+            {
+                NeteaseCrypt cry = NeteaseCrypt(&st, true);
+                if (cry.mMetaData != nullptr)
+                {
+                    t->title = cry.mMetaData->name();
+                    t->auther = cry.mMetaData->artist();
+                    t->time = (float)cry.mMetaData->duration() / 1000;
+                }
+                else
+                {
+                    t->title = "...";
+                    t->auther = "...";
+                    t->time = 0;
+                }
+            }
+
+            play_list.push_back(t);
         }
     }
 
     closedir(dp);
 }
 
-static void play_list_info_scan()
-{
-    play_item *t;
-    for (const auto &it : play_list)
-    {
-        t = it.second;
-        StreamFile st = StreamFile(t->path);
-        music_type type = play_test_music_type(&st);
-        if (type == MUSIC_TYPE_UNKNOW)
-        {
-            continue;
-        }
-
-        switch (type)
-        {
-        case MUSIC_TYPE_MP3:
-        {
-            Mp3Id3 id3 = Mp3Id3(&st);
-            if (id3.get_info())
-            {
-                t->title = id3.title;
-                t->auther = id3.auther;
-            }
-            else
-            {
-                st.seek(0, SEEK_SET);
-            }
-            t->time = mp3_get_time_len(&st);
-            break;
-        }
-        case MUSIC_TYPE_FLAC:
-        {
-            FlacMetadata data = FlacMetadata(&st);
-            if (data.decode_get_info())
-            {
-                t->title = data.info.title;
-                t->auther = data.info.auther;
-                t->time = data.info.time;
-            }
-            break;
-        }
-        case MUSIC_TYPE_NCM:
-        {
-            NeteaseCrypt cry = NeteaseCrypt(&st, true);
-            if (cry.mMetaData != nullptr)
-            {
-                t->title = cry.mMetaData->name();
-                t->auther = cry.mMetaData->artist();
-                t->time = cry.mMetaData->duration();
-            }
-        }
-        }
-    }
-
-    view_music_update_list();
-}
-
 static void get_music_lyric(std::string &comment)
 {
     try
     {
-        if (comment.find("163 key(Don't modify):") != 0)
+        if (comment.find("163 key(Don't modify):") == 0)
         {
-            view_music_set_lyric_state(LYRIC_NONE);
-            return;
-        }
-        std::string key = comment.substr(22);
-        std::string temp = dep(key);
-        if (temp.empty())
-        {
-            view_music_set_lyric_state(LYRIC_NONE);
-            return;
-        }
-        temp = temp.substr(6);
-        json j1 = json::parse(temp);
-        json id = j1["musicId"];
-        if (id.is_string())
-        {
-            uint64_t id1 = std::stoul(id.get<std::string>());
-
-            music_lyric_163(id1);
+            LyricParser *data, *tr_data;
+            if (music_lyric_163(comment, &data, &tr_data))
+            {
+                view_music_set_lyric(data, tr_data);
+            }
+            else
+            {
+                view_music_set_lyric_state(LYRIC_NONE);
+            }
         }
     }
     catch (const std::exception &e)
@@ -193,12 +176,49 @@ static void get_music_lyric(std::string &comment)
     }
 }
 
+static void sort_by_pinyin()
+{
+    boost::locale::generator gen;
+    std::locale loc = gen.generate("zh_CN.UTF-8");
+    std::collate<wchar_t> const &coll = std::use_facet<std::collate<wchar_t>>(loc);
+
+    auto compare = [&](play_item *a,
+                       play_item *b)
+    {
+        static thread_local std::map<std::string, std::wstring> cache;
+
+        auto get_wstring = [](const std::string &str) -> std::wstring
+        {
+            auto it = cache.find(str);
+            if (it != cache.end())
+                return it->second;
+
+            std::wstring result = boost::locale::conv::to_utf<wchar_t>(str, "UTF-8");
+            cache[str] = result;
+            return result;
+        };
+
+        std::wstring wa = get_wstring(a->auther);
+        std::wstring wb = get_wstring(b->auther);
+
+        return coll.compare(wa.data(), wa.data() + wa.size(),
+                            wb.data(), wb.data() + wb.size()) < 0;
+    };
+
+    std::sort(std::execution::par, play_list.begin(), play_list.end(), compare);
+}
+
 static void *play_scan_run(void *arg)
 {
+    uint32_t time = clock_ms();
+    uint32_t time1;
     local_music_scan_now = true;
     play_list_close();
     play_read_list(READ_DIR);
-    view_music_init_list();
+
+    time1 = clock_ms();
+    LV_LOG_USER("read list time: %d", time1 - time);
+    time = clock_ms();
 
     if (play_list.empty())
     {
@@ -206,12 +226,23 @@ static void *play_scan_run(void *arg)
         return NULL;
     }
 
+    sort_by_pinyin();
+
+    time1 = clock_ms();
+    LV_LOG_USER("sort time: %d", time1 - time);
+    time = clock_ms();
+
+    for (const auto &item : play_list)
+    {
+        item->index = play_list_count++;
+    }
+
     std::string name = config::get_config_music_name();
     uint32_t index = config::get_config_music_index();
 
     play_now_index = 0;
 
-    if (play_list.contains(index) && !name.empty())
+    if (play_list.size() > index)
     {
         play_item *item = play_list[index];
         if (endsWith(item->path, name))
@@ -222,18 +253,17 @@ static void *play_scan_run(void *arg)
         {
             for (const auto &item : play_list)
             {
-                if (endsWith(item.second->path, name))
+                if (endsWith(item->path, name))
                 {
-                    play_now_index = item.first;
+                    play_now_index = item->index;
                     break;
                 }
             }
         }
     }
 
+    view_music_init_list();
     local_music_scan_now = false;
-
-    play_list_info_scan();
     return NULL;
 }
 

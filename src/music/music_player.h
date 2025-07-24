@@ -1,5 +1,5 @@
-#ifndef _PLAYER_H_
-#define _PLAYER_H_
+#ifndef _MUSIC_PLAYER_H_
+#define _MUSIC_PLAYER_H_
 
 #include "player_info.h"
 
@@ -7,7 +7,7 @@
 #include "../music/music.h"
 #include "../stream/stream.h"
 
-#include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -20,7 +20,7 @@ extern std::string auther;
 extern std::string comment;
 extern data_item* image;
 
-extern boost::container::flat_map<uint32_t, play_item *> play_list;
+extern boost::container::vector<play_item *> play_list;
 
 extern pthread_mutex_t play_mutex;
 extern pthread_cond_t play_start; 

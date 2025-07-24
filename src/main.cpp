@@ -1,35 +1,14 @@
-#include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <malloc.h>
-#include <math.h>
-#include <poll.h>
-#include <pthread.h>
-#include <signal.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <time.h>
-#include <unistd.h>
-#include <time.h>
-
 #include "lvgl.h"
 #include "lv_conf.h"
 
 #include "display/lv_port_init.h"
-#include "sys/timestamp.h"
 
 #include "main.h"
 #include "ui/ui.h"
-#include "player/sound.h"
-#include "player/player.h"
+#include "sound/sound.h"
 #include "input/rime_input.h"
 #include "net/http_connect.h"
+#include "music/music_player.h"
 #include "music/net_music.h"
 #include "music/local_music.h"
 #include "config/config.h"
@@ -39,6 +18,10 @@
 #include "wireless/wireless.h"
 #include "usb/usb_audio.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
 #include <SDL2/SDL.h>
@@ -47,11 +30,45 @@
 using namespace ColorAudio;
 
 static int quit = 0;
+static pthread_t tid;
+
+static main_mode_type now_mode = MAIN_MODE_NONE;
 
 static void sigterm_handler(int sig)
 {
     fprintf(stderr, "signal %d\n", sig);
     exit(0);
+}
+
+static void *main_loop(void *arg)
+{
+    LV_LOG_USER("main loop run");
+    for (;;)
+    {
+        usleep(100);
+        if (now_mode == MAIN_MODE_MUSIC)
+        {
+            music_run_loop();
+        }
+    }
+}
+
+void change_mode(main_mode_type mode)
+{
+    if (mode == now_mode)
+    {
+        return;
+    }
+
+    if (now_mode == MAIN_MODE_MUSIC)
+    {
+    }
+
+    if (mode == MAIN_MODE_MUSIC)
+    {
+        view_jump(VIEW_MUSIC);
+        music_go_local();
+    }
 }
 
 int main(int argc, char **argv)
@@ -70,7 +87,7 @@ int main(int argc, char **argv)
     local_music_init();
     music_init();
 
-    // net_music_init();
+    pthread_create(&tid, NULL, main_loop, NULL);
 
 #ifdef BUILD_ARM
     struct timespec ts;

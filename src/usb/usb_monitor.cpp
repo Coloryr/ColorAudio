@@ -1,7 +1,7 @@
 #include "usb_monitor.h"
 #include "usb_audio.h"
 
-#include "../player/sound.h"
+#include "../sound/sound.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -20,7 +20,8 @@ static struct udev *udev;
 static struct udev_monitor *mon;
 static struct pollfd fds[1];
 
-static std::atomic<bool> running(true);
+static bool running;
+static std::thread *monitor_thread;
 
 void usb_monitor_run()
 {
@@ -36,61 +37,63 @@ void usb_monitor_run()
         if (fds[0].revents & POLLIN)
         {
             struct udev_device *dev = udev_monitor_receive_device(mon);
-            if (dev)
+            if (dev == NULL)
             {
-                const char *devpath = udev_device_get_devpath(dev);
-                const char *action = udev_device_get_action(dev);
-                const char *subsystem = udev_device_get_subsystem(dev);
+                continue;
+            }
 
-                if (devpath && (strcmp(devpath, UAC1_DEVPATH) == 0 || strcmp(devpath, UAC2_DEVPATH) == 0))
+            const char *devpath = udev_device_get_devpath(dev);
+            const char *action = udev_device_get_action(dev);
+            const char *subsystem = udev_device_get_subsystem(dev);
+
+            if (devpath && (strcmp(devpath, UAC1_DEVPATH) == 0 || strcmp(devpath, UAC2_DEVPATH) == 0))
+            {
+                const char *state = udev_device_get_property_value(dev, "USB_STATE");
+                if (state != NULL)
                 {
-                    const char *state = udev_device_get_property_value(dev, "USB_STATE");
-                    if (state != NULL)
+                    if (strcmp(state, "SET_VOLUME") == 0)
                     {
-                        if (strcmp(state, "SET_VOLUME") == 0)
+                        const char *volume = udev_device_get_property_value(dev, "VOLUME");
+                        if (volume != NULL)
                         {
-                            const char *volume = udev_device_get_property_value(dev, "VOLUME");
-                            if (volume != NULL)
+                            int16_t num;
+                            sscanf(volume, "0x%hx", &num);
+                            num /= -128;
+                            num = 255 - num;
+                            alsa_set_volume_db(num);
+                        }
+                    }
+                    else if (strcmp(state, "SET_MUTE") == 0)
+                    {
+                        const char *mute = udev_device_get_property_value(dev, "MUTE");
+                        if (mute != NULL)
+                        {
+                            if (strcmp(mute, "1") == 0)
                             {
-                                int16_t num;
-                                sscanf(volume, "0x%hx", &num);
-                                num /= -128;
-                                num = 255 - num;
-                                alsa_set_volume_db(num);
+                                alsa_set_volume(0);
                             }
                         }
-                        else if (strcmp(state, "SET_MUTE") == 0)
+                    }
+                    else if (strcmp(state, "SET_INTERFACE") == 0)
+                    {
+                        const char *ststate = udev_device_get_property_value(dev, "STREAM_STATE");
+                        if (ststate != NULL)
                         {
-                            const char *mute = udev_device_get_property_value(dev, "MUTE");
-                            if (mute != NULL)
+                            if (strcmp(ststate, "OFF") == 0)
                             {
-                                if (strcmp(mute, "1") == 0)
-                                {
-                                    alsa_set_volume(0);
-                                }
+                                usb_audio_stop_run();
                             }
-                        }
-                        else if (strcmp(state, "SET_INTERFACE") == 0)
-                        {
-                            const char *ststate = udev_device_get_property_value(dev, "STREAM_STATE");
-                            if (ststate != NULL)
+                            else if (strcmp(ststate, "ON") == 0)
                             {
-                                if (strcmp(ststate, "OFF") == 0)
-                                {
-                                    usb_audio_stop();
-                                }
-                                else if (strcmp(ststate, "ON") == 0)
-                                {
-                                    usb_audio_stop();
-                                    usb_audio_start_run();
-                                }
+                                usb_audio_stop_run();
+                                usb_audio_start_run();
                             }
                         }
                     }
                 }
-
-                udev_device_unref(dev);
             }
+
+            udev_device_unref(dev);
         }
     }
 }
@@ -125,20 +128,27 @@ void usb_monitor_start()
     fds[0].fd = udev_monitor_get_fd(mon);
     fds[0].events = POLLIN;
 
-    std::thread monitor_thread(usb_monitor_run);
-    monitor_thread.detach();
+    running = true;
+    monitor_thread = new std::thread(usb_monitor_run);
+    monitor_thread->detach();
 }
 
 void usb_monitor_stop()
 {
+    running = false;
     if (mon)
     {
         udev_monitor_unref(mon);
-        mon = NULL;
+        mon = nullptr;
     }
     if (udev)
     {
         udev_unref(udev);
-        udev = NULL;
+        udev = nullptr;
+    }
+    if (monitor_thread)
+    {
+        delete monitor_thread;
+        monitor_thread = nullptr;
     }
 }

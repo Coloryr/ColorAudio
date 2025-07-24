@@ -1,8 +1,8 @@
 #include "flac_metadata.h"
 
-#include "../player/player.h"
-#include "../player/sound.h"
-#include "../player/sound_fft.h"
+#include "../music_player.h"
+#include "../sound/sound.h"
+#include "../sound/sound_fft.h"
 #include "../common/data_item.h"
 
 #include "../lvgl/src/misc/lv_log.h"

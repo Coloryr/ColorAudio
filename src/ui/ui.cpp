@@ -5,9 +5,9 @@
 #include "main_view.h"
 #include "input_view.h"
 
-#include "../player/player_info.h"
-#include "../player/player.h"
-#include "../player/sound.h"
+#include "../music/player_info.h"
+#include "../music/music_player.h"
+#include "../sound/sound.h"
 
 #include "lvgl.h"
 
@@ -16,33 +16,47 @@
 #include <stack>
 #include <string>
 
+static view_type now_type = VIEW_MAIN;
+
 void view_init()
 {
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);
 
-    // view_main_create(lv_screen_active());
+    view_main_create(lv_screen_active());
     view_music_create(lv_screen_active());
 
     view_input_create(lv_screen_active());
     view_top_info_create(lv_screen_active());
 
-    // view_music_set_display(false);
+    view_music_set_display(false);
 }
 
-void view_go_music()
+void view_jump(view_type type)
 {
-    // lv_obj_add_flag(main_view, LV_OBJ_FLAG_HIDDEN);
+    if(now_type == type)
+    {
+        return;
+    }
 
-    //
-    //
-}
+    if(now_type == VIEW_MAIN)
+    {
+        view_main_set_display(false);
+    }
+    else if(now_type == VIEW_MUSIC)
+    {
+        view_music_set_display(false);
+    }
 
-void view_go_main()
-{
-    //
-    //
+    if(now_type == VIEW_MAIN)
+    {
+        view_main_set_display(true);
+    }
+    else if(type == VIEW_MUSIC)
+    {
+        view_music_set_display(true);
+    }
 
-    // lv_obj_remove_flag(main_view, LV_OBJ_FLAG_HIDDEN);
+    now_type = type;
 }
 
 void view_tick()

@@ -1,7 +1,7 @@
 #include "usb_audio.h"
 #include "usb_monitor.h"
 
-#include "../player/sound.h"
+#include "../sound/sound.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -30,7 +30,12 @@ static void usb_audio_run()
     pthread_mutex_lock(&usb_mutex);
 
     int err;
-
+    snd_pcm_hw_params_t *params;
+    snd_pcm_hw_params_alloca(&params);
+    unsigned int rate;
+    unsigned int channel;
+    snd_pcm_format_t format;
+    snd_pcm_uframes_t samples;
 run:
     if ((err = snd_pcm_open(&capture_handle, uac2 ? UAC2_DEVICE : UAC1_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0)
     {
@@ -38,14 +43,11 @@ run:
         return;
     }
 
-    // 获取硬件参数
-    unsigned int rate = 48000;
-    unsigned int channel = 2;
-    snd_pcm_format_t format;
-    snd_pcm_uframes_t samples = 4096;
+    rate = 48000;
+    channel = 2;
+    format = SND_PCM_FORMAT_S16_LE;
+    samples = 4096;
 
-    snd_pcm_hw_params_t *params;
-    snd_pcm_hw_params_alloca(&params);
     snd_pcm_hw_params_any(capture_handle, params);
     snd_pcm_hw_params_set_access(capture_handle, params, SND_PCM_ACCESS_RW_INTERLEAVED);
     snd_pcm_hw_params_set_rate_near(capture_handle, params, &rate, NULL);
@@ -57,6 +59,7 @@ run:
     snd_pcm_prepare(capture_handle);
 
     LV_LOG_USER("get rate: %d, samples: %d, format: %s, channel: %d", rate, (int)samples, snd_pcm_format_name(format), channel);
+
     alsa_reset();
     alsa_set(format, channel, rate);
 
@@ -71,6 +74,11 @@ run:
         if ((err = snd_pcm_readi(capture_handle, buffer, samples)) < 0)
         {
             LV_LOG_ERROR("Read error: %s", snd_strerror(err));
+            break;
+        }
+
+        if (!running)
+        {
             break;
         }
 
@@ -92,7 +100,7 @@ run:
     pthread_mutex_unlock(&usb_mutex);
 }
 
-void usb_audio(bool enable, bool isuac2)
+static void usb_audio(bool enable, bool isuac2)
 {
     LV_LOG_USER("stop usb Gadget");
     std::system("usbdevice stop");
@@ -104,6 +112,7 @@ void usb_audio(bool enable, bool isuac2)
 
     if (enable)
     {
+        LV_LOG_USER("Starting UAC Gadget");
         if (isuac2)
         {
             LV_LOG_USER("enable uac2");
@@ -141,7 +150,7 @@ void usb_audio(bool enable, bool isuac2)
     std::system("usbdevice start");
 }
 
-void usb_audio_stop()
+void usb_audio_stop_run()
 {
     if (!running)
     {
@@ -181,15 +190,19 @@ void usb_audio_start_run()
     monitor_thread->detach();
 }
 
-void usb_audio_test()
+void usb_audio_init()
 {
     pthread_mutex_init(&usb_mutex, NULL);
-    LV_LOG_USER("Starting UAC2 Gadget test...");
+}
+
+void usb_audio_start()
+{
     usb_audio(true, true);
     usb_monitor_start();
+}
 
-    for (;;)
-    {
-        sleep(1);
-    }
+void usb_audio_stop()
+{
+    usb_audio(false, true);
+    usb_monitor_stop();
 }

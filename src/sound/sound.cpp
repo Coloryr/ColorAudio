@@ -211,7 +211,7 @@ void alsa_set_volume(float value)
     // LV_LOG_USER("now volume: %ld", target_val);
     int err = snd_ctl_elem_write(ctl_handle, control);
     // LV_LOG_USER("now volume: %f", value);
-    
+
     config::set_config_volume(value);
     config::save_config();
 }

@@ -1,8 +1,8 @@
 #include "decoder_mp3.h"
 
-#include "../player.h"
-#include "../sound.h"
-#include "../sound_fft.h"
+#include "../music_player.h"
+#include "../sound/sound.h"
+#include "../sound/sound_fft.h"
 #include "../lvgl/src/misc/lv_log.h"
 
 #include <alsa/asoundlib.h>

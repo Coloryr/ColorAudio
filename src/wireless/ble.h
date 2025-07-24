@@ -3,8 +3,6 @@
 
 #include <gio/gio.h>
 
-#include "../player/player_info.h"
-
 typedef enum
 {
     BLE_STATE_POWER_OFF = 0,
@@ -42,6 +40,5 @@ void ble_set_name(const char *new_name);
 void ble_set_power(bool state);
 void ble_set_discoverable(bool state);
 void ble_set_pairable(bool state);
-void ble_control_media(music_command command);
 
 #endif // __BLE_H__

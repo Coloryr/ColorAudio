@@ -1,10 +1,12 @@
 #include "net_music.h"
 
 #include "lyric.h"
+#include "music_player.h"
+#include "mp3/mp3_id3.h"
+#include "player_info.h"
+#include "163/music163.h"
+
 #include "../net/music_api.h"
-#include "../music/mp3_id3.h"
-#include "../player/player.h"
-#include "../player/player_info.h"
 #include "../ui/music_view.h"
 #include "../ui/ui.h"
 #include "../ui/mp4.h"
@@ -62,7 +64,15 @@ static void *net_lyric_run(void *arg)
 
     try
     {
-        music_lyric_163(*lyric_id);
+        LyricParser *data, *tr_data;
+        if (music_lyric_163(*lyric_id, &data, &tr_data))
+        {
+            view_music_set_lyric(data, tr_data);
+        }
+        else
+        {
+            view_music_set_lyric_state(LYRIC_NONE);
+        }
     }
     catch (const std::exception &e)
     {

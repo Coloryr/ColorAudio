@@ -1,19 +1,19 @@
-#include "player.h"
+#include "music_player.h"
 
+#include "mp3/mp3_id3.h"
+#include "music.h"
 #include "decoder/decoder.h"
 #include "decoder/decoder_flac.h"
 #include "decoder/decoder_mp3.h"
-#include "sound.h"
 
-#include "../music/mp3_id3.h"
-#include "../music/music.h"
+#include "../sound/sound.h"
 #include "../stream/stream.h"
 #include "../ui/music_view.h"
 #include "../config/config.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
-#include <boost/container/flat_map.hpp>
+#include <boost/container/vector.hpp>
 #include <stdint.h>
 #include <pthread.h>
 #include <string>
@@ -27,7 +27,7 @@ static music_command play_now_command = MUSIC_COMMAND_UNKNOW;
 
 static float jump_time = 0;
 
-boost::container::flat_map<uint32_t, play_item *> play_list;
+boost::container::vector<play_item *> play_list;
 
 std::string title;
 std::string album;

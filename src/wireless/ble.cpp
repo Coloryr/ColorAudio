@@ -3,8 +3,7 @@
 #include "ble_battery.h"
 #include "ble_info.h"
 
-#include "../player/sound.h"
-#include "../player/player_info.h"
+#include "../sound/sound.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -91,14 +90,9 @@ void ble_set_pairable(bool state)
     }
 }
 
-void ble_control_media(music_command command)
-{
-    ble_send_media_command(command);
-}
-
 void ble_device_add()
 {
-    ble_set_name("ColorAudio_V1");
+    ble_set_name("ColorAudio");
     ble_set_power(true);
     ble_set_discoverable(true);
     ble_set_pairable(true);

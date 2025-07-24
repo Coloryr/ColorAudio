@@ -1,6 +1,21 @@
 #include "view_main.h"
 
+#include "../font.h"
+
+#include "../main.h"
+
 #include "lvgl.h"
+
+LV_IMAGE_DECLARE(img_lv_music);
+LV_IMAGE_DECLARE(img_lv_ble);
+LV_IMAGE_DECLARE(img_lv_usb);
+LV_IMAGE_DECLARE(img_lv_setting);
+
+static main_button_type args[] = {MAIN_BUTTON_MUSIC,
+                                  MAIN_BUTTON_BLE,
+                                  MAIN_BUTTON_USB,
+                                  MAIN_BUTTON_SETTING};
+static lv_style_t style;
 
 static void create_wave_images(lv_obj_t *parent)
 {
@@ -21,17 +36,7 @@ static void create_wave_images(lv_obj_t *parent)
     lv_obj_add_flag(wave_bottom, LV_OBJ_FLAG_IGNORE_LAYOUT);
 }
 
-static void local_music_event_cb(lv_event_t *e)
-{
-    // view_go_music();
-}
-
-static void net_music_event_cb(lv_event_t *e)
-{
-    // view_go_music();
-}
-
-lv_obj_t *lv_main_create(lv_obj_t *parent)
+lv_obj_t *lv_main_create(lv_obj_t *parent, lv_event_cb_t cb)
 {
     lv_obj_t *obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
@@ -39,25 +44,130 @@ lv_obj_t *lv_main_create(lv_obj_t *parent)
     lv_obj_set_style_bg_opa(obj, 255, 0);
     lv_obj_set_size(obj, LV_HOR_RES, LV_VER_RES);
 
-    lv_obj_t *cout = lv_obj_create(obj);
-    lv_obj_remove_style_all(cout);
-    lv_obj_align(cout, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_size(cout, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    create_wave_images(obj);
 
-    static const int32_t grid_cols[] = {LV_GRID_CONTENT, LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
-    static const int32_t grid_rows[] = {LV_GRID_CONTENT, LV_GRID_TEMPLATE_LAST};
+    // 创建Flex容器实现垂直居中布局
+    lv_obj_t *cont = lv_obj_create(obj);
+    lv_obj_remove_style_all(cont);
+    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES);
+    lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_center(cont);
 
-    lv_obj_t *button = lv_obj_create(cout);
-    lv_obj_t *label = lv_label_create(button);
+    lv_style_init(&style);
+    lv_style_set_bg_color(&style, lv_color_hex(0xFFFFFF));
+    lv_style_set_bg_opa(&style, 255);
+    lv_style_set_radius(&style, 10);                           // 增加圆角
+    lv_style_set_shadow_width(&style, 20);                     // 增加阴影宽度
+    lv_style_set_shadow_spread(&style, 10);                    // 增加阴影扩散
+    lv_style_set_shadow_color(&style, lv_color_hex(0xd9c5ff)); // 调整阴影颜色
+
+    // 创建按钮1 - 带图标
+    lv_obj_t *button = lv_obj_create(cont);
+    lv_obj_remove_style_all(button);
+    lv_obj_add_style(button, &style, 0);
+    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(button, cb, LV_EVENT_CLICKED, &args[0]);
+    lv_obj_set_size(button, 150, 150);
+    lv_obj_set_style_margin_bottom(button, 30, 0);
+
+    // 创建水平布局容器
+    lv_obj_t *btn_cont = lv_obj_create(button);
+    lv_obj_remove_style_all(btn_cont);
+    lv_obj_set_size(btn_cont, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(btn_cont, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(btn_cont, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_center(btn_cont);
+
+    // 添加图标
+    lv_obj_t *icon = lv_image_create(btn_cont);
+    lv_image_set_src(icon, &img_lv_music);
+    lv_obj_set_style_margin_right(icon, 10, 0);
+
+    // 添加文本标签
+    lv_obj_t *label = lv_label_create(btn_cont);
     lv_label_set_text(label, "本地音乐");
-    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(button, local_music_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_set_grid_cell(button, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+    lv_obj_set_style_text_font(label, font_22, 0);
 
-    button = lv_obj_create(cout);
-    label = lv_label_create(button);
-    lv_label_set_text(label, "网络音乐");
-    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(button, local_music_event_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_set_grid_cell(button, LV_GRID_ALIGN_CENTER, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
+    // 创建按钮2 - 带图标
+    lv_obj_t *button1 = lv_obj_create(cont);
+    lv_obj_remove_style_all(button1);
+    lv_obj_add_style(button1, &style, 0);
+    lv_obj_add_flag(button1, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(button1, cb, LV_EVENT_CLICKED, &args[1]);
+    lv_obj_set_size(button1, 150, 150);
+    lv_obj_set_style_margin_bottom(button1, 30, 0);
+
+    // 创建水平布局容器
+    lv_obj_t *btn_cont1 = lv_obj_create(button1);
+    lv_obj_remove_style_all(btn_cont1);
+    lv_obj_set_size(btn_cont1, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(btn_cont1, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(btn_cont1, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_center(btn_cont1);
+
+    // 添加图标
+    lv_obj_t *icon1 = lv_image_create(btn_cont1);
+    lv_image_set_src(icon1, &img_lv_ble);
+    lv_obj_set_style_margin_right(icon1, 10, 0);
+
+    // 添加文本标签
+    label = lv_label_create(btn_cont1);
+    lv_label_set_text(label, "蓝牙音频");
+    lv_obj_set_style_text_font(label, font_22, 0);
+
+    // 创建按钮3 - 带图标
+    lv_obj_t *button2 = lv_obj_create(cont);
+    lv_obj_remove_style_all(button2);
+    lv_obj_add_style(button2, &style, 0);
+    lv_obj_add_flag(button2, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(button2, cb, LV_EVENT_CLICKED, &args[2]);
+    lv_obj_set_size(button2, 150, 150);
+    lv_obj_set_style_margin_bottom(button2, 30, 0);
+
+    // 创建水平布局容器
+    lv_obj_t *btn_cont2 = lv_obj_create(button2);
+    lv_obj_remove_style_all(btn_cont2);
+    lv_obj_set_size(btn_cont2, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(btn_cont2, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_flex_align(btn_cont2, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_center(btn_cont2);
+
+    // 添加图标
+    lv_obj_t *icon2 = lv_image_create(btn_cont2);
+    lv_image_set_src(icon2, &img_lv_usb);
+    lv_obj_set_style_margin_right(icon2, 10, 0);
+
+    // 添加文本标签
+    label = lv_label_create(btn_cont2);
+    lv_label_set_text(label, "USB音频");
+    lv_obj_set_style_text_font(label, font_22, 0);
+
+    // 创建按钮3 - 带图标
+    lv_obj_t *button3 = lv_obj_create(cont);
+    lv_obj_remove_style_all(button3);
+    lv_obj_add_style(button3, &style, 0);
+    lv_obj_add_flag(button3, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(button3, cb, LV_EVENT_CLICKED, &args[3]);
+    lv_obj_set_size(button3, 150, 40);
+
+    // 创建水平布局容器
+    lv_obj_t *btn_cont3 = lv_obj_create(button3);
+    lv_obj_remove_style_all(btn_cont3);
+    lv_obj_set_size(btn_cont3, LV_SIZE_CONTENT, LV_SIZE_CONTENT);
+    lv_obj_set_flex_flow(btn_cont3, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(btn_cont3, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_center(btn_cont3);
+
+    // 添加图标
+    lv_obj_t *icon3 = lv_image_create(btn_cont3);
+    lv_image_set_src(icon3, &img_lv_setting);
+    lv_obj_set_style_margin_right(icon3, 10, 0);
+
+    // 添加文本标签
+    label = lv_label_create(btn_cont3);
+    lv_label_set_text(label, "设置");
+    lv_obj_set_style_text_font(label, font_22, 0);
+
+    return obj;
 }

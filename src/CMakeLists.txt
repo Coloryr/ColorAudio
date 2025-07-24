@@ -62,7 +62,7 @@ file(GLOB_RECURSE SOURCES
 "./ui/*.*"
 "./input/*.*"
 "./stream/*.*"
-"./player/*.*"
+"./sound/*.*"
 "./net/*.*"
 "./usb/*.*"
 "./wireless/*.*"
@@ -81,6 +81,7 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libSDL2.so"
     "${CMAKE_SOURCE_DIR}/libs/libboost_url.so"
     "${CMAKE_SOURCE_DIR}/libs/libboost_system.so"
+    "${CMAKE_SOURCE_DIR}/libs/libboost_locale.so"
     "${CMAKE_SOURCE_DIR}/libs/libFLAC.so"
     "${CMAKE_SOURCE_DIR}/libs/libFLAC++.so"
     "${CMAKE_SOURCE_DIR}/libs/libpng16.so"
@@ -118,7 +119,7 @@ else()
     target_link_libraries(coloraudio PRIVATE png evdev ${SDL2_LIBRARIES}
         drm asound mad freetype m turbojpeg FLAC++ FLAC rime dbus-1 opus
         fdk-aac sbc bluetooth glib-2.0 gio-2.0 gobject-2.0 freeaptx lc3
-        sbc spandsp openaptx
+        sbc spandsp openaptx boost_locale
         boost_system boost_url ssl crypto cryptopp openh264 wpa_client
         udev
     )

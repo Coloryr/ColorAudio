@@ -40,7 +40,7 @@ static bool input_have_data = false;
 static bool is_ch_mode;
 
 static uint8_t *input_char_table[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
-static void(*close)();
+static void(*close_cb)();
 
 static void create_select(lv_obj_t *parent)
 {
@@ -339,7 +339,7 @@ static void keyboard_event_cb(lv_event_t *e)
     }
     else if (code == LV_EVENT_READY)
     {
-        close();
+        close_cb();
     }
 }
 
@@ -363,9 +363,9 @@ void lv_input_display(bool display)
     anim_set_display(input_obj, display);
 }
 
-void lv_input_create(lv_obj_t *parent, void(*close_cb)())
+void lv_input_create(lv_obj_t *parent, void(*cb)())
 {
-    close = close_cb;
+    close_cb = cb;
 
     lv_style_init(&style_select_scrollbar);
     // lv_style_set_width(&style_select_scrollbar, 4);

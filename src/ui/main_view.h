@@ -3,6 +3,8 @@
 
 #include "lvgl.h"
 
+void view_main_set_display(bool display);
+
 void view_main_create(lv_obj_t *parent);
 
 #endif // __MAIN_VIEW_H__

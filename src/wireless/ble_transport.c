@@ -3,7 +3,7 @@
 #include "../lib_src/bluez-alsa/src/bluez.h"
 #include "../lib_src/bluez-alsa/src/dbus.h"
 
-#include "../player/sound.h"
+#include "../sound/sound.h"
 #include "../lvgl/src/misc/lv_log.h"
 
 #include <gio/gio.h>

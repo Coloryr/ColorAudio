@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include "../player/player_info.h"
+#include "../music/player_info.h"
 
 #include <stdint.h>
 #include <string>

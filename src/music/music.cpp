@@ -2,9 +2,8 @@
 
 #include "lyric.h"
 #include "local_music.h"
+#include "music_player.h"
 
-#include "../player/player.h"
-#include "../net/music_api.h"
 #include "../ui/music_view.h"
 #include "../ui/info_view.h"
 #include "../config/config.h"
@@ -13,7 +12,6 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <deque>
-#include <json/json.hpp>
 
 using namespace ColorAudio;
 
@@ -24,63 +22,6 @@ static pthread_t rtid;
 static uint32_t jump_index = UINT32_MAX;
 
 static std::deque<uint32_t> play_last_stack;
-
-static void *music_run_loop(void *arg)
-{
-    for (;;)
-    {
-        usleep(500);
-        if (music_run == MUSIC_RUN_LOCAL)
-        {
-            if (local_music_scan_now)
-            {
-                if (!view_top_info_is_display())
-                {
-                    view_top_info_display("正在扫描音乐");
-                }
-            }
-            else
-            {
-                if (view_top_info_is_display())
-                {
-                    view_top_info_close();
-                }
-                local_music_run();
-            }
-        }
-    }
-}
-
-void music_lyric_163(uint64_t id)
-{
-    json j = api_lyric_music_new(id);
-
-    std::string lyric, tlyric;
-    if (api_music_get_lyric_new(j, lyric, tlyric))
-    {
-        LyricParser *data = new LyricParser(lyric);
-        LyricParser *tr_data = new LyricParser(tlyric);
-
-        view_music_set_lyric(data, tr_data);
-    }
-    else
-    {
-        j = api_lyric_music(id);
-
-        std::string lyric, tlyric;
-        if (api_music_get_lyric(j, lyric, tlyric))
-        {
-            LyricParser *data = new LyricParser(lyric);
-            LyricParser *tr_data = new LyricParser(tlyric);
-
-            view_music_set_lyric(data, tr_data);
-        }
-        else
-        {
-            view_music_set_lyric_state(LYRIC_NONE);
-        }
-    }
-}
 
 void music_start()
 {
@@ -208,22 +149,31 @@ void music_go_local()
     music_run = MUSIC_RUN_LOCAL;
 }
 
-void music_go_net()
-{
-    music_run = MUSIC_RUN_NET;
-}
-
 void music_init()
 {
     play_last_stack.clear();
 
     play_music_mode = config::get_config_music_mode();
+}
 
-    music_run = MUSIC_RUN_LOCAL;
-
-    int res = pthread_create(&rtid, NULL, music_run_loop, NULL);
-    if (res)
+void music_run_loop()
+{
+    if (music_run == MUSIC_RUN_LOCAL)
     {
-        LV_LOG_ERROR("Music thread run fail: %d", res);
+        if (local_music_scan_now)
+        {
+            if (!view_top_info_is_display())
+            {
+                view_top_info_display("正在扫描音乐");
+            }
+        }
+        else
+        {
+            if (view_top_info_is_display())
+            {
+                view_top_info_close();
+            }
+            local_music_run();
+        }
     }
 }

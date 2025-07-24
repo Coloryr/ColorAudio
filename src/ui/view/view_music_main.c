@@ -5,7 +5,7 @@
 #include "../font.h"
 #include "../anim.h"
 #include "../common/utils.h"
-#include "../player/player_info.h"
+#include "../music/player_info.h"
 
 #include <malloc.h>
 
@@ -42,6 +42,7 @@ static lv_obj_t *handle_box;
 static lv_obj_t *volume_slider_obj;
 static lv_obj_t *volume_pan_obj;
 static lv_obj_t *image_bg;
+static lv_obj_t *list_info_obj;
 
 static bool playing;
 static bool is_display_volume = false;
@@ -52,6 +53,7 @@ static uint8_t volume_down;
 
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_loop);
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_rnd);
+LV_IMAGE_DECLARE(lv_img_record);
 
 static void spectrum_draw_event_cb(lv_event_t *e)
 {
@@ -259,6 +261,7 @@ static lv_obj_t *create_album_image_obj(lv_obj_t *parent)
 
     lv_image_set_inner_align(obj, LV_IMAGE_ALIGN_STRETCH);
     lv_image_set_antialias(obj, true);
+    lv_image_set_src(obj, &lv_img_record);
 
     return obj;
 }
@@ -525,6 +528,12 @@ lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
 
     album_image_obj = create_album_image_obj(cont);
 
+    list_info_obj = lv_label_create(cont);
+    lv_obj_set_style_text_font(list_info_obj, font_16, 0);
+    lv_label_set_text(list_info_obj, "0 / 0");
+    lv_obj_set_style_margin_right(list_info_obj, LV_MUSIC_HANDLE_SIZE, 0);
+    lv_obj_set_style_text_align(list_info_obj, LV_TEXT_ALIGN_RIGHT, 0);
+
     /*Arrange the content into a grid*/
     static const int32_t grid_cols[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static const int32_t grid_rows[] = {LV_MUSIC_HANDLE_SIZE, /*Spacing*/
@@ -553,6 +562,7 @@ lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     lv_obj_set_grid_cell(spectrum_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_START, 4, 1);
 
     lv_obj_set_grid_cell(handle_box, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_CENTER, 6, 1);
+    lv_obj_set_grid_cell(list_info_obj, LV_GRID_ALIGN_END, 0, 1, LV_GRID_ALIGN_CENTER, 6, 1);
 
     lv_obj_update_layout(main_cont);
 
@@ -571,6 +581,11 @@ void lv_music_volume_close()
     volume_down = 0;
     is_display_volume = false;
     volume_display(false);
+}
+
+void lv_music_set_list_info(uint32_t count, uint32_t now)
+{
+    lv_label_set_text_fmt(list_info_obj, "%d / %d", now, count);
 }
 
 void lv_music_set_all_time(float time)
@@ -619,7 +634,7 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
     }
     if (data == NULL)
     {
-        lv_image_set_src(album_image_obj, &img_dsc);
+        lv_image_set_src(album_image_obj, &lv_img_record);
         return;
     }
 
@@ -638,7 +653,7 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
             img_dsc.header.h = 0;
             img_dsc.header.stride = 0;
         }
-        lv_image_set_src(album_image_obj, NULL);
+        lv_image_set_src(album_image_obj, &lv_img_record);
     }
 }
 
@@ -655,7 +670,7 @@ void lv_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data)
     img_dsc.header.stride = width * 3;
     img_dsc.header.cf = LV_COLOR_FORMAT_RGB888;
 
-    lv_image_set_bitmap_map_src(album_image_obj, &img_dsc);
+    lv_image_set_src(album_image_obj, &img_dsc);
 }
 
 void lv_music_set_fft_data(uint16_t index, uint16_t value, uint32_t size)

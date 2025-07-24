@@ -264,7 +264,7 @@ fail:
     }
 }
 
-void ble_send_media_command(music_command command)
+void ble_send_media_command(ble_music_command command)
 {
     if (!device_player_path || !command)
     {
@@ -290,19 +290,19 @@ void ble_send_media_command(music_command command)
         goto fail;
     }
 
-    if (command == MUSIC_COMMAND_NEXT)
+    if (command == BLE_MUSIC_COMMAND_NEXT)
     {
         method = "Next";
     }
-    else if (command == MUSIC_COMMAND_LAST)
+    else if (command == BLE_MUSIC_COMMAND_LAST)
     {
         method = "Previous";
     }
-    else if (command == MUSIC_COMMAND_PLAY)
+    else if (command == BLE_MUSIC_COMMAND_PLAY)
     {
         method = "Play";
     }
-    else if (command == MUSIC_COMMAND_PAUSE)
+    else if (command == BLE_MUSIC_COMMAND_PAUSE)
     {
         method = "Pause";
     }
