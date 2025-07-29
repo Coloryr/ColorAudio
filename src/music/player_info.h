@@ -14,7 +14,7 @@ typedef enum
     MUSIC_MODE_LOOP = 0,
     MUSIC_MODE_RND,
     MUSIC_MODE_UNKNOW = -1
-} music_mode;
+} music_mode_type;
 
 typedef enum
 {
@@ -56,7 +56,7 @@ typedef enum
 
 extern music_type play_music_type;
 extern music_state play_state;
-extern music_mode play_music_mode;
+extern music_mode_type play_music_mode;
 
 extern uint32_t play_music_bps;
 extern uint32_t play_now_index;

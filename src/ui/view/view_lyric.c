@@ -304,6 +304,7 @@ test_next:
         lv_draw_image_dsc_t image_draw_dsc;
         lv_draw_image_dsc_init(&image_draw_dsc);
         image_draw_dsc.src = layer_in; /* Source image is the new layer. */
+        image_draw_dsc.opa = lv_obj_get_style_opa(pan, LV_PART_MAIN);
         /* Draw new layer to parent layer. */
         lv_draw_layer(layer, &image_draw_dsc, &cop);
     }
@@ -345,6 +346,7 @@ test_next:
         lv_draw_image_dsc_t image_draw_dsc_1;
         lv_draw_image_dsc_init(&image_draw_dsc_1);
         image_draw_dsc_1.src = layer_in; /* Source image is the new layer. */
+        image_draw_dsc_1.opa = lv_obj_get_style_opa(pan, LV_PART_MAIN);
         /* Draw new layer to parent layer. */
         lv_draw_layer(layer, &image_draw_dsc_1, &cop);
     }

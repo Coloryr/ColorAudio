@@ -10,6 +10,7 @@ typedef enum
 } main_mode_type;
 
 void change_mode(main_mode_type mode);
+main_mode_type get_mode();
 
 #endif
 

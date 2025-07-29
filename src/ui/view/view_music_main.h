@@ -10,7 +10,7 @@ extern "C" {
 lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
                                  lv_event_cb_t volume, lv_event_cb_t mode,
                                  lv_event_cb_t prev, lv_event_cb_t play, lv_event_cb_t next,
-                                 lv_event_cb_t mute);
+                                 lv_event_cb_t mute, lv_event_cb_t back);
 
 void lv_music_set_all_time(float time);
 void lv_music_set_now_time(float time);
@@ -18,7 +18,7 @@ void lv_music_set_title(const char *data);
 void lv_music_set_album(const char *data);
 void lv_music_set_auther(const char *data);
 void lv_music_set_image(uint8_t *data, uint32_t size);
-void lv_music_set_fft_data(uint16_t index, uint16_t value, uint32_t size);
+void lv_music_set_fft_data(uint16_t index, uint16_t value);
 void lv_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data);
 void lv_music_set_volume_timer(uint8_t time);
 void lv_music_set_play();

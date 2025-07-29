@@ -1,5 +1,6 @@
 #include "view_music_main.h"
 #include "view_lyric.h"
+#include "view_spectrum.h"
 
 #include "../view_setting.h"
 #include "../font.h"
@@ -11,15 +12,6 @@
 
 #define ACTIVE_TRACK_CNT 3
 #define INTRO_TIME 0
-#define BAR_COLOR1 lv_color_hex(0xe9dbfc)
-#define BAR_COLOR2 lv_color_hex(0x6f8af6)
-#define BAR_COLOR3 lv_color_hex(0xffffff)
-#define BAR_COLOR1_STOP 5
-#define BAR_COLOR2_STOP 20
-#define BAR_REST_RADIUS 5
-#define BAR_COLOR3_STOP (LV_MAX(LV_HOR_RES, LV_VER_RES) / 3)
-#define BAR_CNT 20
-#define BAR_MAX_VALUE 50
 #define PIC_SIZE 300
 
 static lv_obj_t *main_cont;
@@ -43,87 +35,17 @@ static lv_obj_t *volume_slider_obj;
 static lv_obj_t *volume_pan_obj;
 static lv_obj_t *image_bg;
 static lv_obj_t *list_info_obj;
+static lv_obj_t *lyric_obj;
 
 static bool playing;
 static bool is_display_volume = false;
-static uint32_t spectrum[20] = {0};
 static lv_image_dsc_t img_dsc;
 
 static uint8_t volume_down;
 
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_loop);
 LV_IMAGE_DECLARE(img_lv_demo_music_btn_rnd);
-LV_IMAGE_DECLARE(lv_img_record);
-
-static void spectrum_draw_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-
-    if (code == LV_EVENT_REFR_EXT_DRAW_SIZE)
-    {
-        lv_event_set_ext_draw_size(e, LV_HOR_RES);
-    }
-    else if (code == LV_EVENT_COVER_CHECK)
-    {
-        lv_event_set_cover_res(e, LV_COVER_RES_NOT_COVER);
-    }
-    else if (code == LV_EVENT_DRAW_MAIN_BEGIN)
-    {
-        lv_obj_t *obj = lv_event_get_target(e);
-        lv_layer_t *layer = lv_event_get_layer(e);
-
-        lv_opa_t opa = lv_obj_get_style_opa_recursive(obj, LV_PART_MAIN);
-        if (opa <= LV_OPA_MIN)
-            return;
-
-        lv_draw_rect_dsc_t draw_dsc;
-        lv_draw_rect_dsc_init(&draw_dsc);
-        draw_dsc.bg_opa = LV_OPA_COVER;
-
-        lv_point_t center;
-        lv_area_t obj_coords;
-        lv_obj_get_coords(obj, &obj_coords);
-        center.x = obj_coords.x1;
-        center.y = obj_coords.y1;
-
-        uint32_t i;
-
-        int32_t width = lv_obj_get_width(obj);
-        int32_t height = lv_obj_get_height(obj);
-
-        int32_t item = width / BAR_CNT;
-        int32_t pad = 1;
-        int32_t count = 0;
-        for (i = 0; i < BAR_CNT; i++)
-        {
-            uint32_t v;
-            v = BAR_REST_RADIUS + spectrum[i];
-
-            if (v < BAR_COLOR1_STOP)
-                draw_dsc.bg_color = BAR_COLOR1;
-            else if (v > (uint32_t)BAR_COLOR3_STOP)
-                draw_dsc.bg_color = BAR_COLOR3;
-            else if (v > BAR_COLOR2_STOP)
-                draw_dsc.bg_color = lv_color_mix(BAR_COLOR3, BAR_COLOR2,
-                                                 ((v - BAR_COLOR2_STOP) * 255) / (BAR_COLOR3_STOP - BAR_COLOR2_STOP));
-            else
-                draw_dsc.bg_color = lv_color_mix(BAR_COLOR2, BAR_COLOR1,
-                                                 ((v - BAR_COLOR1_STOP) * 255) / (BAR_COLOR2_STOP - BAR_COLOR1_STOP));
-            count += pad;
-            int16_t temp = item - pad * 2;
-
-            lv_area_t area = {.x1 = center.x + count,
-                              .x2 = center.x + temp + count,
-                              .y1 = center.y + height - v + 5,
-                              .y2 = center.y + height + 5};
-            lv_draw_rect(layer, &draw_dsc, &area);
-            count += pad + temp;
-        }
-    }
-    else if (code == LV_EVENT_DELETE)
-    {
-    }
-}
+LV_IMAGE_DECLARE(img_lv_record);
 
 static void volume_display(bool display)
 {
@@ -261,7 +183,7 @@ static lv_obj_t *create_album_image_obj(lv_obj_t *parent)
 
     lv_image_set_inner_align(obj, LV_IMAGE_ALIGN_STRETCH);
     lv_image_set_antialias(obj, true);
-    lv_image_set_src(obj, &lv_img_record);
+    lv_image_set_src(obj, &img_lv_record);
 
     return obj;
 }
@@ -354,23 +276,6 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_label_set_text(genre_label, "");
 
     return cont;
-}
-
-static lv_obj_t *create_spectrum_obj(lv_obj_t *parent)
-{
-    /*Create the spectrum visualizer*/
-    lv_obj_t *obj = lv_obj_create(parent);
-    lv_obj_remove_style_all(obj);
-    lv_obj_set_height(obj, 20);
-
-    uint32_t wid = lv_obj_get_width(parent);
-
-    lv_obj_set_width(obj, wid - LV_MUSIC_HANDLE_SIZE - LV_MUSIC_HANDLE_SIZE);
-    lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_event_cb(obj, spectrum_draw_event_cb, LV_EVENT_ALL, NULL);
-    lv_obj_refresh_ext_draw_size(obj);
-
-    return obj;
 }
 
 static lv_obj_t *create_timer_box(lv_obj_t *parent, lv_event_cb_t time)
@@ -505,7 +410,8 @@ static lv_obj_t *create_handle(lv_obj_t *parent)
 lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
                                lv_event_cb_t volume, lv_event_cb_t mode,
                                lv_event_cb_t prev, lv_event_cb_t play,
-                               lv_event_cb_t next, lv_event_cb_t mute)
+                               lv_event_cb_t next, lv_event_cb_t mute,
+                               lv_event_cb_t back)
 {
     /*Create the content of the music player*/
     lv_obj_t *cont = create_cont(parent);
@@ -513,7 +419,7 @@ lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     create_wave_images(cont);
     title_box = create_title_box(cont);
     ctrl_box = create_ctrl_box(cont, mode, prev, play, next);
-    spectrum_obj = create_spectrum_obj(cont);
+    spectrum_obj = lv_spectrum_create(cont);
     handle_box = create_handle(cont);
     lv_obj_t *time_box = create_timer_box(cont, time);
 
@@ -569,9 +475,17 @@ lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
     volume_pan_obj = create_volume_slider(cont, volume, mute);
     lv_obj_align_to(volume_pan_obj, image_bg, LV_ALIGN_OUT_RIGHT_MID, 30, 0);
 
-    lv_obj_t *lyric = lv_lyric_create(cont);
-    lv_obj_set_grid_cell(lyric, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 3, 1);
-    // lv_obj_set_style_margin_top(lyric, 5, 0);
+    lyric_obj = lv_lyric_create(cont);
+    lv_obj_set_grid_cell(lyric_obj, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_START, 3, 1);
+
+    LV_IMAGE_DECLARE(img_lv_back);
+
+    lv_obj_t *button = lv_image_create(cont);
+    lv_image_set_src(button, &img_lv_back);
+    lv_obj_set_size(button, 40, 40);
+    lv_obj_add_event_cb(button, back, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_flag(button, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_IGNORE_LAYOUT);
+    lv_obj_align(button, LV_ALIGN_TOP_LEFT, 10, LV_MUSIC_HANDLE_SIZE);
 
     return main_cont;
 }
@@ -634,7 +548,7 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
     }
     if (data == NULL)
     {
-        lv_image_set_src(album_image_obj, &lv_img_record);
+        lv_image_set_src(album_image_obj, &img_lv_record);
         return;
     }
 
@@ -653,7 +567,7 @@ void lv_music_set_image(uint8_t *data, uint32_t size)
             img_dsc.header.h = 0;
             img_dsc.header.stride = 0;
         }
-        lv_image_set_src(album_image_obj, &lv_img_record);
+        lv_image_set_src(album_image_obj, &img_lv_record);
     }
 }
 
@@ -673,13 +587,9 @@ void lv_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data)
     lv_image_set_src(album_image_obj, &img_dsc);
 }
 
-void lv_music_set_fft_data(uint16_t index, uint16_t value, uint32_t size)
+void lv_music_set_fft_data(uint16_t index, uint16_t value)
 {
-    if (value > BAR_MAX_VALUE)
-    {
-        value = BAR_MAX_VALUE;
-    }
-    spectrum[index] = value;
+    lv_spectrum_set_value(spectrum_obj, index, value);
 }
 
 void lv_music_fft_load()
@@ -708,10 +618,7 @@ void lv_music_set_sound_info(uint16_t bit, uint32_t rate, uint8_t channel, uint3
 
 void lv_music_fft_clear()
 {
-    for (int i = 0; i < BAR_CNT; i++)
-    {
-        spectrum[i] = 0;
-    }
+    lv_spectrum_clear_value(spectrum_obj);
 }
 
 void lv_music_set_play_mode()
@@ -751,7 +658,8 @@ void lv_music_fadein()
     lv_obj_fade_in(handle_box, 1000, INTRO_TIME);
     lv_obj_fade_in(image_bg, 1000, INTRO_TIME);
     lv_obj_fade_in(album_image_obj, 1000, INTRO_TIME);
-    lv_obj_fade_in(spectrum_obj, 0, INTRO_TIME);
+    lv_obj_fade_in(spectrum_obj, 1000, INTRO_TIME);
+    lv_obj_fade_in(lyric_obj, 1000, INTRO_TIME);
 }
 
 void lv_music_volume_timer_tick()

@@ -4,6 +4,7 @@
 #include "local_music.h"
 #include "music_player.h"
 
+#include "../ui/ui.h"
 #include "../ui/music_view.h"
 #include "../ui/info_view.h"
 #include "../config/config.h"
@@ -23,6 +24,8 @@ static uint32_t jump_index = UINT32_MAX;
 
 static std::deque<uint32_t> play_last_stack;
 
+static bool is_close;
+
 void music_start()
 {
     view_music_set_check(play_now_index, true);
@@ -35,14 +38,22 @@ void music_end()
 
     view_music_set_check(play_now_index, false);
 
-    if (have_jump_index())
+    if (is_close)
     {
-        play_now_index = get_jump_index();
         play_jump_index_clear();
+        is_close = false;
     }
     else
     {
-        music_next();
+        if (have_jump_index())
+        {
+            play_now_index = get_jump_index();
+            play_jump_index_clear();
+        }
+        else
+        {
+            music_next();
+        }
     }
 
     // 清理指令
@@ -154,6 +165,19 @@ void music_init()
     play_last_stack.clear();
 
     play_music_mode = config::get_config_music_mode();
+
+    local_music_init();
+}
+
+void music_close()
+{
+    is_close = true;
+    play_set_command(MUSIC_COMMAND_STOP);
+}
+
+music_run_type get_music_run()
+{
+    return music_run;
 }
 
 void music_run_loop()
@@ -162,14 +186,14 @@ void music_run_loop()
     {
         if (local_music_scan_now)
         {
-            if (!view_top_info_is_display())
+            if (get_view_mode() == VIEW_MUSIC && !view_top_info_is_display())
             {
                 view_top_info_display("正在扫描音乐");
             }
         }
         else
         {
-            if (view_top_info_is_display())
+            if (get_view_mode() == VIEW_MUSIC && view_top_info_is_display())
             {
                 view_top_info_close();
             }

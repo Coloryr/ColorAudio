@@ -4,7 +4,7 @@
 
 music_type play_music_type = MUSIC_TYPE_UNKNOW;
 music_state play_state = MUSIC_STATE_UNKNOW;
-music_mode play_music_mode = MUSIC_MODE_LOOP;
+music_mode_type play_music_mode = MUSIC_MODE_LOOP;
 
 uint32_t play_music_bps;
 uint32_t play_now_index;

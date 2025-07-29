@@ -16,6 +16,7 @@ typedef enum
 extern "C" {
 #endif
 
+void lv_main_set_now(const char *text);
 lv_obj_t *lv_main_create(lv_obj_t *parent, lv_event_cb_t cb);
 
 #ifdef __cplusplus

@@ -156,6 +156,6 @@ void fft_fill(uint32_t down)
     for (int i = 0; i < OUT_POINTS; i++)
     {
         int bar_len = (int)(bin_values[i] * 20);
-        lv_music_set_fft_data(i, bar_len, 0);
+        lv_music_set_fft_data(i, bar_len);
     }
 }

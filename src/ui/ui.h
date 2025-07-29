@@ -8,9 +8,10 @@ typedef enum
     VIEW_BLE,
     VIEW_USB,
     VIEW_SETTING
-} view_type;
+} view_mode_type;
 
-void view_jump(view_type type);
+view_mode_type get_view_mode();
+void view_jump(view_mode_type type);
 
 void view_init();
 void view_tick();

@@ -42,7 +42,8 @@ static void sigterm_handler(int sig)
 
 static void *main_loop(void *arg)
 {
-    LV_LOG_USER("main loop run");
+    change_mode(config::get_config_main_mode());
+
     for (;;)
     {
         usleep(100);
@@ -51,6 +52,11 @@ static void *main_loop(void *arg)
             music_run_loop();
         }
     }
+}
+
+main_mode_type get_mode()
+{
+    return now_mode;
 }
 
 void change_mode(main_mode_type mode)
@@ -62,13 +68,17 @@ void change_mode(main_mode_type mode)
 
     if (now_mode == MAIN_MODE_MUSIC)
     {
+        music_close();
     }
 
     if (mode == MAIN_MODE_MUSIC)
     {
-        view_jump(VIEW_MUSIC);
         music_go_local();
     }
+
+    now_mode = mode;
+    config::set_config_main_mode(now_mode);
+    config::save_config();
 }
 
 int main(int argc, char **argv)
@@ -84,10 +94,10 @@ int main(int argc, char **argv)
     lv_port_init();
 
     view_init();
-    local_music_init();
     music_init();
 
     pthread_create(&tid, NULL, main_loop, NULL);
+    pthread_setname_np(tid, "main loop");
 
 #ifdef BUILD_ARM
     struct timespec ts;

@@ -274,6 +274,7 @@ void local_music_init()
     {
         LV_LOG_ERROR("Music play list read thread run fail: %d", res);
     }
+    pthread_setname_np(rtid, "play list scan"); 
 }
 
 void local_music_run()

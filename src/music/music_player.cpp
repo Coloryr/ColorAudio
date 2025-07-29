@@ -209,6 +209,7 @@ void play_init()
     {
         LV_LOG_ERROR("Music play thread run fail: %d", res);
     }
+    pthread_setname_np(tid, "music play loop"); 
 }
 
 music_command get_play_command()
@@ -241,7 +242,7 @@ bool play_set_command(music_command command)
         play_now_command = command;
         return true;
     case MUSIC_COMMAND_CHANGE_MODE:
-        play_music_mode = static_cast<music_mode>((play_music_mode + 1) % 2);
+        play_music_mode = static_cast<music_mode_type>((play_music_mode + 1) % 2);
         config::set_config_music_code(play_music_mode);
         config::save_config();
         view_music_update_state();

@@ -13,10 +13,12 @@
 using namespace ColorAudio;
 using namespace nlohmann;
 
-music_mode config::play_mode = MUSIC_MODE_LOOP;
+music_mode_type config::play_mode = MUSIC_MODE_LOOP;
 uint32_t config::play_index = 0;
 std::string config::play_name;
 float config::play_volume = 20;
+main_mode_type config::main_mode = MAIN_MODE_NONE;
+view_mode_type config::view_mode = VIEW_MAIN;
 
 static pthread_t save_tid;
 
@@ -47,18 +49,28 @@ void config::load_config()
         try
         {
             json j = json::parse(temp);
-            json index = j["index"];
-            json mode = j["mode"];
-            json name = j["name"];
-            json volume = j["volume"];
+            json index = j[MUSIC_CONFOG_ID_MUSIC_INDEX];
+            json mode = j[MUSIC_CONFOG_ID_MUSIC_MODE];
+            json mainmode = j[MUSIC_CONFOG_ID_MAIN_MODE];
+            json viewmode = j[MUSIC_CONFOG_ID_VIEW_MODE];
+            json name = j[MUSIC_CONFOG_ID_MUISC_NAME];
+            json volume = j[MUSIC_CONFOG_ID_VOLUME];
 
             if (index.is_number())
             {
                 play_index = index.get<uint32_t>();
             }
+            if (viewmode.is_number())
+            {
+                view_mode = viewmode.get<view_mode_type>();
+            }
             if (mode.is_number())
             {
-                play_mode = mode.get<music_mode>();
+                play_mode = mode.get<music_mode_type>();
+            }
+            if (mainmode.is_number())
+            {
+                main_mode = mainmode.get<main_mode_type>();
             }
             if (name.is_string())
             {
@@ -102,10 +114,12 @@ void config::save_config_run()
     try
     {
         json j = json();
-        j["index"] = play_index;
-        j["mode"] = play_mode;
-        j["name"] = play_name;
-        j["volume"] = play_volume;
+        j[MUSIC_CONFOG_ID_MUSIC_INDEX] = play_index;
+        j[MUSIC_CONFOG_ID_MUSIC_MODE] = play_mode;
+        j[MUSIC_CONFOG_ID_MAIN_MODE] = main_mode;
+        j[MUSIC_CONFOG_ID_MUISC_NAME] = play_name;
+        j[MUSIC_CONFOG_ID_VOLUME] = play_volume;
+        j[MUSIC_CONFOG_ID_VIEW_MODE] = view_mode;
 
         std::string res = j.dump();
 

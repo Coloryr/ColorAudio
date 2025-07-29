@@ -1,6 +1,8 @@
 #include "music_view.h"
 
 #include "input_view.h"
+#include "info_view.h"
+#include "ui.h"
 #include "view_setting.h"
 #include "view/view_lyric.h"
 #include "view/view_music_main.h"
@@ -10,6 +12,7 @@
 #include "../music/music_player.h"
 #include "../sound/sound.h"
 #include "../music/lyric.h"
+#include "../main.h"
 
 #include "lvgl.h"
 
@@ -18,8 +21,7 @@
 static LyricParser *lyric_data = NULL;
 static LyricParser *lyric_tr_data = NULL;
 
-static lv_obj_t *ctrl_view;
-static lv_obj_t *list_view;
+static lv_obj_t *music_obj;
 
 static pthread_mutex_t lyric_mutex;
 
@@ -40,8 +42,25 @@ static bool update_list;
 static bool init_list;
 static bool mp4_have_update;
 
+static char view_list_search_data[512] = {0};
+
+static boost::container::flat_map<uint32_t, view_play_item_t *> view_play_list;
+
+static bool is_search = false;
+
+static void search_done(bool iscancel);
+static void clear_click_event_cb(lv_event_t *e);
+static void search_click_event_cb(lv_event_t *e);
+static void play_click_event_cb(lv_event_t *e);
+static void list_event_cb(lv_event_t *e);
+
 static void lyric_tick(lv_timer_t *timer)
 {
+    if (get_view_mode() != VIEW_MUSIC)
+    {
+        return;
+    }
+
     if (ly_state == LYRIC_NONE)
     {
         view_music_set_lyric(nullptr, nullptr);
@@ -129,6 +148,11 @@ static void lyric_tick(lv_timer_t *timer)
 
 static void timer_tick(lv_timer_t *timer)
 {
+    if (get_view_mode() != VIEW_MUSIC)
+    {
+        return;
+    }
+
     lv_music_set_now_time(time_now);
     lv_music_set_list_info(play_list_count, play_now_index);
     lv_music_volume_timer_tick();
@@ -199,7 +223,7 @@ static void timer_tick(lv_timer_t *timer)
 
     if (update_list)
     {
-         for (const auto &it : play_list)
+        for (const auto &it : play_list)
         {
             view_muisc_list_reload(it);
         }
@@ -231,18 +255,6 @@ static void timer_tick(lv_timer_t *timer)
         mp4_have_update = false;
     }
 }
-
-static void search_done(bool iscancel);
-static void clear_click_event_cb(lv_event_t *e);
-static void search_click_event_cb(lv_event_t *e);
-static void play_click_event_cb(lv_event_t *e);
-static void list_event_cb(lv_event_t *e);
-
-static char view_list_search_data[512] = {0};
-
-static boost::container::flat_map<uint32_t, view_play_item_t *> view_play_list;
-
-static bool is_search = false;
 
 static void search_done(bool iscancel)
 {
@@ -403,17 +415,21 @@ static void mute_click_event_cb(lv_event_t *e)
     lv_music_set_volume_timer(LV_MUSIC_VOLUME_DISPLAY_TIME);
 }
 
-static lv_obj_t *list_create(lv_obj_t *parent)
+static void back_dialog(bool stop)
 {
-    return lv_music_list_create(parent, clear_click_event_cb, search_click_event_cb);
+    if (stop)
+    {
+        change_mode(MAIN_MODE_NONE);
+    }
+
+    view_jump(VIEW_MAIN);
+
+    view_dialog_close();
 }
 
-static lv_obj_t *main_create(lv_obj_t *parent)
+static void back_view(lv_event_t *e)
 {
-    return lv_music_main_create(parent, time_change_event_cb,
-                                volume_click_event_cb, mode_click_event_cb,
-                                prev_click_event_cb, play_event_click_cb,
-                                next_click_event_cb, mute_click_event_cb);
+    view_dialog_show(back_dialog, "是否要同时退出本地音乐模式");
 }
 
 void view_music_list_check(uint32_t index, bool state)
@@ -507,14 +523,12 @@ void view_music_set_display(bool display)
 {
     if (display)
     {
-        lv_obj_remove_flag(list_view, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_remove_flag(ctrl_view, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_remove_flag(music_obj, LV_OBJ_FLAG_HIDDEN);
         lv_music_fadein();
     }
     else
     {
-        lv_obj_add_flag(list_view, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(ctrl_view, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(music_obj, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
@@ -522,12 +536,17 @@ void view_music_create(lv_obj_t *parent)
 {
     pthread_mutex_init(&lyric_mutex, NULL);
 
-    lv_obj_t *obj = lv_obj_create(lv_screen_active());
-    lv_obj_remove_style_all(obj);
-    lv_obj_set_size(obj, LV_HOR_RES, LV_VER_RES);
+    music_obj = lv_obj_create(lv_screen_active());
+    lv_obj_remove_style_all(music_obj);
+    lv_obj_set_size(music_obj, LV_HOR_RES, LV_VER_RES);
 
-    list_view = list_create(obj);
-    ctrl_view = main_create(obj);
+    lv_music_list_create(music_obj, clear_click_event_cb,
+                         search_click_event_cb);
+    lv_music_main_create(music_obj, time_change_event_cb,
+                         volume_click_event_cb, mode_click_event_cb,
+                         prev_click_event_cb, play_event_click_cb,
+                         next_click_event_cb, mute_click_event_cb,
+                         back_view);
 
     lv_timer_create(timer_tick, 500, NULL);
     lv_timer_create(lyric_tick, 50, NULL);

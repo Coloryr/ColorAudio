@@ -22,11 +22,13 @@ void play_jump_index_clear();
 uint32_t get_jump_index();
 bool have_jump_index();
 
+music_run_type get_music_run();
+
 void music_start();
 void music_end();
 void music_next();
 void music_go_local();
-void music_go_net();
+void music_close();
 
 void music_init();
 void music_run_loop();
