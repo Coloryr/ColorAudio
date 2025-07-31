@@ -3972,6 +3972,16 @@
 	)
 	(wire
 		(pts
+			(xy 342.9 59.69) (xy 353.06 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "03cf7f34-49fa-4d96-a0a9-8290f25bdfb1")
+	)
+	(wire
+		(pts
 			(xy 350.52 212.09) (xy 344.17 212.09)
 		)
 		(stroke
@@ -4502,26 +4512,6 @@
 	)
 	(wire
 		(pts
-			(xy 342.9 54.61) (xy 353.06 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "64dde15c-1446-4361-90b6-f7e1abc2dc11")
-	)
-	(wire
-		(pts
-			(xy 342.9 57.15) (xy 353.06 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "66c8b096-3d4b-452d-b0b7-0dcb78cbe661")
-	)
-	(wire
-		(pts
 			(xy 68.58 173.99) (xy 83.82 173.99)
 		)
 		(stroke
@@ -4912,16 +4902,6 @@
 	)
 	(wire
 		(pts
-			(xy 342.9 59.69) (xy 353.06 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b50bea56-f4ac-444a-92bc-f9a43bb9eb82")
-	)
-	(wire
-		(pts
 			(xy 342.9 77.47) (xy 353.06 77.47)
 		)
 		(stroke
@@ -5112,6 +5092,16 @@
 	)
 	(wire
 		(pts
+			(xy 68.58 54.61) (xy 83.82 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d9cb54fd-5f4e-4f32-9ed0-79b204dd889d")
+	)
+	(wire
+		(pts
 			(xy 256.54 204.47) (xy 256.54 205.74)
 		)
 		(stroke
@@ -5159,6 +5149,16 @@
 			(type default)
 		)
 		(uuid "e1f651e6-7585-43cf-ad74-a49549c938b1")
+	)
+	(wire
+		(pts
+			(xy 342.9 57.15) (xy 353.06 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e3057951-36ba-4b97-83b4-d2ac9d833eee")
 	)
 	(wire
 		(pts
@@ -5738,24 +5738,24 @@
 			)
 		)
 	)
-	(global_label "BAT_SCL"
+	(global_label "HCHAG"
 		(shape input)
-		(at 353.06 57.15 0)
+		(at 68.58 54.61 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "37f31809-fec4-405a-b184-6aec11bd3a31")
+		(uuid "32e95987-1e1c-4523-ac24-9a6aaca16d26")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 363.8466 57.15 0)
+			(at 59.3052 54.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -6112,6 +6112,28 @@
 			)
 		)
 	)
+	(global_label "BAT_SDA"
+		(shape input)
+		(at 353.06 57.15 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7ae1003e-5134-488e-b3bc-dd5f4a258218")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 363.9071 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "BOOT"
 		(shape input)
 		(at 205.74 243.84 0)
@@ -6310,28 +6332,6 @@
 			)
 		)
 	)
-	(global_label "BAT_SDA"
-		(shape input)
-		(at 353.06 59.69 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a2ded03d-59ac-4335-9fa6-4a6f1c369e95")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 363.9071 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "LCD_D0P"
 		(shape input)
 		(at 353.06 118.11 0)
@@ -6464,28 +6464,6 @@
 			)
 		)
 	)
-	(global_label "BAT_INT"
-		(shape input)
-		(at 353.06 54.61 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "ccd9cbeb-8ff3-4b20-aa6e-65e42bf7fda9")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 363.2419 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "RESET"
 		(shape input)
 		(at 351.79 184.15 0)
@@ -6521,6 +6499,28 @@
 		(uuid "d258c87e-e2e9-4100-a0df-e8f1c6651a8a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 363.1209 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "BAT_SCL"
+		(shape input)
+		(at 353.06 59.69 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d3a9910c-a7ca-49c7-b996-d07f104f2f7d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 363.8466 59.69 0)
 			(effects
 				(font
 					(size 1.27 1.27)

@@ -1307,7 +1307,7 @@
 	)
 	(rectangle
 		(start 120.65 20.32)
-		(end 266.065 104.775)
+		(end 266.065 72.39)
 		(stroke
 			(width 0)
 			(type dash)
@@ -4595,7 +4595,7 @@
 			)
 		)
 		(property "Value" "4.7uF"
-			(at 252.73 34.798 90)
+			(at 253.492 34.798 90)
 			(effects
 				(font
 					(size 1.27 1.27)

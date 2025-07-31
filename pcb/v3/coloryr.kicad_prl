@@ -1,6 +1,6 @@
 {
   "board": {
-    "active_layer": 0,
+    "active_layer": 2,
     "active_layer_preset": "",
     "auto_track_width": false,
     "hidden_netclasses": [],
@@ -113,6 +113,18 @@
   "open_jobsets": [],
   "project": {
     "files": [
+      {
+        "name": "coloryr.kicad_sch",
+        "open": true,
+        "window": {
+          "display": 0,
+          "maximized": false,
+          "pos_x": -7,
+          "pos_y": 0,
+          "size_x": 1294,
+          "size_y": 1559
+        }
+      },
       {
         "name": "coloryr.kicad_pcb",
         "open": false,
