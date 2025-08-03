@@ -44,3 +44,10 @@ dbus-send --system --print-reply \
           /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76 \
           org.freedesktop.DBus.Properties.GetAll \
           string:"org.bluez.Device1"
+
+dbus-send --system --dest=org.bluez \
+  --print-reply \
+  /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76 \
+  org.freedesktop.DBus.Properties.Get \
+  string:"org.bluez.Device1" \
+  string:"Alias"
