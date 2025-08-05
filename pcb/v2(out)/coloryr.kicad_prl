@@ -127,14 +127,14 @@
       },
       {
         "name": "coloryr.kicad_pcb",
-        "open": true,
+        "open": false,
         "window": {
           "display": 0,
-          "maximized": false,
+          "maximized": true,
           "pos_x": 1283,
           "pos_y": 0,
-          "size_x": 1284,
-          "size_y": 1559
+          "size_x": 1268,
+          "size_y": 1475
         }
       }
     ]

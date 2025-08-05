@@ -4,6 +4,7 @@
 #include "wifibt/wireless.config"
 #include "multimedia/audio.config"
 #include "fs/ntfs.config"
+#include "locale/chinese.config"
 BR2_GCC_VERSION_13_X=y
 BR2_PACKAGE_BLUEZ_TOOLS=y
 BR2_PACKAGE_BOOST=y
@@ -102,4 +103,3 @@ BR2_TARGET_ROOTFS_UBI_SUBSIZE=2048
 BR2_TIME_BITS_64=y
 BR2_arm=y
 BR2_cortex_a7=y
-BR2_PACKAGE_ICU=y
