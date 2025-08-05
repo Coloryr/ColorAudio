@@ -95,7 +95,7 @@ lv_obj_t *lv_spectrum_create(lv_obj_t *parent)
 
     uint32_t wid = lv_obj_get_width(parent);
 
-    uint32_t *temp = lv_malloc(sizeof(uint32_t) * BAR_CNT);
+    uint32_t *temp = lv_calloc(1, sizeof(uint32_t) * BAR_CNT);
 
     lv_obj_set_width(obj, wid - LV_MUSIC_HANDLE_SIZE - LV_MUSIC_HANDLE_SIZE);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_SCROLLABLE);

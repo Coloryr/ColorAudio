@@ -8,7 +8,6 @@
 #include "view/view_music_main.h"
 #include "view/view_music_list.h"
 
-#include "../music/player_info.h"
 #include "../music/music_player.h"
 #include "../sound/sound.h"
 #include "../music/lyric.h"
@@ -75,6 +74,16 @@ static void lyric_tick(lv_timer_t *timer)
     {
         view_music_set_lyric(nullptr, nullptr);
         lv_lyric_set_text("歌词获取失败");
+        lv_lyric_tr_set_text("");
+        lv_lyric_k_set_text("");
+        lv_lyric_k_now_set_text("");
+        ly_state = LYRIC_UNKNOW;
+        return;
+    }
+    else if (ly_state == LYRIC_GET)
+    {
+        view_music_set_lyric(nullptr, nullptr);
+        lv_lyric_set_text("正在获取歌词");
         lv_lyric_tr_set_text("");
         lv_lyric_k_set_text("");
         lv_lyric_k_now_set_text("");
@@ -155,7 +164,6 @@ static void timer_tick(lv_timer_t *timer)
 
     lv_music_set_now_time(time_now);
     lv_music_set_list_info(play_list_count, play_now_index);
-    lv_music_volume_timer_tick();
 
     if (clear_info)
     {
@@ -166,9 +174,9 @@ static void timer_tick(lv_timer_t *timer)
 
     if (update_img)
     {
-        if (image)
+        if (play_image && play_image)
         {
-            lv_music_set_image(image->data, image->size);
+            lv_music_set_image(play_image->data, play_image->size);
         }
         else
         {
@@ -181,11 +189,11 @@ static void timer_tick(lv_timer_t *timer)
     if (update_info)
     {
         lv_music_set_all_time(time_all);
-        lv_music_set_title(title.c_str());
-        lv_music_set_album(album.c_str());
-        lv_music_set_auther(auther.c_str());
+        lv_music_set_title(play_title.c_str());
+        lv_music_set_album(play_album.c_str());
+        lv_music_set_auther(play_auther.c_str());
 
-        lv_music_set_sound_info(pcm_now_format, pcm_now_rate, pcm_now_channels, play_music_bps);
+        lv_music_set_sound_info(pcm_now_format, pcm_now_rate, pcm_now_channels, play_music_bps, play_music_type == MUSIC_TYPE_FLAC);
 
         update_info = false;
     }
@@ -201,7 +209,7 @@ static void timer_tick(lv_timer_t *timer)
             lv_music_set_pause();
         }
 
-        lv_music_set_play_mode();
+        lv_music_set_play_mode(play_music_mode == MUSIC_MODE_RND);
         lv_music_set_volume(alsa_get_volume());
 
         update_state = false;
@@ -388,14 +396,6 @@ static void volume_click_event_cb(lv_event_t *e)
         alsa_set_volume(sel);
         last_mute = 0;
     }
-    else if (code == LV_EVENT_PRESSED)
-    {
-        lv_music_set_volume_timer(UINT8_MAX);
-    }
-    else if (code == LV_EVENT_RELEASED)
-    {
-        lv_music_set_volume_timer(LV_MUSIC_VOLUME_DISPLAY_TIME);
-    }
 }
 
 static void mute_click_event_cb(lv_event_t *e)
@@ -412,24 +412,6 @@ static void mute_click_event_cb(lv_event_t *e)
         alsa_set_volume(0);
         lv_music_set_volume(0);
     }
-    lv_music_set_volume_timer(LV_MUSIC_VOLUME_DISPLAY_TIME);
-}
-
-static void back_dialog(bool stop)
-{
-    if (stop)
-    {
-        change_mode(MAIN_MODE_NONE);
-    }
-
-    view_jump(VIEW_MAIN);
-
-    view_dialog_close();
-}
-
-static void back_view(lv_event_t *e)
-{
-    view_dialog_show(back_dialog, "是否要同时退出本地音乐模式");
 }
 
 void view_music_list_check(uint32_t index, bool state)
@@ -545,8 +527,7 @@ void view_music_create(lv_obj_t *parent)
     lv_music_main_create(music_obj, time_change_event_cb,
                          volume_click_event_cb, mode_click_event_cb,
                          prev_click_event_cb, play_event_click_cb,
-                         next_click_event_cb, mute_click_event_cb,
-                         back_view);
+                         next_click_event_cb, mute_click_event_cb);
 
     lv_timer_create(timer_tick, 500, NULL);
     lv_timer_create(lyric_tick, 50, NULL);
@@ -593,4 +574,9 @@ void view_music_update_list()
 void view_music_init_list()
 {
     init_list = true;
+}
+
+void view_music_set_fft_data(uint16_t index, uint16_t value)
+{
+    lv_music_set_fft_data(index, value);
 }

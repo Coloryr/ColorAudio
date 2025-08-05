@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_C_STANDARD 17)
 
 # build arm32
-# set(BUILD_ARM ON)
+set(BUILD_ARM ON)
 
 # Lvgl
 set(LV_CONF_PATH
@@ -68,6 +68,7 @@ file(GLOB_RECURSE SOURCES
 "./wireless/*.*"
 "./config/*.*"
 "./fft/*.*"
+"./io/*.*"
 )
 
 add_executable(coloraudio ${LIB_SOURCES} ${SOURCES} main.cpp)

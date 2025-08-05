@@ -1,3 +1,5 @@
+#include "ble_transport.h"
+
 #include "../lib_src/bluez-alsa/src/ba-transport.h"
 #include "../lib_src/bluez-alsa/src/ba-transport-pcm.h"
 #include "../lib_src/bluez-alsa/src/bluez.h"
@@ -15,9 +17,6 @@ static pthread_t tid;
 
 extern GDBusConnection *ble_g_conn;
 
-void ble_send_volume();
-void ble_send_battery();
-
 static void *later_send(void *arg)
 {
     float vol = alsa_get_volume();
@@ -30,6 +29,15 @@ static void *later_send(void *arg)
 
     ble_send_battery();
     return NULL;
+}
+
+static void later_send_volume()
+{
+    int res = pthread_create(&tid, NULL, later_send, NULL);
+    if (res)
+    {
+        LV_LOG_ERROR("Ble thread run fail: %d", res);
+    }
 }
 
 void ble_send_volume()
@@ -71,15 +79,7 @@ void ble_set_ba_transport(struct ba_device *device,
     }
     t = ba_transport_new_a2dp(device, profile, dbus_owner, dbus_path, sep, configuration);
     t->a2dp.pcm.fd = 0;
-}
-
-void ble_later_send_volume()
-{
-    int res = pthread_create(&tid, NULL, later_send, NULL);
-    if (res)
-    {
-        LV_LOG_ERROR("Ble thread run fail: %d", res);
-    }
+    later_send_volume();
 }
 
 struct ba_transport *ble_get_ba_transport()
@@ -119,17 +119,22 @@ void ble_set_format(uint16_t channels, uint32_t rate)
     alsa_set(SND_PCM_FORMAT_S16, channels, rate);
 }
 
+void fft_check_buffer(uint16_t len);
+void fft_fill(uint32_t down);
+extern int32_t *sound_fft_buf;
+
 void ble_write(const void *buffer, size_t samples)
 {
-    // alsa_check_buffer(samples);
+    fft_check_buffer(samples);
 
-    // int16_t *buffer1 = (int16_t *)buffer;
-    // int16_t *buffer2 = (int16_t *)sound_buf;
+    int16_t *buffer1 = (int16_t *)buffer;
 
-    // for (size_t i = 0; i < samples; i++)
-    // {
-    //     buffer2[i] = buffer1[i];
-    // }
+    for (size_t i = 0; i < samples; i++)
+    {
+        sound_fft_buf[i] = buffer1[i];
+    }
+
+    fft_fill(0xFFFF);
 
     alsa_write_buffer(buffer, samples);
 }

@@ -162,17 +162,7 @@ void NeteaseCrypt::buildKeyBox(unsigned char *key, int keyLen)
     }
 }
 
-std::string NeteaseCrypt::mimeType(std::string &data)
-{
-    if (memcmp(data.c_str(), mPng, 8) == 0)
-    {
-        return std::string("image/png");
-    }
-
-    return std::string("image/jpeg");
-}
-
-void NeteaseCrypt::Dump(uint8_t *output, uint32_t size)
+void NeteaseCrypt::decode(uint8_t *output, uint32_t size)
 {
     for (uint32_t i = 0; i < size; i++)
     {

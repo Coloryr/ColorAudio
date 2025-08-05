@@ -15,7 +15,9 @@
 #include "wireless/wifi.h"
 #include "wireless/ble.h"
 #include "wireless/le_audio.h"
-#include "wireless/wireless.h"
+#include "io/event.h"
+#include "io/gpio.h"
+#include "io/wireless.h"
 #include "usb/usb_audio.h"
 
 #include <stdio.h>
@@ -32,11 +34,17 @@ using namespace ColorAudio;
 static int quit = 0;
 static pthread_t tid;
 
+static bool mode_change;
+
 static main_mode_type now_mode = MAIN_MODE_NONE;
 
 static void sigterm_handler(int sig)
 {
-    fprintf(stderr, "signal %d\n", sig);
+#ifdef BUILD_ARM
+    set_amp_power(false);
+#endif
+    printf("ColorAudio Exit %d\n", sig);
+
     exit(0);
 }
 
@@ -47,9 +55,17 @@ static void *main_loop(void *arg)
     for (;;)
     {
         usleep(100);
+        if (mode_change)
+        {
+            continue;
+        }
         if (now_mode == MAIN_MODE_MUSIC)
         {
             music_run_loop();
+        }
+        else if (now_mode == MAIN_MODE_BLE)
+        {
+            ble_run_loop();
         }
     }
 }
@@ -70,10 +86,18 @@ void change_mode(main_mode_type mode)
     {
         music_close();
     }
+    else if (now_mode == MAIN_MODE_BLE)
+    {
+        ble_stop();
+    }
 
     if (mode == MAIN_MODE_MUSIC)
     {
         music_go_local();
+    }
+    else if (mode == MAIN_MODE_BLE)
+    {
+        ble_init();
     }
 
     now_mode = mode;
@@ -88,6 +112,9 @@ int main(int argc, char **argv)
     config::load_config();
 
     alsa_init();
+#ifdef BUILD_ARM
+    set_amp_power(true);
+#endif
 
     play_init();
     rime_init();
@@ -95,6 +122,9 @@ int main(int argc, char **argv)
 
     view_init();
     music_init();
+#ifdef BUILD_ARM
+    // event_init();
+#endif
 
     pthread_create(&tid, NULL, main_loop, NULL);
     pthread_setname_np(tid, "main loop");

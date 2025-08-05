@@ -14,6 +14,7 @@ typedef enum
     LYRIC_NONE = 0,
     LYRIC_FAIL,
     LYRIC_CLEAR,
+    LYRIC_GET,
     LYRIC_UNKNOW = -1
 } lyric_state;
 
@@ -27,6 +28,7 @@ void view_muisc_list_clear();
 void view_muisc_list_reload(play_item *item);
 void view_muisc_list_add(play_item *item);
 void view_music_list_check(uint32_t index, bool state);
+void view_music_set_fft_data(uint16_t index, uint16_t value);
 
 void view_music_create(lv_obj_t *parent);
 void view_music_tick();

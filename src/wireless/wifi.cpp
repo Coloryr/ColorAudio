@@ -22,7 +22,7 @@
 
 static char reply[2048];
 
-bool have_wifi_device()
+bool wifi_have_device()
 {
     struct sockaddr_in *sin = NULL;
     struct ifaddrs *ifa = NULL, *ifList;
@@ -48,7 +48,7 @@ bool have_wifi_device()
     return find;
 }
 
-bool is_wpa_supplicant_running()
+bool wifi_is_wpa_supplicant_running()
 {
     std::string ctrl_path = WIFI_PATH;
     struct stat buffer;
@@ -60,7 +60,7 @@ bool wifi_wpa_start()
     return std::system(WIFI_RUN) == 0;
 }
 
-void terminate_wpa_supplicant()
+void wifi_terminate_wpa_supplicant()
 {
     // std::string ctrl_path = "/var/run/wpa_supplicant/" WIFI_NAME;
     // wpa_ctrl *ctrl = wpa_ctrl_open(ctrl_path.c_str());
@@ -343,34 +343,34 @@ bool wifi_get_level(int16_t *level)
     return true;
 }
 
-void wifi_test()
-{
-    while (!have_wifi_device())
-    {
-        usleep(500000);
-    }
+// void wifi_test()
+// {
+//     while (!have_wifi_device())
+//     {
+//         usleep(500000);
+//     }
 
-    // terminate_wpa_supplicant();
+//     // terminate_wpa_supplicant();
 
-    // usleep(500000);
+//     // usleep(500000);
 
-    // wifi_wpa_start();
+//     // wifi_wpa_start();
 
-    // usleep(5000000);
+//     // usleep(5000000);
 
-    // std::vector<wifi_item_t> list;
+//     // std::vector<wifi_item_t> list;
 
-    // if (wifi_scan(list))
-    // {
-    // }
+//     // if (wifi_scan(list))
+//     // {
+//     // }
 
-    // std::string wifi = "coloryr";
-    // std::string psk = "1234567890";
-    // wifi_connect(wifi, psk);
+//     // std::string wifi = "coloryr";
+//     // std::string psk = "1234567890";
+//     // wifi_connect(wifi, psk);
 
-    wifi_state state;
-    wifi_get_state(&state);
+//     wifi_state state;
+//     wifi_get_state(&state);
 
-    int16_t level;
-    wifi_get_level(&level);
-}
+//     int16_t level;
+//     wifi_get_level(&level);
+// }

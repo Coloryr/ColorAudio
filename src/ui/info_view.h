@@ -12,7 +12,6 @@ bool view_top_info_is_display();
 void view_top_info_display(std::string info);
 void view_top_error_display(std::string info);
 void view_top_info_close();
-void view_top_info_update();
 
 void view_top_info_create(lv_obj_t *parent);
 

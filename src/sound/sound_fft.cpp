@@ -2,7 +2,7 @@
 #include "sound.h"
 
 #include "../fft/arduinoFFT.h"
-#include "../ui/view/view_music_main.h"
+#include "../ui/ui.h"
 
 #include "lvgl.h"
 
@@ -153,9 +153,5 @@ void fft_fill(uint32_t down)
         }
     }
 
-    for (int i = 0; i < OUT_POINTS; i++)
-    {
-        int bar_len = (int)(bin_values[i] * 20);
-        lv_music_set_fft_data(i, bar_len);
-    }
+    view_set_fft_data(OUT_POINTS, bin_values);
 }

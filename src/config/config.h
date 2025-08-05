@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include "../music/player_info.h"
+#include "../music/music.h"
 #include "../main.h"
 #include "../ui/ui.h"
 

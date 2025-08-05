@@ -1,4 +1,5 @@
 #include "view_main.h"
+#include "view_wave.h"
 
 #include "../view_setting.h"
 #include "../font.h"
@@ -19,25 +20,6 @@ static lv_style_t style;
 
 static lv_obj_t *now_mode_obj;
 
-static void create_wave_images(lv_obj_t *parent)
-{
-    LV_IMAGE_DECLARE(img_lv_bg1);
-    LV_IMAGE_DECLARE(img_lv_bg2);
-    lv_obj_t *wave_top = lv_image_create(parent);
-    lv_image_set_src(wave_top, &img_lv_bg2);
-    lv_image_set_inner_align(wave_top, LV_IMAGE_ALIGN_TILE);
-    lv_obj_set_width(wave_top, LV_HOR_RES);
-    lv_obj_align(wave_top, LV_ALIGN_TOP_MID, 0, 0);
-    lv_obj_add_flag(wave_top, LV_OBJ_FLAG_IGNORE_LAYOUT);
-
-    lv_obj_t *wave_bottom = lv_image_create(parent);
-    lv_image_set_src(wave_bottom, &img_lv_bg1);
-    lv_image_set_inner_align(wave_bottom, LV_IMAGE_ALIGN_TILE);
-    lv_obj_set_width(wave_bottom, LV_HOR_RES);
-    lv_obj_align(wave_bottom, LV_ALIGN_BOTTOM_MID, 0, 0);
-    lv_obj_add_flag(wave_bottom, LV_OBJ_FLAG_IGNORE_LAYOUT);
-}
-
 lv_obj_t *lv_main_create(lv_obj_t *parent, lv_event_cb_t cb)
 {
     lv_obj_t *obj = lv_obj_create(parent);
@@ -46,14 +28,15 @@ lv_obj_t *lv_main_create(lv_obj_t *parent, lv_event_cb_t cb)
     lv_obj_set_style_bg_opa(obj, 255, 0);
     lv_obj_set_size(obj, LV_HOR_RES, LV_VER_RES);
 
-    create_wave_images(obj);
+    lv_wave_images_create(obj, 2);
 
     uint32_t wid = lv_obj_get_width(parent);
 
     now_mode_obj = lv_label_create(obj);
     lv_obj_set_size(now_mode_obj, wid - LV_MUSIC_HANDLE_SIZE, LV_SIZE_CONTENT);
     lv_obj_align(now_mode_obj, LV_ALIGN_TOP_MID, 0, 40);
-    lv_style_set_text_align(now_mode_obj, LV_TEXT_ALIGN_CENTER);
+    lv_obj_set_style_text_align(now_mode_obj, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_font(now_mode_obj, font_22, 0);
     lv_label_set_long_mode(now_mode_obj, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
     lv_label_set_text(now_mode_obj, "欢迎使用ColorAudio");
 
