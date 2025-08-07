@@ -3,7 +3,6 @@
 #include "lyric.h"
 #include "music_player.h"
 #include "mp3/mp3_id3.h"
-#include "player_info.h"
 #include "163/music163.h"
 
 #include "../net/music_api.h"
@@ -157,7 +156,7 @@ static void *play_run(void *arg)
     {
         Stream *st = new StreamHttp(&http);
 
-        music_type type = play_test_music_type(st);
+        music_type type = music_test_type(st);
         if (type == MUSIC_TYPE_UNKNOW)
         {
             LV_LOG_ERROR("Unkown music file type");

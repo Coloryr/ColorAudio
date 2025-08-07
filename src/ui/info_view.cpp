@@ -15,7 +15,12 @@ static void timer_tick(lv_timer_t *timer)
 {
     if (update_top_info)
     {
-        view_top_info_update();
+        if (use_bar)
+        {
+            lv_info_scr_display(display);
+        }
+        lv_info_display(display);
+        lv_info_set_text(text.c_str());
         update_top_info = false;
     }
 }
@@ -54,16 +59,6 @@ void view_top_info_close()
 bool view_top_info_is_display()
 {
     return display;
-}
-
-void view_top_info_update()
-{
-    if (use_bar)
-    {
-        lv_info_scr_display(display);
-    }
-    lv_info_display(display);
-    lv_info_set_text(text.c_str());
 }
 
 void view_top_info_create(lv_obj_t *parent)

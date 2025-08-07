@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 #define WIFI_NAME "wlan0"
 #define WIFI_PATH "/var/run/wpa_supplicant/" WIFI_NAME
@@ -43,10 +44,13 @@ typedef struct
     uint16_t frequency;
 } wifi_item_t;
 
-bool get_wifi_power();
-void set_wifi_power(bool enable);
-
-bool have_wifi_device();
-void wifi_test();
+bool wifi_have_device();
+bool wifi_is_wpa_supplicant_running();
+bool wifi_wpa_start();
+void wifi_terminate_wpa_supplicant();
+bool wifi_connect(std::string &ssid, std::string &psk);
+bool wifi_scan(std::vector<wifi_item_t> &list);
+bool wifi_get_state(wifi_state *state);
+bool wifi_get_level(int16_t *level);
 
 #endif // __WIFI_H__

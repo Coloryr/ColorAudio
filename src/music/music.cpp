@@ -4,11 +4,14 @@
 #include "local_music.h"
 #include "music_player.h"
 
+#include "163/music163.h"
+
 #include "../ui/ui.h"
 #include "../ui/music_view.h"
 #include "../ui/info_view.h"
 #include "../config/config.h"
 #include "../common/utils.h"
+#include "../io/gpio.h"
 
 #include <stdint.h>
 #include <pthread.h>
@@ -26,9 +29,53 @@ static std::deque<uint32_t> play_last_stack;
 
 static bool is_close;
 
+music_type play_music_type = MUSIC_TYPE_UNKNOW;
+music_state play_state = MUSIC_STATE_UNKNOW;
+music_mode_type play_music_mode = MUSIC_MODE_LOOP;
+
+uint32_t play_music_bps;
+uint32_t play_now_index;
+uint32_t play_list_count;
+
+float target_time = 0;
+float time_all = 0;
+float time_now = 0;
+
 void music_start()
 {
     view_music_set_check(play_now_index, true);
+}
+
+void music_get_lyric(std::string &comment)
+{
+#ifdef BUILD_ARM
+    if (get_wireless_power() == false)
+    {
+        view_music_set_lyric_state(LYRIC_FAIL);
+        return;
+    }
+#endif
+    try
+    {
+        if (comment.find("163 key(Don't modify):") == 0)
+        {
+            view_music_set_lyric_state(LYRIC_GET);
+            LyricParser *data, *tr_data;
+            if (music_lyric_163(comment, &data, &tr_data))
+            {
+                view_music_set_lyric(data, tr_data);
+            }
+            else
+            {
+                view_music_set_lyric_state(LYRIC_NONE);
+            }
+        }
+    }
+    catch (const std::exception &e)
+    {
+        LV_LOG_ERROR("%s", e.what());
+        view_music_set_lyric_state(LYRIC_FAIL);
+    }
 }
 
 void music_end()

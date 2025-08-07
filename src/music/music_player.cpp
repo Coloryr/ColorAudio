@@ -29,11 +29,10 @@ static float jump_time = 0;
 
 boost::container::vector<play_item *> play_list;
 
-std::string title;
-std::string album;
-std::string auther;
-std::string comment;
-data_item *image;
+std::string play_title;
+std::string play_album;
+std::string play_auther;
+data_item *play_image;
 
 ColorAudio::Stream *play_st;
 
@@ -42,7 +41,7 @@ pthread_cond_t play_start;
 
 bool play_need_seek;
 
-music_type play_test_music_type(ColorAudio::Stream *st)
+music_type music_test_type(ColorAudio::Stream *st)
 {
     uint8_t buffer[8];
     st->peek(buffer, sizeof(buffer));
@@ -84,7 +83,7 @@ static void *play_run(void *arg)
             pthread_cond_wait(&play_start, &play_mutex);
         }
 
-        play_music_type = play_test_music_type(play_st);
+        play_music_type = music_test_type(play_st);
         if (play_music_type == MUSIC_TYPE_UNKNOW)
         {
             LV_LOG_ERROR("Unkown music file type");
@@ -157,13 +156,13 @@ void play_update_text(std::string text, music_info_type type)
     switch (type)
     {
     case MUSIC_INFO_TITLE:
-        title = text;
+        play_title = text;
         break;
     case MUSIC_INFO_AUTHER:
-        auther = text;
+        play_auther = text;
         break;
     case MUSIC_INFO_ALBUM:
-        album = text;
+        play_album = text;
         break;
     default:
         break;
@@ -172,10 +171,9 @@ void play_update_text(std::string text, music_info_type type)
 
 void play_clear()
 {
-    title.clear();
-    album.clear();
-    auther.clear();
-    comment.clear();
+    play_title.clear();
+    play_album.clear();
+    play_auther.clear();
 
     play_update_image(nullptr, MUSIC_INFO_IMAGE);
 
@@ -188,11 +186,11 @@ void play_update_image(data_item *data, music_info_type type)
     switch (type)
     {
     case MUSIC_INFO_IMAGE:
-        if (image)
+        if (play_image)
         {
-            delete image;
+            delete play_image;
         }
-        image = data;
+        play_image = data;
         break;
     default:
         break;

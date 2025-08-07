@@ -4,9 +4,10 @@
 #include "info_view.h"
 #include "main_view.h"
 #include "input_view.h"
+#include "ble_view.h"
+#include "header_view.h"
 
 #include "../config/config.h"
-#include "../music/player_info.h"
 #include "../music/music_player.h"
 #include "../sound/sound.h"
 
@@ -31,6 +32,10 @@ static void change_view(view_mode_type type)
     {
         view_music_set_display(false);
     }
+    else if (now_type == VIEW_BLE)
+    {
+        view_ble_set_display(false);
+    }
 
     if (type == VIEW_MAIN)
     {
@@ -39,6 +44,10 @@ static void change_view(view_mode_type type)
     else if (type == VIEW_MUSIC)
     {
         view_music_set_display(true);
+    }
+    else if (type == VIEW_BLE)
+    {
+        view_ble_set_display(true);
     }
 
     now_type = type;
@@ -51,10 +60,15 @@ void view_init()
     view_main_create(lv_screen_active());
     view_music_create(lv_screen_active());
 
+    view_ble_create(lv_screen_active());
+
     view_input_create(lv_screen_active());
     view_top_info_create(lv_screen_active());
 
+    view_header_create(lv_screen_active());
+
     view_music_set_display(false);
+    view_ble_set_display(false);
 
     change_view(config::get_config_view_mode());
 }
@@ -77,10 +91,25 @@ void view_jump(view_mode_type type)
     config::save_config();
 }
 
+void view_set_fft_data(uint16_t size, float *value)
+{
+    if (now_type == VIEW_MAIN)
+    {
+        for (uint16_t i = 0; i < size; i++)
+        {
+            view_music_set_fft_data(i, (uint16_t)(value[i] * 20));
+        }
+    }
+}
+
 void view_tick()
 {
     if (now_type == VIEW_MUSIC)
     {
         view_music_tick();
+    }
+    else if (now_type == VIEW_BLE)
+    {
+        view_ble_tick();
     }
 }

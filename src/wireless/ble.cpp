@@ -1,6 +1,7 @@
 #include "ble.h"
 #include "ble_agent.h"
 #include "ble_battery.h"
+#include "ble_transport.h"
 #include "ble_info.h"
 
 #include "../sound/sound.h"
@@ -16,12 +17,8 @@
 #include <regex.h>
 #include <stdlib.h>
 
-#define AVRCP_CMD_REGISTER_NOTIF 0x31
-#define AVRCP_EVENT_VOLUME_CHANGED 0x0D
-#define AVRCP_CMD_SET_ABSOLUTE_VOL 0x40
-
 GDBusConnection *ble_g_conn;
-ble_state ble_now_state;
+ble_state ble_now_state = BLE_STATE_UNKNOW;
 
 const char *adapter_path = "/org/bluez/hci0";
 
@@ -98,8 +95,39 @@ void ble_device_add()
     ble_set_pairable(true);
 }
 
-static void *ble_loop_run(void *arg)
+void ble_init()
 {
+    GError *error = NULL;
+    ble_g_conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
+
+    if (error)
+    {
+        LV_LOG_ERROR("Error: %s", error->message);
+        g_error_free(error);
+        return;
+    }
+    ble_now_state = BLE_STATE_POWER_OFF;
+}
+
+void ble_stop()
+{
+    if (main_loop && g_main_loop_is_running(main_loop))
+    {
+        g_main_loop_quit(main_loop);
+
+        main_loop = NULL;
+    }
+    if (ble_g_conn)
+    {
+        g_object_unref(ble_g_conn);
+        ble_g_conn = NULL;
+    }
+    ble_now_state = BLE_STATE_STOP;
+}
+
+void ble_run_loop()
+{
+    loop = g_main_loop_new(NULL, FALSE);
     ble_agent_init();
     ble_info_init();
     bluez_alsa_start(ble_g_conn);
@@ -125,47 +153,4 @@ static void *ble_loop_run(void *arg)
     g_object_unref(ble_g_conn);
     ble_g_conn = NULL;
     main_loop = NULL;
-
-    return NULL;
-}
-
-void ble_init()
-{
-    GError *error = NULL;
-    ble_g_conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
-    ble_now_state = BLE_STATE_POWER_OFF;
-
-    if (error)
-    {
-        LV_LOG_ERROR("Error: %s", error->message);
-        g_error_free(error);
-        return;
-    }
-}
-
-void ble_stop()
-{
-    if (main_loop && g_main_loop_is_running(main_loop))
-    {
-        g_main_loop_quit(main_loop);
-
-        main_loop = NULL;
-    }
-}
-
-void ble_run()
-{
-    loop = g_main_loop_new(NULL, FALSE);
-
-    int res = pthread_create(&tid, NULL, ble_loop_run, NULL);
-    if (res)
-    {
-        LV_LOG_ERROR("Ble thread run fail: %d", res);
-    }
-}
-
-void ble_run_loop()
-{
-    loop = g_main_loop_new(NULL, FALSE);
-    ble_loop_run(NULL);
 }

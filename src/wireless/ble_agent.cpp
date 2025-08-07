@@ -1,6 +1,7 @@
 #include "ble_agent.h"
 #include "ble.h"
 
+#include "../ui/ble_view.h"
 #include "../lvgl/src/misc/lv_log.h"
 
 #include <glib.h>
@@ -63,6 +64,7 @@ static void handle_authorize_service(
     LV_LOG_USER("  Device: %s  Service UUID: %s", device_path, uuid);
 
     ble_set_pairable(false);
+    view_ble_set_par_close();
 
     g_dbus_method_invocation_return_value(invocation, NULL);
 }
@@ -85,6 +87,8 @@ static void handle_request_confirmation(
 
     LV_LOG_USER("  Device: %s  Passkey: %06u", device_path, passkey);
 
+    view_ble_set_par(passkey);
+
     ble_now_state = BLE_STATE_PAIR;
     ble_log_state_change();
 
@@ -105,6 +109,7 @@ static void handle_cancel(
     LV_LOG_USER("Pairing cancelled");
     ble_now_state = BLE_STATE_DISCONNECTED;
     g_dbus_method_invocation_return_value(invocation, NULL);
+    view_ble_set_par_close();
 }
 
 static void register_agent(GDBusConnection *connection)

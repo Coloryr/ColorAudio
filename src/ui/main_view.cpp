@@ -22,7 +22,8 @@ static void button_event_cb(lv_event_t *e)
         view_jump(VIEW_MUSIC);
         break;
     case MAIN_BUTTON_BLE:
-
+        change_mode(MAIN_MODE_BLE);
+        view_jump(VIEW_BLE);
         break;
     case MAIN_BUTTON_USB:
 
@@ -35,13 +36,8 @@ static void button_event_cb(lv_event_t *e)
     }
 }
 
-static void main_tick(lv_timer_t *timer)
+static void reload_text()
 {
-    if (get_view_mode() != VIEW_MAIN)
-    {
-        return;
-    }
-
     switch (get_mode())
     {
     case MAIN_MODE_MUSIC:
@@ -53,16 +49,33 @@ static void main_tick(lv_timer_t *timer)
             }
             else
             {
-                if (title.empty())
+                if (play_title.empty())
                 {
                     lv_main_set_now("正在播放本地音乐");
                 }
+                else
+                {
+                    char temp[256];
+                    sprintf(temp, "正在播放本地音乐：%s", play_title.c_str());
+                    lv_main_set_now(temp);
+                }
             }
         }
+        break;
     default:
         lv_main_set_now("欢迎使用ColorAudio");
         break;
     }
+}
+
+static void main_tick(lv_timer_t *timer)
+{
+    if (get_view_mode() != VIEW_MAIN)
+    {
+        return;
+    }
+
+    reload_text();
 }
 
 void view_main_set_display(bool display)
@@ -70,6 +83,7 @@ void view_main_set_display(bool display)
     if (display)
     {
         lv_obj_remove_flag(main_view, LV_OBJ_FLAG_HIDDEN);
+        reload_text();
     }
     else
     {

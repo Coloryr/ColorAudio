@@ -5,7 +5,12 @@
 
 extern int32_t *sound_fft_buf;
 
+extern "C" 
+{
+
 void fft_check_buffer(uint16_t len);
 void fft_fill(uint32_t down);
+
+}
 
 #endif

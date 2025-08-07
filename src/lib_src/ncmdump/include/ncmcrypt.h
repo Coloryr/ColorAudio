@@ -42,7 +42,6 @@ private:
 
 	bool isNcmFile();
 	void buildKeyBox(unsigned char *key, int keyLen);
-	std::string mimeType(std::string &data);
 
 public:
 	uint8_t *mImageData;
@@ -54,5 +53,5 @@ public:
 	NeteaseCrypt(ColorAudio::Stream *, bool meta);
 	~NeteaseCrypt();
 
-	void Dump(uint8_t *output, uint32_t size);
+	void decode(uint8_t *output, uint32_t size);
 };

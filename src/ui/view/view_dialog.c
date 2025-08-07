@@ -47,24 +47,24 @@ void lv_create_dialog(lv_obj_t *parent, lv_event_cb_t cb)
     lv_obj_align(btn_container, LV_ALIGN_BOTTOM_MID, 0, -20);
 
     // 创建取消按钮
-    lv_obj_t *btn_cancel = lv_btn_create(btn_container);
+    lv_obj_t *btn_cancel = lv_button_create(btn_container);
     lv_obj_set_size(btn_cancel, 100, 40);
     lv_obj_t *btn_cancel_label = lv_label_create(btn_cancel);
     lv_label_set_text(btn_cancel_label, "取消");
     lv_obj_center(btn_cancel_label);
 
     // 创建确认按钮
-    lv_obj_t *btn_confirm = lv_btn_create(btn_container);
+    lv_obj_t *btn_confirm = lv_button_create(btn_container);
     lv_obj_set_size(btn_confirm, 100, 40);
     lv_obj_t *btn_confirm_label = lv_label_create(btn_confirm);
     lv_label_set_text(btn_confirm_label, "确认");
     lv_obj_center(btn_confirm_label);
 
     // 设置按钮样式
-    lv_obj_set_style_bg_color(btn_confirm, lv_color_hex(0x4CAF50), 0);
-    lv_obj_set_style_bg_color(btn_cancel, lv_color_hex(0xF44336), 0);
-    lv_obj_set_style_text_color(btn_confirm, lv_color_white(), 0);
-    lv_obj_set_style_text_color(btn_cancel, lv_color_white(), 0);
+    lv_obj_set_style_bg_color(btn_confirm,  lv_color_white(), 0);
+    lv_obj_set_style_bg_color(btn_cancel,  lv_color_white(), 0);
+    lv_obj_set_style_text_color(btn_confirm, lv_color_black(), 0);
+    lv_obj_set_style_text_color(btn_cancel, lv_color_black(), 0);
 
     // 绑定按钮事件
     lv_obj_add_event_cb(btn_confirm, cb, LV_EVENT_CLICKED, &arg[1]);

@@ -36,7 +36,7 @@ StreamNcm::~StreamNcm()
 void StreamNcm::read_block()
 {
     uint32_t size = st->read(buffer, BLOCK_SIZE);
-    cry->Dump(buffer, BLOCK_SIZE);
+    cry->decode(buffer, BLOCK_SIZE);
 
     buffer_pos = 0;
     buffer_write = size;
@@ -81,7 +81,7 @@ uint32_t StreamNcm::write(uint8_t *buf, uint32_t len)
 uint32_t StreamNcm::peek(uint8_t *buf, uint32_t len)
 {
     uint32_t size = st->peek(buf, len);
-    cry->Dump(buf, len);
+    cry->decode(buf, len);
 
     return size;
 }

@@ -15,12 +15,12 @@ static lv_obj_t *pan;
 
 static char temp_text[512];
 static char temp_text1[512];
-static char *text;
 
-static char *text_lyric;
-static char *text_lyric_k;
-static char *text_lyric_k_now;
-static char *text_lyric_tr;
+static char text[2048];
+static char text_lyric[512];
+static char text_lyric_k[512];
+static char text_lyric_k_now[512];
+static char text_lyric_tr[512];
 
 static float text_lyric_kp;
 
@@ -78,6 +78,10 @@ static void lv_lyric_render(lv_event_t *e)
     uint32_t len1 = strlen(text_lyric);
     uint32_t len2 = 0;
     uint32_t len3 = 0;
+    if (len1 == 0)
+    {
+        return;
+    }
     if (text_lyric_k != NULL)
     {
         len2 = strlen(text_lyric_k);
@@ -86,13 +90,9 @@ static void lv_lyric_render(lv_event_t *e)
     {
         len3 = strlen(text_lyric_k_now);
     }
-    if (text == NULL)
+    if (len1 + len2 + len3 + 1 > sizeof(text))
     {
-        text = malloc(len1 + len2 + len3 + 1);
-    }
-    else
-    {
-        text = realloc(text, len1 + len2 + len3 + 1);
+        return;
     }
 
     lv_point_t size_lyric;
@@ -107,8 +107,8 @@ static void lv_lyric_render(lv_event_t *e)
     }
     strcpy(text + len2 + len3, text_lyric);
 
-    const lv_font_t *ly_font;
-    const lv_font_t *ty_font;
+    const lv_font_t *ly_font = font_22;
+    const lv_font_t *ty_font = font_18;
 
 test_next:
     if (test_time == LYRIC_TEST1)
@@ -145,6 +145,11 @@ test_next:
     {
         ly_font = font_14;
         ty_font = font_12;
+    }
+    else
+    {
+        LV_LOG_USER("lyric out");
+        return;
     }
 
     lv_text_get_size(&size_lyric_tr, text_lyric_tr, ty_font, letter_space, line_space, max_w, LV_TEXT_FLAG_NONE);
@@ -382,8 +387,6 @@ lv_obj_t *lv_lyric_create(lv_obj_t *parent)
     pan = lv_obj_create(parent);
     lv_obj_remove_style_all(pan);
     lv_obj_set_size(pan, wid, 115);
-    // lv_obj_set_style_bg_color(pan, lv_color_hex(0xFF0000), 0);
-    // lv_obj_set_style_bg_opa(pan, 50, 0);
     lv_obj_set_style_pad_left(pan, 20, 0);
     lv_obj_set_style_pad_right(pan, 20, 0);
     lv_obj_add_event_cb(pan, lv_lyric_render, LV_EVENT_DRAW_MAIN, NULL);
@@ -395,49 +398,16 @@ lv_obj_t *lv_lyric_create(lv_obj_t *parent)
 
 void lv_lyric_set_text(const char *text)
 {
-    const size_t text_len = strlen(text) + 1;
-
-    if (text_lyric == NULL)
-    {
-        text_lyric = malloc(text_len);
-    }
-    else
-    {
-        text_lyric = realloc(text_lyric, text_len);
-    }
-
     strcpy(text_lyric, text);
 }
 
 void lv_lyric_k_set_text(const char *text)
 {
-    const size_t text_len = strlen(text) + 1;
-
-    if (text_lyric_k == NULL)
-    {
-        text_lyric_k = malloc(text_len);
-    }
-    else
-    {
-        text_lyric_k = realloc(text_lyric_k, text_len);
-    }
-
     strcpy(text_lyric_k, text);
 }
 
 void lv_lyric_k_now_set_text(const char *text)
 {
-    const size_t text_len = strlen(text) + 1;
-
-    if (text_lyric_k_now == NULL)
-    {
-        text_lyric_k_now = malloc(text_len);
-    }
-    else
-    {
-        text_lyric_k_now = realloc(text_lyric_k_now, text_len);
-    }
-
     strcpy(text_lyric_k_now, text);
 }
 
@@ -448,17 +418,6 @@ void lv_lyric_kp_set_text(float kp)
 
 void lv_lyric_tr_set_text(const char *text)
 {
-    const size_t text_len = strlen(text) + 1;
-
-    if (text_lyric_tr == NULL)
-    {
-        text_lyric_tr = malloc(text_len);
-    }
-    else
-    {
-        text_lyric_tr = realloc(text_lyric_tr, text_len);
-    }
-
     strcpy(text_lyric_tr, text);
 }
 

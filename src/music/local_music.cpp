@@ -5,7 +5,6 @@
 #include "mp3/mp3_id3.h"
 #include "mp3/mp3_header.h"
 #include "flac/flac_metadata.h"
-#include "163/music163.h"
 
 #include "../common/timestamp.h"
 #include "../stream/stream_file.h"
@@ -88,7 +87,7 @@ static void play_read_list(const char *path)
         else if (S_ISREG(file_stat.st_mode))
         {
             StreamFile st = StreamFile(full_path);
-            music_type type = play_test_music_type(&st);
+            music_type type = music_test_type(&st);
             if (type == MUSIC_TYPE_UNKNOW)
             {
                 continue;
@@ -152,40 +151,31 @@ static void play_read_list(const char *path)
     closedir(dp);
 }
 
-static void get_music_lyric(std::string &comment)
-{
-    try
-    {
-        if (comment.find("163 key(Don't modify):") == 0)
-        {
-            LyricParser *data, *tr_data;
-            if (music_lyric_163(comment, &data, &tr_data))
-            {
-                view_music_set_lyric(data, tr_data);
-            }
-            else
-            {
-                view_music_set_lyric_state(LYRIC_NONE);
-            }
-        }
-    }
-    catch (const std::exception &e)
-    {
-        LV_LOG_ERROR("%s", e.what());
-        view_music_set_lyric_state(LYRIC_FAIL);
-    }
-}
-
 static void sort_by_pinyin()
 {
     boost::locale::generator gen;
     std::locale loc = gen.generate("zh_CN.UTF-8");
     std::collate<wchar_t> const &coll = std::use_facet<std::collate<wchar_t>>(loc);
 
+    std::vector<std::map<std::string, std::wstring> *> cache_list;
+
     auto compare = [&](play_item *a,
                        play_item *b)
     {
         static thread_local std::map<std::string, std::wstring> cache;
+        bool find = false;
+        for (auto &item : cache_list)
+        {
+            if (item == &cache)
+            {
+                find = true;
+            }
+        }
+        if (!find)
+        {
+            LV_LOG_USER("add cache: %p", &cache);
+            cache_list.push_back(&cache);
+        }
 
         auto get_wstring = [](const std::string &str) -> std::wstring
         {
@@ -206,6 +196,12 @@ static void sort_by_pinyin()
     };
 
     std::sort(std::execution::par, play_list.begin(), play_list.end(), compare);
+
+    for (auto &item : cache_list)
+    {
+        LV_LOG_USER("clear cache: %p", item);
+        item->clear();
+    }
 }
 
 static void *play_scan_run(void *arg)
@@ -274,7 +270,7 @@ void local_music_init()
     {
         LV_LOG_ERROR("Music play list read thread run fail: %d", res);
     }
-    pthread_setname_np(rtid, "play list scan"); 
+    pthread_setname_np(rtid, "play list scan");
 }
 
 void local_music_run()
@@ -283,7 +279,7 @@ void local_music_run()
     play_item *item = play_list[play_now_index];
 
     StreamFile st = StreamFile(item->path);
-    music_type type = play_test_music_type(&st);
+    music_type type = music_test_type(&st);
     if (type == MUSIC_TYPE_UNKNOW)
     {
         LV_LOG_ERROR("Unkown music file type");
@@ -291,6 +287,8 @@ void local_music_run()
     }
 
     music_start();
+
+    std::string comment;
 
     if (type == MUSIC_TYPE_MP3)
     {
@@ -374,7 +372,7 @@ void local_music_run()
 
     if (!comment.empty())
     {
-        get_music_lyric(comment);
+        music_get_lyric(comment);
     }
     else
     {
