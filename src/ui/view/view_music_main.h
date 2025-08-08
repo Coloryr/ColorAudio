@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+lv_obj_t *lv_music_get_cont();
+
 lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,
                                lv_event_cb_t volume, lv_event_cb_t mode,
                                lv_event_cb_t prev, lv_event_cb_t play,

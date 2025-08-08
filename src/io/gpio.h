@@ -3,6 +3,9 @@
 
 #include <stdbool.h>
 
+//echo 0 > /sys/class/leds/wifi-power/brightness
+//echo 1 > /sys/class/leds/wifi-power/brightness
+
 #define WIFI_DEVICE_POWER "/sys/class/leds/wifi-power/brightness"
 #define AMP_DEVICE_POWER "/sys/class/leds/codec-en/brightness"
 

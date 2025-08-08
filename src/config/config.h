@@ -17,6 +17,8 @@
 #define MUSIC_CONFOG_ID_MUISC_NAME "music_name"
 #define MUSIC_CONFOG_ID_MUSIC_INDEX "music_index"
 
+#define MUSIC_CONFOG_ID_CODEC_DOUBLE "codec_sec"
+
 #define MUSIC_CONFOG_ID_VOLUME "volume"
 
 namespace ColorAudio
@@ -30,6 +32,10 @@ namespace ColorAudio
         static uint32_t play_index;
         static std::string play_name;
         static float play_volume;
+
+#ifdef BUILD_ARM
+        static bool codec_double;
+#endif
 
     public:
         static void load_config();
@@ -95,6 +101,18 @@ namespace ColorAudio
         {
             return play_volume;
         }
+
+#ifdef BUILD_ARM
+        static bool get_codec_double()
+        {
+            return codec_double;
+        }
+
+        static void set_codec_double(bool enable)
+        {
+            codec_double = enable;
+        }
+#endif
     };
 
 }

@@ -1,7 +1,9 @@
 #include "main_view.h"
+#include "header_view.h"
+#include "lang.h"
+#include "ui.h"
 
 #include "view/view_main.h"
-#include "ui.h"
 
 #include "../main.h"
 #include "../music/music.h"
@@ -45,25 +47,25 @@ static void reload_text()
         {
             if (local_music_scan_now)
             {
-                lv_main_set_now("正在读取本地歌曲列表");
+                lv_main_set_now(now_lang->main_text8);
             }
             else
             {
                 if (play_title.empty())
                 {
-                    lv_main_set_now("正在播放本地音乐");
+                    lv_main_set_now(now_lang->main_text6);
                 }
                 else
                 {
                     char temp[256];
-                    sprintf(temp, "正在播放本地音乐：%s", play_title.c_str());
+                    sprintf(temp, now_lang->main_text7, play_title.c_str());
                     lv_main_set_now(temp);
                 }
             }
         }
         break;
     default:
-        lv_main_set_now("欢迎使用ColorAudio");
+        lv_main_set_now(now_lang->title);
         break;
     }
 }
@@ -76,6 +78,12 @@ static void main_tick(lv_timer_t *timer)
     }
 
     reload_text();
+}
+
+void view_main_set_header()
+{
+    view_header_move(main_view);
+    view_header_back_display(false);
 }
 
 void view_main_set_display(bool display)

@@ -3,6 +3,7 @@
 
 #include "lvgl.h"
 
+void view_ble_set_header();
 void view_ble_set_display(bool display);
 void view_ble_create(lv_obj_t *parent);
 

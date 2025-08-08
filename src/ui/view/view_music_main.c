@@ -4,6 +4,7 @@
 #include "view_wave.h"
 #include "view_volume.h"
 
+#include "../lang.h"
 #include "../view_setting.h"
 #include "../font.h"
 #include "../anim.h"
@@ -137,7 +138,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_style_text_align(title_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_add_style(title_label, &label_style, LV_STATE_DEFAULT);
     lv_label_set_long_mode(title_label, LV_LABEL_LONG_MODE_SCROLL);
-    lv_label_set_text(title_label, "无音乐");
+    lv_label_set_text(title_label, now_lang->music_text1);
 
     lv_obj_set_style_margin_top(title_label, 25, 0);
 
@@ -207,7 +208,7 @@ static lv_obj_t *create_timer_box(lv_obj_t *parent, lv_event_cb_t time)
     sound_info_obj = lv_label_create(cont);
     lv_obj_set_style_text_font(sound_info_obj, font_16, 0);
     lv_obj_set_style_text_color(sound_info_obj, lv_color_hex(0x8a86b8), 0);
-    lv_label_set_text(sound_info_obj, "N/A");
+    lv_label_set_text(sound_info_obj, now_lang->music_text2);
     lv_obj_set_grid_cell(sound_info_obj, LV_GRID_ALIGN_CENTER, 2, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     return cont;
@@ -280,7 +281,7 @@ static lv_obj_t *create_handle(lv_obj_t *parent)
 
     /*A handle to scroll to the track list*/
     lv_obj_t *handle_label = lv_label_create(cont);
-    lv_label_set_text(handle_label, "ALL TRACKS");
+    lv_label_set_text(handle_label, now_lang->music_text3);
     lv_obj_set_style_text_font(handle_label, font_16, 0);
     lv_obj_set_style_text_color(handle_label, lv_color_hex(0x8a86b8), 0);
 
@@ -291,6 +292,11 @@ static lv_obj_t *create_handle(lv_obj_t *parent)
     lv_obj_set_style_border_width(handle_rect, 0, 0);
 
     return cont;
+}
+
+lv_obj_t *lv_music_get_cont()
+{
+    return main_cont;
 }
 
 lv_obj_t *lv_music_main_create(lv_obj_t *parent, lv_event_cb_t time,

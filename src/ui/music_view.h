@@ -18,6 +18,7 @@ typedef enum
     LYRIC_UNKNOW = -1
 } lyric_state;
 
+void view_music_set_header();
 void view_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data);
 void view_music_set_lyric_state(lyric_state state);
 void view_music_set_check(uint32_t index, bool enable);

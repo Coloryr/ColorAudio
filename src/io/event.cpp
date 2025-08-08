@@ -1,4 +1,7 @@
 #include "event.h"
+
+#include "../ui/header_view.h"
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
@@ -53,6 +56,7 @@ void InputDeviceListener::read_event()
             {
                 headphone_2_in = ev.value == 1;
             }
+            view_header_update();
         }
         else if (device_path.ends_with("event3"))
         {
@@ -60,6 +64,7 @@ void InputDeviceListener::read_event()
             {
                 headphone_1_in = ev.value == 1;
             }
+            view_header_update();
         }
         else
         {

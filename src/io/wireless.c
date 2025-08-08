@@ -13,7 +13,7 @@ void set_wireless_power_on()
     if (!get_wireless_power())
     {
         set_wireless_power(true);
-        sleep(5);
+        sleep(10);
     }
 }
 

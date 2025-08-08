@@ -20,6 +20,10 @@ float config::play_volume = 20;
 main_mode_type config::main_mode = MAIN_MODE_NONE;
 view_mode_type config::view_mode = VIEW_MAIN;
 
+#ifdef BUILD_ARM
+bool config::codec_double = false;
+#endif
+
 static pthread_t save_tid;
 
 static bool need_save;
@@ -80,6 +84,13 @@ void config::load_config()
             {
                 play_volume = volume.get<float>();
             }
+#ifdef BUILD_ARM
+            json codec = j[MUSIC_CONFOG_ID_CODEC_DOUBLE];
+            if (codec.is_boolean())
+            {
+                codec_double = codec.get<bool>();
+            }
+#endif
         }
         catch (const std::exception &e)
         {
@@ -120,6 +131,10 @@ void config::save_config_run()
         j[MUSIC_CONFOG_ID_MUISC_NAME] = play_name;
         j[MUSIC_CONFOG_ID_VOLUME] = play_volume;
         j[MUSIC_CONFOG_ID_VIEW_MODE] = view_mode;
+
+#ifdef BUILD_ARM
+        j[MUSIC_CONFOG_ID_CODEC_DOUBLE] = codec_double;
+#endif
 
         std::string res = j.dump();
 

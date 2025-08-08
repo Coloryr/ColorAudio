@@ -6,6 +6,7 @@
 
 #include "163/music163.h"
 
+#include "../ui/lang.h"
 #include "../ui/ui.h"
 #include "../ui/music_view.h"
 #include "../ui/info_view.h"
@@ -235,7 +236,7 @@ void music_run_loop()
         {
             if (get_view_mode() == VIEW_MUSIC && !view_top_info_is_display())
             {
-                view_top_info_display("正在扫描音乐");
+                view_top_info_display(now_lang->music_text9);
             }
         }
         else

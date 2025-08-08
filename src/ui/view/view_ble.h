@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t back, lv_event_cb_t prev,
+lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t prev,
                         lv_event_cb_t play, lv_event_cb_t next,
                         lv_event_cb_t volume, lv_event_cb_t mute,
                         lv_event_cb_t par);

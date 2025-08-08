@@ -1,5 +1,6 @@
 #include "view_music_list.h"
 
+#include "../lang.h"
 #include "../view_setting.h"
 #include "../font.h"
 
@@ -42,7 +43,7 @@ void view_music_list_search_display(bool display)
 
 void view_music_list_search_text(char *data)
 {
-    lv_label_set_text_fmt(search_text_obj, "搜索包含“%s”的结果", data);
+    lv_label_set_text_fmt(search_text_obj, now_lang->music_text4, data);
 }
 
 static void button_move()
@@ -232,9 +233,7 @@ lv_obj_t *lv_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event_c
     lv_obj_set_style_text_font(search_text_obj, font_22, 0);
     lv_obj_set_style_text_color(search_text_obj, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_opa(search_text_obj, 255, 0);
-    // lv_obj_set_style_bg_color(search_text_obj, lv_color_hex(0xFF0000), 0);
-    // lv_obj_set_style_bg_opa(search_text_obj, 255, 0);
-    lv_label_set_text(search_text_obj, "搜索包含的结果");
+    lv_label_set_text(search_text_obj, "");
     lv_obj_set_style_text_align(search_text_obj, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(search_text_obj, LV_LABEL_LONG_MODE_WRAP);
     lv_obj_set_grid_cell(search_text_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
@@ -254,7 +253,7 @@ lv_obj_t *lv_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event_c
     lv_obj_set_style_border_opa(clear_obj, 255, 0);
     lv_obj_add_event_cb(clear_obj, clear, LV_EVENT_CLICKED, NULL);
     lv_obj_t *label = lv_label_create(clear_obj);
-    lv_label_set_text(label, "清除搜索结果");
+    lv_label_set_text(label, now_lang->music_text5);
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_grid_cell(clear_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 1, 1);
 

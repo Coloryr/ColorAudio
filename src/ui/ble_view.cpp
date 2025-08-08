@@ -1,9 +1,12 @@
 #include "ble_view.h"
 #include "info_view.h"
-
 #include "ui.h"
 #include "info_view.h"
+#include "header_view.h"
+#include "lang.h"
+
 #include "view/view_ble.h"
+
 #include "../wireless/ble.h"
 #include "../wireless/ble_info.h"
 
@@ -38,23 +41,6 @@ static void timer_tick(lv_timer_t *timer)
 
         update = false;
     }
-}
-
-static void back_dialog(bool stop)
-{
-    if (stop)
-    {
-        // change_mode(MAIN_MODE_NONE);
-    }
-
-    view_jump(VIEW_MAIN);
-
-    view_dialog_close();
-}
-
-static void back_click(lv_event_t *e)
-{
-    view_dialog_show(back_dialog, "是否要同时退出蓝牙音乐模式");
 }
 
 static void prev_click(lv_event_t *e)
@@ -101,6 +87,12 @@ static void play_click(lv_event_t *e)
     }
 }
 
+void view_ble_set_header()
+{
+    view_header_move(view);
+    view_header_back_display(true);
+}
+
 void view_ble_update_info()
 {
     update = true;
@@ -110,7 +102,7 @@ void view_ble_set_par(uint32_t key)
 {
     is_par = true;
     char temp[256] = {0};
-    sprintf(temp, "设备请求配对，配对码：%d", key);
+    sprintf(temp, now_lang->ble_text4, key);
     view_top_info_display(temp);
 }
 
@@ -147,7 +139,7 @@ void view_ble_set_display(bool display)
 
 void view_ble_create(lv_obj_t *parent)
 {
-    view = lv_ble_create(parent, back_click, prev_click, play_click,
+    view = lv_ble_create(parent, prev_click, play_click,
                          next_click, volume_click, mute_click, par_click);
     lv_timer_create(timer_tick, 500, NULL);
 }

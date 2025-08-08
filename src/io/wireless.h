@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+//echo 1 > /sys/bus/usb/devices/2-1/remove
+
 #define WIFI_DEVICE_USB "/sys/bus/usb/devices/2-1/remove"
 
 #ifdef BUILD_ARM

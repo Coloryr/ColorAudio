@@ -6,6 +6,7 @@
 #include "input_view.h"
 #include "ble_view.h"
 #include "header_view.h"
+#include "lang.h"
 
 #include "../config/config.h"
 #include "../music/music_player.h"
@@ -40,14 +41,17 @@ static void change_view(view_mode_type type)
     if (type == VIEW_MAIN)
     {
         view_main_set_display(true);
+        view_main_set_header();
     }
     else if (type == VIEW_MUSIC)
     {
         view_music_set_display(true);
+        view_music_set_header();
     }
     else if (type == VIEW_BLE)
     {
         view_ble_set_display(true);
+        view_ble_set_header();
     }
 
     now_type = type;
@@ -55,6 +59,8 @@ static void change_view(view_mode_type type)
 
 void view_init()
 {
+    lang_init();
+
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);
 
     view_main_create(lv_screen_active());

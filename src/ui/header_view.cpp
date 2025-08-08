@@ -1,12 +1,18 @@
 #include "header_view.h"
 #include "info_view.h"
 #include "ui.h"
+#include "lang.h"
 
 #include "view/view_header.h"
 
 #include "../main.h"
+#include "../io/event.h"
 
 #include "lvgl.h"
+
+static lv_obj_t *header;
+
+static bool update;
 
 static void back_dialog(bool stop)
 {
@@ -22,15 +28,60 @@ static void back_dialog(bool stop)
 
 static void back_button(lv_event_t *event)
 {
-    view_dialog_show(back_dialog, "是否要同时关闭播放");
+    view_dialog_show(back_dialog, now_lang->main_text5);
+}
+
+static void header_timer(lv_timer_t * timer)
+{
+    if(update)
+    {
+        update = false;
+        view_header_headphone1(headphone_1_in);
+        view_header_headphone2(headphone_2_in);
+    }
+}
+
+void view_header_wifi(bool off, wifi_rf_state state)
+{
+    if (off)
+    {
+        lv_header_wifi_display(false);
+        return;
+    }
+
+    lv_header_wifi_display(true);
+    lv_header_wifi_set_state(state);
+}
+
+void view_header_headphone1(bool in)
+{
+    lv_header_headphone_display(0, in);
+}
+
+void view_header_headphone2(bool in)
+{
+    lv_header_headphone_display(1, in);
+}
+
+void view_header_move(lv_obj_t *parent)
+{
+    lv_obj_set_parent(header, parent);
+    lv_obj_move_foreground(header);
 }
 
 void view_header_back_display(bool display)
 {
-    
+    lv_header_back_display(display);
+}
+
+void view_header_update()
+{
+    update = true;
 }
 
 void view_header_create(lv_obj_t *parent)
 {
-    lv_header_create(parent, back_button);
+    header = lv_header_create(parent, back_button);
+    lv_timer_create(header_timer, 500, NULL);
+    view_header_update();
 }

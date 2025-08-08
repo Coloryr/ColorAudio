@@ -13,14 +13,14 @@ static lv_obj_t *lyric_obj;
 static lv_obj_t *lyric_tr_obj;
 static lv_obj_t *pan;
 
-static char temp_text[512];
-static char temp_text1[512];
+static char temp_text[512] = {0};
+static char temp_text1[512] = {0};
 
-static char text[2048];
-static char text_lyric[512];
-static char text_lyric_k[512];
-static char text_lyric_k_now[512];
-static char text_lyric_tr[512];
+static char text[2048] = {0};
+static char text_lyric[512] = {0};
+static char text_lyric_k[512] = {0};
+static char text_lyric_k_now[512] = {0};
+static char text_lyric_tr[512] = {0};
 
 static float text_lyric_kp;
 
@@ -71,37 +71,25 @@ static void lv_lyric_render(lv_event_t *e)
         return;
     }
 
-    if (text_lyric == NULL)
-    {
-        return;
-    }
     uint32_t len1 = strlen(text_lyric);
-    uint32_t len2 = 0;
-    uint32_t len3 = 0;
-    if (len1 == 0)
-    {
-        return;
-    }
-    if (text_lyric_k != NULL)
-    {
-        len2 = strlen(text_lyric_k);
-    }
-    if (text_lyric_k_now != NULL)
-    {
-        len3 = strlen(text_lyric_k_now);
-    }
-    if (len1 + len2 + len3 + 1 > sizeof(text))
+    uint32_t len2 = strlen(text_lyric_k);
+    uint32_t len3 = strlen(text_lyric_k_now);
+    if (len1 == 0 || len1 + len2 + len3 + 1 > sizeof(text))
     {
         return;
     }
 
+    text[0] = 0;
+    temp_text[0] = 0;
+    temp_text1[0] = 0;
+
     lv_point_t size_lyric;
     lv_point_t size_lyric_tr;
-    if (text_lyric_k != NULL)
+    if (len2 > 0)
     {
         strcpy(text, text_lyric_k);
     }
-    if (text_lyric_k_now != NULL)
+    if (len3 > 0)
     {
         strcpy(text + len2, text_lyric_k_now);
     }
@@ -398,27 +386,31 @@ lv_obj_t *lv_lyric_create(lv_obj_t *parent)
 
 void lv_lyric_set_text(const char *text)
 {
+    text_lyric[0] = 0;
     strcpy(text_lyric, text);
 }
 
 void lv_lyric_k_set_text(const char *text)
 {
+    text_lyric_k[0] = 0;
     strcpy(text_lyric_k, text);
 }
 
 void lv_lyric_k_now_set_text(const char *text)
 {
+    text_lyric_k_now[0] = 0;
     strcpy(text_lyric_k_now, text);
+}
+
+void lv_lyric_tr_set_text(const char *text)
+{
+    text_lyric_tr[0] = 0;
+    strcpy(text_lyric_tr, text);
 }
 
 void lv_lyric_kp_set_text(float kp)
 {
     text_lyric_kp = kp;
-}
-
-void lv_lyric_tr_set_text(const char *text)
-{
-    strcpy(text_lyric_tr, text);
 }
 
 void lv_lyric_set_have_k(bool have)

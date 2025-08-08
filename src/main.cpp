@@ -2,9 +2,9 @@
 #include "lv_conf.h"
 
 #include "display/lv_port_init.h"
-
 #include "main.h"
 #include "ui/ui.h"
+#include "ui/info_view.h"
 #include "sound/sound.h"
 #include "input/rime_input.h"
 #include "net/http_connect.h"
@@ -65,6 +65,9 @@ static void *main_loop(void *arg)
         }
         else if (now_mode == MAIN_MODE_BLE)
         {
+            view_top_info_display("正在启用蓝牙");
+            set_wireless_power_on();
+            view_top_info_close();
             ble_run_loop();
         }
     }
@@ -123,7 +126,7 @@ int main(int argc, char **argv)
     view_init();
     music_init();
 #ifdef BUILD_ARM
-    // event_init();
+    event_init();
 #endif
 
     pthread_create(&tid, NULL, main_loop, NULL);

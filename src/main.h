@@ -3,7 +3,7 @@
 
 typedef enum
 {
-    MAIN_MODE_NONE,
+    MAIN_MODE_NONE = 0,
     MAIN_MODE_MUSIC,
     MAIN_MODE_BLE,
     MAIN_MODE_USB

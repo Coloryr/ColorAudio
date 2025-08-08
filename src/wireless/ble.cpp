@@ -117,11 +117,6 @@ void ble_stop()
 
         main_loop = NULL;
     }
-    if (ble_g_conn)
-    {
-        g_object_unref(ble_g_conn);
-        ble_g_conn = NULL;
-    }
     ble_now_state = BLE_STATE_STOP;
 }
 

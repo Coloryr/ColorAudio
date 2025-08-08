@@ -5,6 +5,7 @@
 
 #include "../view_setting.h"
 #include "../font.h"
+#include "../lang.h"
 #include "../anim.h"
 
 static lv_obj_t *state_obj;
@@ -53,7 +54,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_style_text_align(title_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_add_style(title_label, &label_style, LV_STATE_DEFAULT);
     lv_label_set_long_mode(title_label, LV_LABEL_LONG_MODE_SCROLL);
-    lv_label_set_text(title_label, "无音乐");
+    lv_label_set_text(title_label, now_lang->music_text1);
 
     lv_obj_set_style_margin_top(title_label, 25, 0);
 
@@ -170,7 +171,7 @@ static lv_obj_t *create_timer_box(lv_obj_t *parent)
     return cont;
 }
 
-lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t back, lv_event_cb_t prev,
+lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t prev,
                         lv_event_cb_t play, lv_event_cb_t next,
                         lv_event_cb_t volume, lv_event_cb_t mute,
                         lv_event_cb_t par)
@@ -218,17 +219,8 @@ lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t back, lv_event_cb_t prev
     lv_obj_align(button_par_obj, LV_ALIGN_TOP_MID, 0, 660);
     lv_obj_add_event_cb(button_par_obj, par, LV_EVENT_CLICKED, NULL);
     lv_obj_t *label = lv_label_create(button_par_obj);
-    lv_label_set_text(label, "启用配对");
+    lv_label_set_text(label, now_lang->ble_text1);
     lv_obj_set_align(label, LV_ALIGN_CENTER);
-
-    LV_IMAGE_DECLARE(img_lv_back);
-
-    button_back_obj = lv_image_create(obj);
-    lv_image_set_src(button_back_obj, &img_lv_back);
-    lv_obj_set_size(button_back_obj, 40, 40);
-    lv_obj_add_event_cb(button_back_obj, back, LV_EVENT_CLICKED, NULL);
-    lv_obj_add_flag(button_back_obj, LV_OBJ_FLAG_CLICKABLE | LV_OBJ_FLAG_IGNORE_LAYOUT);
-    lv_obj_align(button_back_obj, LV_ALIGN_TOP_LEFT, 10, 10);
 
     return obj;
 }
@@ -291,10 +283,10 @@ void lv_ble_set_pause()
 
 void lv_ble_connect(const char *text)
 {
-    lv_label_set_text_fmt(state_obj, "已连接：%s", text);
+    lv_label_set_text_fmt(state_obj, now_lang->ble_text2, text);
 }
 
 void lv_ble_disconnect()
 {
-    lv_label_set_text(state_obj, "未连接设备");
+    lv_label_set_text(state_obj, now_lang->ble_text3);
 }

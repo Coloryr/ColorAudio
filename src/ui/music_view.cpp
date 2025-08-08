@@ -1,8 +1,9 @@
 #include "music_view.h"
-
+#include "header_view.h"
 #include "input_view.h"
 #include "info_view.h"
 #include "ui.h"
+#include "lang.h"
 #include "view_setting.h"
 #include "view/view_lyric.h"
 #include "view/view_music_main.h"
@@ -63,7 +64,7 @@ static void lyric_tick(lv_timer_t *timer)
     if (ly_state == LYRIC_NONE)
     {
         view_music_set_lyric(nullptr, nullptr);
-        lv_lyric_set_text("无歌词");
+        lv_lyric_set_text(now_lang->music_text6);
         lv_lyric_tr_set_text("");
         lv_lyric_k_set_text("");
         lv_lyric_k_now_set_text("");
@@ -73,7 +74,7 @@ static void lyric_tick(lv_timer_t *timer)
     else if (ly_state == LYRIC_FAIL)
     {
         view_music_set_lyric(nullptr, nullptr);
-        lv_lyric_set_text("歌词获取失败");
+        lv_lyric_set_text(now_lang->music_text7);
         lv_lyric_tr_set_text("");
         lv_lyric_k_set_text("");
         lv_lyric_k_now_set_text("");
@@ -83,7 +84,7 @@ static void lyric_tick(lv_timer_t *timer)
     else if (ly_state == LYRIC_GET)
     {
         view_music_set_lyric(nullptr, nullptr);
-        lv_lyric_set_text("正在获取歌词");
+        lv_lyric_set_text(now_lang->music_text8);
         lv_lyric_tr_set_text("");
         lv_lyric_k_set_text("");
         lv_lyric_k_now_set_text("");
@@ -512,6 +513,12 @@ void view_music_set_display(bool display)
     {
         lv_obj_add_flag(music_obj, LV_OBJ_FLAG_HIDDEN);
     }
+}
+
+void view_music_set_header()
+{
+    view_header_move(lv_music_get_cont());
+    view_header_back_display(true);
 }
 
 void view_music_create(lv_obj_t *parent)
