@@ -149,7 +149,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_width(artist_label, wid - LV_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(artist_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(artist_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-    lv_label_set_text(artist_label, "");
+    lv_label_set_text(artist_label, now_lang->empty);
 
     genre_label = lv_label_create(cont);
     lv_obj_set_style_text_font(genre_label, font_22, 0);
@@ -160,7 +160,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_add_style(genre_label, &label_style, LV_STATE_DEFAULT);
     lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_DOTS);
     // lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_SCROLL);
-    lv_label_set_text(genre_label, "");
+    lv_label_set_text(genre_label, now_lang->empty);
 
     return cont;
 }
@@ -196,13 +196,13 @@ static lv_obj_t *create_timer_box(lv_obj_t *parent, lv_event_cb_t time)
     time_all_obj = lv_label_create(cont);
     lv_obj_set_style_text_font(time_all_obj, font_22, 0);
     lv_obj_set_style_text_color(time_all_obj, lv_color_hex(0x8a86b8), 0);
-    lv_label_set_text(time_all_obj, "/:/");
+    lv_label_set_text(time_all_obj, now_lang->time_text1);
     lv_obj_set_grid_cell(time_all_obj, LV_GRID_ALIGN_END, 3, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     time_now_obj = lv_label_create(cont);
     lv_obj_set_style_text_font(time_now_obj, font_22, 0);
     lv_obj_set_style_text_color(time_now_obj, lv_color_hex(0x8a86b8), 0);
-    lv_label_set_text(time_now_obj, "0:00");
+    lv_label_set_text(time_now_obj, now_lang->time_text2);
     lv_obj_set_grid_cell(time_now_obj, LV_GRID_ALIGN_START, 1, 1, LV_GRID_ALIGN_CENTER, 0, 1);
 
     sound_info_obj = lv_label_create(cont);

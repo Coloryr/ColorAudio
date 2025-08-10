@@ -94,8 +94,8 @@ lv_obj_t *lv_header_create(lv_obj_t *parent, lv_event_cb_t back)
 
     headphone1_obj = lv_obj_create(obj);
     lv_obj_set_size(headphone1_obj, LV_SIZE_CONTENT, 40);
-    lv_obj_remove_style_all(headphone1_obj);
-    lv_obj_set_style_bg_color(headphone1_obj, lv_color_hex(0xFF0000), 0);
+    // lv_obj_remove_style_all(headphone1_obj);
+    // lv_obj_set_style_bg_color(headphone1_obj, lv_color_hex(0xFF0000), 0);
     lv_obj_set_style_bg_opa(headphone1_obj, 60, 0);
     lv_obj_align(headphone1_obj, LV_ALIGN_RIGHT_MID, -60, 0);
 

@@ -5,6 +5,7 @@
 #include "main_view.h"
 #include "input_view.h"
 #include "ble_view.h"
+#include "usb_view.h"
 #include "header_view.h"
 #include "lang.h"
 
@@ -37,6 +38,10 @@ static void change_view(view_mode_type type)
     {
         view_ble_set_display(false);
     }
+    else if (now_type == VIEW_USB)
+    {
+        view_ble_set_display(false);
+    }
 
     if (type == VIEW_MAIN)
     {
@@ -53,6 +58,11 @@ static void change_view(view_mode_type type)
         view_ble_set_display(true);
         view_ble_set_header();
     }
+    else if (type == VIEW_USB)
+    {
+        view_usb_set_display(true);
+        view_usb_set_header();
+    }
 
     now_type = type;
 }
@@ -63,18 +73,22 @@ void view_init()
 
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);
 
+    //music
     view_main_create(lv_screen_active());
     view_music_create(lv_screen_active());
-
+    //ble
     view_ble_create(lv_screen_active());
-
+    //usb
+    view_usb_create(lv_screen_active());
+    //top level
     view_input_create(lv_screen_active());
     view_top_info_create(lv_screen_active());
-
+    //header
     view_header_create(lv_screen_active());
 
     view_music_set_display(false);
     view_ble_set_display(false);
+    view_usb_set_display(false);
 
     change_view(config::get_config_view_mode());
 }

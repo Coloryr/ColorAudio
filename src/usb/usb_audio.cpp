@@ -25,6 +25,13 @@ static pthread_mutex_t usb_mutex;
 
 static bool uac2;
 
+static bool now_state;
+static uint8_t change_state;
+
+static bool change_uac2;
+static char *change_rate;
+static char *change_bits;
+
 static void usb_audio_run()
 {
     pthread_mutex_lock(&usb_mutex);
@@ -100,7 +107,7 @@ run:
     pthread_mutex_unlock(&usb_mutex);
 }
 
-static void usb_audio(bool enable, bool isuac2)
+static void usb_audio(bool enable)
 {
     LV_LOG_USER("stop usb Gadget");
     std::system("usbdevice stop");
@@ -112,15 +119,18 @@ static void usb_audio(bool enable, bool isuac2)
 
     if (enable)
     {
+        char temp[256];
         LV_LOG_USER("Starting UAC Gadget");
-        if (isuac2)
+        if (change_uac2)
         {
             LV_LOG_USER("enable uac2");
             std::system("mkdir /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0");
 
             std::system("echo 0 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/p_chmask");
-            std::system("echo 44100,48000,96000,192000 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_srate");
-            std::system("echo 2,3,4 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_ssize");
+            sprintf(temp, "echo %s > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_srate", change_rate);
+            std::system(temp);
+            sprintf(temp, "echo %s > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_ssize", change_bits);
+            std::system(temp);
             std::system("echo 3 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_chmask");
             std::system("echo -32512 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_min");
             std::system("echo 128 > /sys/kernel/config/usb_gadget/rockchip/functions/uac2.usb0/c_volume_res");
@@ -134,8 +144,10 @@ static void usb_audio(bool enable, bool isuac2)
             std::system("mkdir /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0");
 
             std::system("echo 0 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/p_chmask");
-            std::system("echo 44100,48000,96000 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_srate");
-            std::system("echo 2 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_ssize");
+            sprintf(temp, "echo %s > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_srate", change_rate);
+            std::system(temp);
+            sprintf(temp, "echo %s > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_ssize", change_bits);
+            std::system(temp);
             std::system("echo 3 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_chmask");
             std::system("echo -32512 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_volume_min");
             std::system("echo 128 > /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0/c_volume_res");
@@ -143,7 +155,7 @@ static void usb_audio(bool enable, bool isuac2)
 
             std::system("ln -s /sys/kernel/config/usb_gadget/rockchip/functions/uac1.usb0 /sys/kernel/config/usb_gadget/rockchip/configs/b.1/");
         }
-        uac2 = isuac2;
+        uac2 = change_uac2;
     }
 
     LV_LOG_USER("start usb Gadget");
@@ -197,12 +209,48 @@ void usb_audio_init()
 
 void usb_audio_start()
 {
-    usb_audio(true, true);
     usb_monitor_start();
 }
 
 void usb_audio_stop()
 {
-    usb_audio(false, true);
+    usb_audio(false);
     usb_monitor_stop();
+}
+
+void usb_audio_change(bool state)
+{
+    change_state = state ? 1 : 2;
+}
+
+void usb_audio_set_mode(bool uac2)
+{
+    change_uac2 = uac2;
+}
+
+void usb_audio_set_rate(char *rate)
+{
+    change_rate = rate;
+}
+
+void usb_audio_set_bits(char *bits)
+{
+    change_bits = bits;
+}
+
+void usb_audio_tick()
+{
+    if (change_state != 0)
+    {
+        if (change_state == 1 && now_state != true)
+        {
+            usb_audio(true);
+        }
+        else if (change_state == 2 && now_state != false)
+        {
+            usb_audio(false);
+        }
+
+        change_state = 0;
+    }
 }

@@ -43,7 +43,7 @@ static void sigterm_handler(int sig)
 #ifdef BUILD_ARM
     set_amp_power(false);
 #endif
-    printf("ColorAudio Exit %d\n", sig);
+    LV_LOG_USER("ColorAudio Exit %d\n", sig);
 
     exit(0);
 }
@@ -66,9 +66,15 @@ static void *main_loop(void *arg)
         else if (now_mode == MAIN_MODE_BLE)
         {
             view_top_info_display("正在启用蓝牙");
+#ifdef BUILD_ARM
             set_wireless_power_on();
+#endif
             view_top_info_close();
             ble_run_loop();
+        }
+        else if (now_mode == MAIN_MODE_USB)
+        {
+            usb_audio_tick();
         }
     }
 }
@@ -93,6 +99,10 @@ void change_mode(main_mode_type mode)
     {
         ble_stop();
     }
+    else if (now_mode == MAIN_MODE_USB)
+    {
+        usb_audio_stop();
+    }
 
     if (mode == MAIN_MODE_MUSIC)
     {
@@ -101,6 +111,10 @@ void change_mode(main_mode_type mode)
     else if (mode == MAIN_MODE_BLE)
     {
         ble_init();
+    }
+    else if (mode == MAIN_MODE_USB)
+    {
+        usb_audio_start();
     }
 
     now_mode = mode;
@@ -125,6 +139,7 @@ int main(int argc, char **argv)
 
     view_init();
     music_init();
+    usb_audio_init();
 #ifdef BUILD_ARM
     event_init();
 #endif

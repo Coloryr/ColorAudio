@@ -233,7 +233,7 @@ lv_obj_t *lv_music_list_create(lv_obj_t *parent, lv_event_cb_t clear, lv_event_c
     lv_obj_set_style_text_font(search_text_obj, font_22, 0);
     lv_obj_set_style_text_color(search_text_obj, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_text_opa(search_text_obj, 255, 0);
-    lv_label_set_text(search_text_obj, "");
+    lv_label_set_text(search_text_obj, now_lang->empty);
     lv_obj_set_style_text_align(search_text_obj, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(search_text_obj, LV_LABEL_LONG_MODE_WRAP);
     lv_obj_set_grid_cell(search_text_obj, LV_GRID_ALIGN_CENTER, 0, 1, LV_GRID_ALIGN_CENTER, 0, 1);
