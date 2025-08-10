@@ -137,7 +137,6 @@ static bool find_controls(snd_ctl_t *ctl, snd_ctl_elem_id_t *ctl_id, bool *on)
                 if (min_val == TARGET_RANGE_MIN && max_val == TARGET_RANGE_MAX)
                 {
                     found = true;
-                    snd_ctl_elem_id_malloc(&ctl_id);
                     snd_ctl_elem_list_get_id(list, i, ctl_id);
                     break;
                 }
@@ -392,11 +391,15 @@ void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate)
 
 void alsa_clear()
 {
+#ifdef BUILD_ARM
     snd_pcm_reset(pcm_handle_a);
     if (enable_double)
     {
         snd_pcm_reset(pcm_handle_b);
     }
+#else
+    snd_pcm_reset(pcm_handle);
+#endif
 }
 
 void alsa_ready()
@@ -419,9 +422,17 @@ void alsa_reset()
 
 int alsa_write()
 {
+#ifdef BUILD_ARM
     snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle_a, sound_buf, pcm_now_size);
+#else
+    snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle, sound_buf, pcm_now_size);
+#endif
     if (frames < 0)
+#ifdef BUILD_ARM
         frames = snd_pcm_recover(pcm_handle_a, frames, 0);
+#else
+        frames = snd_pcm_recover(pcm_handle, frames, 0);
+#endif
     if (frames < 0)
         return -1;
 
@@ -430,9 +441,17 @@ int alsa_write()
 
 int alsa_write_buffer(const void *buffer, size_t samples)
 {
+#ifdef BUILD_ARM
     snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle_a, buffer, samples);
+#else
+    snd_pcm_sframes_t frames = snd_pcm_writei(pcm_handle, buffer, samples);
+#endif
     if (frames < 0)
+#ifdef BUILD_ARM
         frames = snd_pcm_recover(pcm_handle_a, frames, 0);
+#else
+        frames = snd_pcm_recover(pcm_handle, frames, 0);
+#endif
     if (frames < 0)
         return -1;
 

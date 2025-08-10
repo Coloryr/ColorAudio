@@ -31,13 +31,15 @@ static void back_button(lv_event_t *event)
     view_dialog_show(back_dialog, now_lang->main_text5);
 }
 
-static void header_timer(lv_timer_t * timer)
+static void header_timer(lv_timer_t *timer)
 {
-    if(update)
+    if (update)
     {
         update = false;
+#ifdef BUILD_ARM
         view_header_headphone1(headphone_1_in);
         view_header_headphone2(headphone_2_in);
+#endif
     }
 }
 

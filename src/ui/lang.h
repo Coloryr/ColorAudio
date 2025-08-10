@@ -3,7 +3,10 @@
 
 typedef struct
 {
+    const char* empty;
     const char* title;
+    const char* time_text1;
+    const char* time_text2;
     const char* main_text1;
     const char* main_text2;
     const char* main_text3;
@@ -27,6 +30,11 @@ typedef struct
     const char* ble_text2;
     const char* ble_text3;
     const char* ble_text4;
+    const char* usb_text1;
+    const char* usb_text2;
+    const char* usb_text3;
+    const char* usb_text4;
+    const char* usb_text5;
 } lang_t;
 
 extern const lang_t* now_lang;

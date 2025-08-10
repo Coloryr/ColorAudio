@@ -28,7 +28,8 @@ static void button_event_cb(lv_event_t *e)
         view_jump(VIEW_BLE);
         break;
     case MAIN_BUTTON_USB:
-
+        change_mode(MAIN_MODE_USB);
+        view_jump(VIEW_USB);
         break;
     case MAIN_BUTTON_SETTING:
 

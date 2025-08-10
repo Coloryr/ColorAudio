@@ -65,7 +65,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_set_width(artist_label, wid - LV_MUSIC_HANDLE_SIZE);
     lv_obj_set_style_text_align(artist_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_label_set_long_mode(artist_label, LV_LABEL_LONG_MODE_SCROLL_CIRCULAR);
-    lv_label_set_text(artist_label, "");
+    lv_label_set_text(artist_label, now_lang->empty);
 
     genre_label = lv_label_create(cont);
     lv_obj_set_style_text_font(genre_label, font_22, 0);
@@ -76,7 +76,7 @@ static lv_obj_t *create_title_box(lv_obj_t *parent)
     lv_obj_add_style(genre_label, &label_style, LV_STATE_DEFAULT);
     lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_DOTS);
     // lv_label_set_long_mode(genre_label, LV_LABEL_LONG_MODE_SCROLL);
-    lv_label_set_text(genre_label, "");
+    lv_label_set_text(genre_label, now_lang->empty);
 
     return cont;
 }

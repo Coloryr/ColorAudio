@@ -3,7 +3,10 @@
 const lang_t *now_lang;
 
 const lang_t lang_ch = {
+    .empty = "",
     .title = "欢迎使用ColorAudio",
+    .time_text1 = "/:/",
+    .time_text2 = "0:00",
     .main_text1 = "本地音乐",
     .main_text2 = "蓝牙音频",
     .main_text3 = "USB音频",
@@ -27,6 +30,11 @@ const lang_t lang_ch = {
     .ble_text2 = "已连接：%s",
     .ble_text3 = "未连接设备",
     .ble_text4 = "设备请求配对，配对码：%d",
+    .usb_text1 = "设置USB音频模式",
+    .usb_text2 = "启用USB音频",
+    .usb_text3 = "设备模式：",
+    .usb_text4 = "采样率：",
+    .usb_text5 = "比特位：",
 };
 
 void lang_init()
