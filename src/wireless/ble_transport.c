@@ -120,7 +120,7 @@ void ble_set_format(uint16_t channels, uint32_t rate)
 }
 
 void fft_check_buffer(uint16_t len);
-void fft_fill(uint32_t down);
+void fft_fill_count(uint32_t down, uint32_t count);
 extern int32_t *sound_fft_buf;
 
 void ble_write(const void *buffer, size_t samples)
@@ -131,10 +131,9 @@ void ble_write(const void *buffer, size_t samples)
 
     for (size_t i = 0; i < samples; i++)
     {
-        sound_fft_buf[i] = buffer1[i];
+        sound_fft_buf[i] = buffer1[i * 2];
     }
-
-    fft_fill(0xFFFF);
+    fft_fill_count(0xFFFF, samples);
 
     alsa_write_buffer(buffer, samples);
 }

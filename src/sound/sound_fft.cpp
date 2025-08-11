@@ -26,7 +26,7 @@ static ArduinoFFT<float> *fft;
 
 static uint16_t fft_now_size;
 
-void fft_run(float *vReal, float *vImag, uint16_t samples)
+static void fft_run(float *vReal, float *vImag, uint16_t samples)
 {
     if (fft == NULL)
     {
@@ -37,81 +37,77 @@ void fft_run(float *vReal, float *vImag, uint16_t samples)
     fft->complexToMagnitude();
 }
 
-void fft_check_buffer(uint16_t len)
-{
-    if (fft_now_size != len)
-    {
-        if (sound_fft_buf)
-        {
-            free(sound_fft_buf);
-        }
-        sound_fft_buf = static_cast<int32_t *>(malloc(sizeof(int32_t) * len));
-        fft_now_size = len;
-    }
-}
-
-void fft_fill(uint32_t down)
+static bool fft_fill_data(uint32_t down, uint32_t count, uint16_t *down_index)
 {
     bool skip = false;
-    uint16_t down_index = 1;
     if (pcm_now_rate > 48000)
     {
-        down_index = pcm_now_rate / 48000;
+        *down_index = pcm_now_rate / 48000;
 
-        if (fft_now_size >= POINTS * down_index)
+        if (count >= POINTS * *down_index)
         {
-            uint32_t index = 0;
-            for (size_t i = 0; i < POINTS; i += down_index)
-            {
-                input_fft_data_imag[index] = input_fft_data[index] =
-                    ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
-                index++;
-            }
-        }
-        else
-        {
-            for (size_t i = 0; i < fft_now_size; i += down_index)
+            input_fft_index = 0;
+            for (size_t i = 0; input_fft_index < POINTS; i += *down_index)
             {
                 input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
                     ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
                 input_fft_index++;
             }
-            if (input_fft_index < POINTS)
+        }
+        else
+        {
+            for (size_t i = 0; i < count; i += *down_index)
             {
-                skip = true;
+                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
+                    ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
+                input_fft_index++;
+                if (input_fft_index >= POINTS)
+                {
+                    break;
+                }
             }
         }
     }
     else
     {
-        if (fft_now_size >= POINTS)
+        if (count >= POINTS)
         {
+            input_fft_index = 0;
             for (size_t i = 0; i < POINTS; i++)
             {
-                input_fft_data[i] = ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
-                input_fft_data_imag[i] = input_fft_data[i];
+                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
+                    ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
+                input_fft_index++;
             }
         }
         else
         {
-            uint16_t less = POINTS - input_fft_index;
-            for (size_t i = 0; i < LV_MIN(less, fft_now_size); i++)
+            for (size_t i = 0; i < count; i++)
             {
-                input_fft_data[input_fft_index] = ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
-                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index];
+                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
+                    ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
                 input_fft_index++;
-            }
-            if (input_fft_index < POINTS)
-            {
-                skip = true;
+                if (input_fft_index >= POINTS)
+                {
+                    break;
+                }
             }
         }
     }
-    if (skip)
+    if (input_fft_index < POINTS)
+    {
+        skip = true;
+    }
+    return skip;
+}
+
+void fft_fill_count(uint32_t down, uint32_t count)
+{
+    uint16_t down_index = 1;
+    if (fft_fill_data(down, count, &down_index))
     {
         return;
     }
-
     input_fft_index = 0;
 
     fft_run(input_fft_data, input_fft_data_imag, POINTS);
@@ -154,4 +150,17 @@ void fft_fill(uint32_t down)
     }
 
     view_set_fft_data(OUT_POINTS, bin_values);
+}
+
+void fft_check_buffer(uint16_t len)
+{
+    if (fft_now_size != len)
+    {
+        if (sound_fft_buf)
+        {
+            free(sound_fft_buf);
+        }
+        sound_fft_buf = static_cast<int32_t *>(malloc(sizeof(int32_t) * len * 2));
+        fft_now_size = len;
+    }
 }

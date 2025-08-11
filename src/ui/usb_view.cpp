@@ -2,15 +2,29 @@
 #include "header_view.h"
 
 #include "view/view_usb.h"
-
+#include "../config/config.h"
+#include "../sound/sound.h"
 #include "../usb/usb_audio.h"
 
 #include "lvgl.h"
 
-static lv_obj_t *view_obj;
+using namespace ColorAudio;
 
-static char rate[32];
-static char bits[32];
+static lv_obj_t *view_obj;
+static bool update, is_connect;
+
+const static char *rate_arg[2][7] = {
+    {"44100", "48000", "96000", "44100,48000", "44100,48000,96000"},
+    {"44100", "48000", "96000", "192000", "44100,48000", "44100,48000,96000", "44100,48000,96000,192000"}};
+const static char *bits_arg[] = {"2", "3", "4", "2,3", "2,3,4"};
+
+static void change_event(lv_event_t *change)
+{
+    config::set_config_usb_mode(lv_usb_get_mode());
+    config::set_config_usb_rate(lv_usb_get_rate());
+    config::set_config_usb_bits(lv_usb_get_bits());
+    config::save_config();
+}
 
 static void click_event(lv_event_t *event)
 {
@@ -21,17 +35,30 @@ static void click_event(lv_event_t *event)
         bool chk = lv_obj_get_state(obj) & LV_STATE_CHECKED;
         if (chk)
         {
-            usb_audio_set_mode(lv_usb_get_mode());
-            lv_usb_get_rate(rate, sizeof(rate));
-            usb_audio_set_rate(rate);
-            lv_usb_get_bits(bits, sizeof(bits));
-            usb_audio_set_bits(bits);
+            uint32_t mode = lv_usb_get_mode();
+            usb_audio_set_mode(mode);
+            usb_audio_set_rate(rate_arg[mode][lv_usb_get_rate()]);
+            usb_audio_set_bits(bits_arg[lv_usb_get_bits()]);
             usb_audio_change(true);
+            lv_usb_lock(true);
         }
         else
         {
             usb_audio_change(false);
+            lv_usb_lock(false);
         }
+
+        config::set_config_usb_enable(chk);
+        config::save_config();
+    }
+}
+
+static void timer(lv_timer_t *timer)
+{
+    if (update)
+    {
+        lv_usb_set_format(is_connect, pcm_now_rate, pcm_now_format);
+        update = false;
     }
 }
 
@@ -53,7 +80,47 @@ void view_usb_set_display(bool display)
     }
 }
 
+void view_usb_set_fft_data(uint16_t index, uint16_t value)
+{
+    lv_usb_set_fft_data(index, value);
+}
+
+void view_usb_tick()
+{
+    if (is_connect)
+    {
+        lv_usb_fft_load();
+    }
+}
+
+void view_usb_update(bool connect)
+{
+    is_connect = connect;
+    update = true;
+    if (!is_connect)
+    {
+        for (uint16_t i = 0; i < 20; i++)
+        {
+            lv_usb_set_fft_data(i, 0);
+        }
+    }
+}
+
 void view_usb_create(lv_obj_t *parent)
 {
-    view_obj = lv_usb_create(parent, click_event);
+    view_obj = lv_usb_create(parent, click_event, change_event);
+    lv_timer_create(timer, 500, NULL);
+
+    lv_usb_set_mode(config::get_config_usb_mode());
+    lv_usb_set_rate(config::get_config_usb_rate());
+    lv_usb_set_bits(config::get_config_usb_bits());
+    if (config::get_config_usb_enable())
+    {
+        lv_usb_set_enable(true);
+        lv_usb_lock(true);
+        uint32_t mode = lv_usb_get_mode();
+        usb_audio_set_mode(mode);
+        usb_audio_set_rate(rate_arg[mode][lv_usb_get_rate()]);
+        usb_audio_set_bits(bits_arg[lv_usb_get_bits()]);
+    }
 }

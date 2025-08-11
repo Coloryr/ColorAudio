@@ -134,7 +134,7 @@ static enum mad_flow play_mp3_output(void *data, const struct mad_header *header
         }
     }
 
-    fft_fill(0xFFFFFF);
+    fft_fill_count(0xFFFFFF, j);
 
     if (alsa_write() < 0)
     {

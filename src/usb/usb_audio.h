@@ -11,7 +11,7 @@ void usb_audio_tick();
 
 void usb_audio_change(bool state);
 void usb_audio_set_mode(bool uac1);
-void usb_audio_set_rate(char* rate);
-void usb_audio_set_bits(char* bits);
+void usb_audio_set_rate(const char* rate);
+void usb_audio_set_bits(const char* bits);
 
 #endif // __USB_AUDIO_H__

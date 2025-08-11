@@ -10,16 +10,21 @@
 
 #define MUSIC_CONFIG_NAME "config.json"
 
-#define MUSIC_CONFOG_ID_MAIN_MODE "main_mode"
-#define MUSIC_CONFOG_ID_VIEW_MODE "view_mode"
+#define MUSIC_CONFIG_ID_MAIN_MODE "main_mode"
+#define MUSIC_CONFIG_ID_VIEW_MODE "view_mode"
 
-#define MUSIC_CONFOG_ID_MUSIC_MODE "music_mode"
-#define MUSIC_CONFOG_ID_MUISC_NAME "music_name"
-#define MUSIC_CONFOG_ID_MUSIC_INDEX "music_index"
+#define MUSIC_CONFIG_ID_MUSIC_MODE "music_mode"
+#define MUSIC_CONFIG_ID_MUISC_NAME "music_name"
+#define MUSIC_CONFIG_ID_MUSIC_INDEX "music_index"
 
-#define MUSIC_CONFOG_ID_CODEC_DOUBLE "codec_sec"
+#define MUSIC_CONFIG_ID_CODEC_DOUBLE "codec_sec"
 
-#define MUSIC_CONFOG_ID_VOLUME "volume"
+#define MUSIC_CONFIG_ID_USB_ENABLE "usb_enable"
+#define MUSIC_CONFIG_ID_USB_MODE "usb_mode"
+#define MUSIC_CONFOG_ID_USB_RATE "usb_rate"
+#define MUSIC_CONFOG_ID_USB_BITS "usb_bits"
+
+#define MUSIC_CONFIG_ID_VOLUME "volume"
 
 namespace ColorAudio
 {
@@ -32,6 +37,10 @@ namespace ColorAudio
         static uint32_t play_index;
         static std::string play_name;
         static float play_volume;
+        static bool usb_enable;
+        static uint8_t usb_mode;
+        static uint8_t usb_rate;
+        static uint8_t usb_bits;
 
 #ifdef BUILD_ARM
         static bool codec_double;
@@ -72,6 +81,26 @@ namespace ColorAudio
             play_name = name;
         }
 
+        static void set_config_usb_enable(bool enable)
+        {
+            usb_enable = enable;
+        }
+
+        static void set_config_usb_mode(uint8_t mode)
+        {
+            usb_mode = mode;
+        }
+
+        static void set_config_usb_rate(uint8_t rate)
+        {
+            usb_rate = rate;
+        }
+
+        static void set_config_usb_bits(uint8_t bits)
+        {
+            usb_bits = bits;
+        }
+
         static music_mode_type get_config_music_mode()
         {
             return play_mode;
@@ -102,13 +131,33 @@ namespace ColorAudio
             return play_volume;
         }
 
+        static bool get_config_usb_enable()
+        {
+            return usb_enable;
+        }
+
+        static uint8_t get_config_usb_mode()
+        {
+            return usb_mode;
+        }
+
+        static uint8_t get_config_usb_rate()
+        {
+            return usb_rate;
+        }
+
+        static uint8_t get_config_usb_bits()
+        {
+            return usb_bits;
+        }
+
 #ifdef BUILD_ARM
-        static bool get_codec_double()
+        static bool get_config_codec_double()
         {
             return codec_double;
         }
 
-        static void set_codec_double(bool enable)
+        static void set_config_codec_double(bool enable)
         {
             codec_double = enable;
         }

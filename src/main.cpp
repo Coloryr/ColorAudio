@@ -6,6 +6,7 @@
 #include "ui/ui.h"
 #include "ui/info_view.h"
 #include "sound/sound.h"
+#include "sound/sound_fft.h"
 #include "input/rime_input.h"
 #include "net/http_connect.h"
 #include "music/music_player.h"

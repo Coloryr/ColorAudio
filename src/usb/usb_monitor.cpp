@@ -128,6 +128,8 @@ void usb_monitor_start()
     fds[0].fd = udev_monitor_get_fd(mon);
     fds[0].events = POLLIN;
 
+    LV_LOG_USER("开始监听usb事件");
+
     running = true;
     monitor_thread = new std::thread(usb_monitor_run);
     monitor_thread->detach();

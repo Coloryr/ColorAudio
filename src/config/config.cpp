@@ -19,6 +19,10 @@ std::string config::play_name;
 float config::play_volume = 20;
 main_mode_type config::main_mode = MAIN_MODE_NONE;
 view_mode_type config::view_mode = VIEW_MAIN;
+bool config::usb_enable = false;
+uint8_t config::usb_mode = 1;
+uint8_t config::usb_rate = 7;
+uint8_t config::usb_bits = 5;
 
 #ifdef BUILD_ARM
 bool config::codec_double = false;
@@ -53,12 +57,16 @@ void config::load_config()
         try
         {
             json j = json::parse(temp);
-            json index = j[MUSIC_CONFOG_ID_MUSIC_INDEX];
-            json mode = j[MUSIC_CONFOG_ID_MUSIC_MODE];
-            json mainmode = j[MUSIC_CONFOG_ID_MAIN_MODE];
-            json viewmode = j[MUSIC_CONFOG_ID_VIEW_MODE];
-            json name = j[MUSIC_CONFOG_ID_MUISC_NAME];
-            json volume = j[MUSIC_CONFOG_ID_VOLUME];
+            json index = j[MUSIC_CONFIG_ID_MUSIC_INDEX];
+            json mode = j[MUSIC_CONFIG_ID_MUSIC_MODE];
+            json mainmode = j[MUSIC_CONFIG_ID_MAIN_MODE];
+            json viewmode = j[MUSIC_CONFIG_ID_VIEW_MODE];
+            json name = j[MUSIC_CONFIG_ID_MUISC_NAME];
+            json volume = j[MUSIC_CONFIG_ID_VOLUME];
+            json usbenable = j[MUSIC_CONFIG_ID_USB_ENABLE];
+            json usbmode = j[MUSIC_CONFIG_ID_USB_MODE];
+            json usbrate = j[MUSIC_CONFOG_ID_USB_RATE];
+            json usbbits = j[MUSIC_CONFOG_ID_USB_BITS];
 
             if (index.is_number())
             {
@@ -84,8 +92,24 @@ void config::load_config()
             {
                 play_volume = volume.get<float>();
             }
+            if (usbenable.is_boolean())
+            {
+                usb_enable = usbenable.get<bool>();
+            }
+            if (usbmode.is_number())
+            {
+                usb_mode = usbmode.get<uint8_t>();
+            }
+            if (usbrate.is_number())
+            {
+                usb_rate = usbrate.get<uint8_t>();
+            }
+            if (usbbits.is_number())
+            {
+                usb_bits = usbbits.get<uint8_t>();
+            }
 #ifdef BUILD_ARM
-            json codec = j[MUSIC_CONFOG_ID_CODEC_DOUBLE];
+            json codec = j[MUSIC_CONFIG_ID_CODEC_DOUBLE];
             if (codec.is_boolean())
             {
                 codec_double = codec.get<bool>();
@@ -125,15 +149,18 @@ void config::save_config_run()
     try
     {
         json j = json();
-        j[MUSIC_CONFOG_ID_MUSIC_INDEX] = play_index;
-        j[MUSIC_CONFOG_ID_MUSIC_MODE] = play_mode;
-        j[MUSIC_CONFOG_ID_MAIN_MODE] = main_mode;
-        j[MUSIC_CONFOG_ID_MUISC_NAME] = play_name;
-        j[MUSIC_CONFOG_ID_VOLUME] = play_volume;
-        j[MUSIC_CONFOG_ID_VIEW_MODE] = view_mode;
-
+        j[MUSIC_CONFIG_ID_MUSIC_INDEX] = play_index;
+        j[MUSIC_CONFIG_ID_MUSIC_MODE] = play_mode;
+        j[MUSIC_CONFIG_ID_MAIN_MODE] = main_mode;
+        j[MUSIC_CONFIG_ID_MUISC_NAME] = play_name;
+        j[MUSIC_CONFIG_ID_VOLUME] = play_volume;
+        j[MUSIC_CONFIG_ID_VIEW_MODE] = view_mode;
+        j[MUSIC_CONFIG_ID_USB_ENABLE] = usb_enable;
+        j[MUSIC_CONFIG_ID_USB_MODE] = usb_mode;
+        j[MUSIC_CONFOG_ID_USB_RATE] = usb_rate;
+        j[MUSIC_CONFOG_ID_USB_BITS] = usb_bits;
 #ifdef BUILD_ARM
-        j[MUSIC_CONFOG_ID_CODEC_DOUBLE] = codec_double;
+        j[MUSIC_CONFIG_ID_CODEC_DOUBLE] = codec_double;
 #endif
 
         std::string res = j.dump();

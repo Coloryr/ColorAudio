@@ -40,7 +40,7 @@ static void change_view(view_mode_type type)
     }
     else if (now_type == VIEW_USB)
     {
-        view_ble_set_display(false);
+        view_usb_set_display(false);
     }
 
     if (type == VIEW_MAIN)
@@ -73,17 +73,17 @@ void view_init()
 
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);
 
-    //music
+    // music
     view_main_create(lv_screen_active());
     view_music_create(lv_screen_active());
-    //ble
+    // ble
     view_ble_create(lv_screen_active());
-    //usb
+    // usb
     view_usb_create(lv_screen_active());
-    //top level
+    // top level
     view_input_create(lv_screen_active());
     view_top_info_create(lv_screen_active());
-    //header
+    // header
     view_header_create(lv_screen_active());
 
     view_music_set_display(false);
@@ -113,11 +113,18 @@ void view_jump(view_mode_type type)
 
 void view_set_fft_data(uint16_t size, float *value)
 {
-    if (now_type == VIEW_MAIN)
+    if (now_type == VIEW_MUSIC)
     {
         for (uint16_t i = 0; i < size; i++)
         {
             view_music_set_fft_data(i, (uint16_t)(value[i] * 20));
+        }
+    }
+    else if (now_type == VIEW_USB)
+    {
+        for (uint16_t i = 0; i < size; i++)
+        {
+            view_usb_set_fft_data(i, (uint16_t)(value[i] * 20));
         }
     }
 }
@@ -131,5 +138,9 @@ void view_tick()
     else if (now_type == VIEW_BLE)
     {
         view_ble_tick();
+    }
+    else if (now_type == VIEW_USB)
+    {
+        view_usb_tick();
     }
 }
