@@ -9,7 +9,7 @@ extern "C"
 {
 
 void fft_check_buffer(uint16_t len);
-void fft_fill(uint32_t down);
+void fft_fill_count(uint32_t down, uint32_t count);
 
 }
 

@@ -35,6 +35,8 @@ typedef struct
     const char* usb_text3;
     const char* usb_text4;
     const char* usb_text5;
+    const char* usb_text6;
+    const char* usb_text7;
 } lang_t;
 
 extern const lang_t* now_lang;

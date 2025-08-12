@@ -3,6 +3,7 @@
 
 #include "../config/config.h"
 #include "../ui/music_view.h"
+#include "../io/gpio.h"
 #include "../io/event.h"
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -192,7 +193,7 @@ void alsa_init()
     snd_ctl_elem_id_malloc(&ctl_id_b);
     pcm_ctl = find_controls(ctl_handle_a, ctl_id_a, &headphone_1_in) &&
               find_controls(ctl_handle_b, ctl_id_b, &headphone_2_in);
-    enable_double = config::get_codec_double();
+    enable_double = config::get_config_codec_double();
 #else
     snd_ctl_elem_id_malloc(&ctl_id);
     pcm_ctl = find_controls(ctl_handle, ctl_id, NULL);
@@ -329,22 +330,25 @@ void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate)
 
 #ifdef BUILD_ARM
     snd_pcm_drain(pcm_handle_a);
+    set_amp_power(false);
+    snd_pcm_drop(pcm_handle_a);
     snd_pcm_reset(pcm_handle_a);
-    int err = snd_pcm_set_params(pcm_handle_a, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 1, 1000000);
+    int err = snd_pcm_set_params(pcm_handle_a, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 0, 100000);
     if (err != 0)
     {
         LV_LOG_ERROR("ALSA format set fail");
     }
     if (enable_double)
     {
-        snd_pcm_drain(pcm_handle_b);
+        snd_pcm_drop(pcm_handle_b);
         snd_pcm_reset(pcm_handle_b);
-        err = snd_pcm_set_params(pcm_handle_b, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 1, 1000000);
+        err = snd_pcm_set_params(pcm_handle_b, format, SND_PCM_ACCESS_RW_INTERLEAVED, channels, rate, 0, 100000);
         if (err != 0)
         {
             LV_LOG_ERROR("ALSA format set fail");
         }
     }
+    set_amp_power(true);
 #else
     snd_pcm_reset(pcm_handle);
     snd_pcm_close(pcm_handle);

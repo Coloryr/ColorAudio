@@ -35,6 +35,8 @@ const lang_t lang_ch = {
     .usb_text3 = "设备模式：",
     .usb_text4 = "采样率：",
     .usb_text5 = "比特位：",
+    .usb_text6 = "未连接",
+    .usb_text7 = "采样率：%d 位宽：%d",
 };
 
 void lang_init()

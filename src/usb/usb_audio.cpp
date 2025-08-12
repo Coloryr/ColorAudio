@@ -2,6 +2,9 @@
 #include "usb_monitor.h"
 
 #include "../sound/sound.h"
+#include "../sound/sound_fft.h"
+#include "../ui/usb_view.h"
+#include "../config/config.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -15,7 +18,8 @@
 #define UAC1_DEVICE "hw:UAC1Gadget"
 #define UAC2_DEVICE "hw:UAC2Gadget"
 #define CHANNELS 2
-#define BUFFER_SIZE 1024 * 1024
+
+using namespace ColorAudio;
 
 static std::atomic<bool> running(false);
 static snd_pcm_t *capture_handle;
@@ -29,12 +33,14 @@ static bool now_state;
 static uint8_t change_state;
 
 static bool change_uac2;
-static char *change_rate;
-static char *change_bits;
+static const char *change_rate;
+static const char *change_bits;
 
 static void usb_audio_run()
 {
     pthread_mutex_lock(&usb_mutex);
+
+    LV_LOG_USER("开始读取USB音频");
 
     int err;
     snd_pcm_hw_params_t *params;
@@ -47,6 +53,7 @@ run:
     if ((err = snd_pcm_open(&capture_handle, uac2 ? UAC2_DEVICE : UAC1_DEVICE, SND_PCM_STREAM_CAPTURE, 0)) < 0)
     {
         LV_LOG_ERROR("Cannot open audio device %s (%s)", uac2 ? UAC2_DEVICE : UAC1_DEVICE, snd_strerror(err));
+        pthread_mutex_unlock(&usb_mutex);
         return;
     }
 
@@ -68,14 +75,25 @@ run:
     LV_LOG_USER("get rate: %d, samples: %d, format: %s, channel: %d", rate, (int)samples, snd_pcm_format_name(format), channel);
 
     alsa_reset();
-    alsa_set(format, channel, rate);
+    if (format == SND_PCM_FORMAT_S24_3LE)
+    {
+        alsa_set(SND_PCM_FORMAT_S24_LE, channel, rate);
+    }
+    else
+    {
+        alsa_set(format, channel, rate);
+    }
+
+    view_usb_update(true);
 
     LV_LOG_USER("Starting data read thread");
 
-    char *buffer = (char *)malloc(BUFFER_SIZE); // 2 bytes per sample
+    uint32_t size = samples * sizeof(int32_t) * 2;
+    uint8_t *buffer = static_cast<uint8_t *>(malloc(size));
+    uint8_t *output = static_cast<uint8_t *>(malloc(size));
 
-    unsigned int last_rate = rate;
-    snd_pcm_format_t last_format = SND_PCM_FORMAT_S16_LE;
+    fft_check_buffer(samples);
+
     while (running)
     {
         if ((err = snd_pcm_readi(capture_handle, buffer, samples)) < 0)
@@ -83,19 +101,71 @@ run:
             LV_LOG_ERROR("Read error: %s", snd_strerror(err));
             break;
         }
+        if (format == SND_PCM_FORMAT_S24_3LE)
+        {
+            for (uint32_t i = 0; i < samples * 2; i++)
+            {
+                output[i * 4 + 0] = buffer[i * 3 + 0];
+                output[i * 4 + 1] = buffer[i * 3 + 1];
+                output[i * 4 + 2] = buffer[i * 3 + 2];
+                output[i * 4 + 3] = 0x00;
+            }
+        }
+        else
+        {
+            memcpy(output, buffer, size);
+        }
 
         if (!running)
         {
             break;
         }
 
-        if (alsa_write_buffer(buffer, err) < 0)
+        if (format == SND_PCM_FORMAT_S16_LE)
+        {
+            int16_t *buffer1 = reinterpret_cast<int16_t *>(output);
+            for (uint32_t i = 0; i < samples; i++)
+            {
+                sound_fft_buf[i] = buffer1[i * 2];
+            }
+
+            fft_fill_count(0xFFFF, samples);
+        }
+        else if (format == SND_PCM_FORMAT_S24_3LE)
+        {
+            // Sign extend 24-bit to 32-bit
+            // int32_t sample = (buffer[i * 3 + 2] & 0x80) ? 
+            //     (0xFF << 24) | (buffer[i * 3 + 2] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 0] :
+            //     (buffer[i * 3 + 2] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 0];
+            // memcpy(&output[i * 4], &sample, sizeof(sample));
+
+            int32_t *buffer1 = reinterpret_cast<int32_t *>(output);
+            for (uint32_t i = 0; i < samples; i++)
+            {
+                sound_fft_buf[i] = buffer1[i * 2];
+            }
+            fft_fill_count(0xFFFFFF, samples);
+        }
+        else if (format == SND_PCM_FORMAT_S32_LE)
+        {
+            int32_t *buffer1 = reinterpret_cast<int32_t *>(output);
+            for (uint32_t i = 0; i < samples; i++)
+            {
+                sound_fft_buf[i] = buffer1[i * 2];
+            }
+
+            fft_fill_count(0xFFFFFFFF, samples);
+        }
+
+        if (alsa_write_buffer(output, err) < 0)
         {
             LV_LOG_ERROR("Write error");
             break;
         }
     }
     free(buffer);
+    free(output);
+
     snd_pcm_close(capture_handle);
     capture_handle = NULL;
 
@@ -164,6 +234,8 @@ static void usb_audio(bool enable)
 
 void usb_audio_stop_run()
 {
+    view_usb_update(false);
+
     if (!running)
     {
         return;
@@ -210,10 +282,15 @@ void usb_audio_init()
 void usb_audio_start()
 {
     usb_monitor_start();
+    if (config::get_config_usb_enable())
+    {
+        change_state = 1;
+    }
 }
 
 void usb_audio_stop()
 {
+    running = false;
     usb_audio(false);
     usb_monitor_stop();
 }
@@ -228,12 +305,12 @@ void usb_audio_set_mode(bool uac2)
     change_uac2 = uac2;
 }
 
-void usb_audio_set_rate(char *rate)
+void usb_audio_set_rate(const char *rate)
 {
     change_rate = rate;
 }
 
-void usb_audio_set_bits(char *bits)
+void usb_audio_set_bits(const char *bits)
 {
     change_bits = bits;
 }
@@ -245,10 +322,13 @@ void usb_audio_tick()
         if (change_state == 1 && now_state != true)
         {
             usb_audio(true);
+            now_state = true;
         }
         else if (change_state == 2 && now_state != false)
         {
+            running = false;
             usb_audio(false);
+            now_state = false;
         }
 
         change_state = 0;

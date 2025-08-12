@@ -122,7 +122,7 @@ FLAC__StreamDecoderWriteStatus DecoderFlac::write_callback(const ::FLAC__Frame *
             }
         }
 
-        fft_fill(0xFFFF);
+        fft_fill_count(0xFFFF, j);
 
         if (alsa_write() < 0)
         {
@@ -145,7 +145,7 @@ FLAC__StreamDecoderWriteStatus DecoderFlac::write_callback(const ::FLAC__Frame *
             }
         }
 
-        fft_fill(bps == 24 ? 0xFFFFFF : 0xFFFFFFFF);
+        fft_fill_count(bps == 24 ? 0xFFFFFF : 0xFFFFFFFF, j);
 
         if (alsa_write() < 0)
         {
