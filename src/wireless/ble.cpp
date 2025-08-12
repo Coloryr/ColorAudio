@@ -95,7 +95,7 @@ void ble_device_add()
     ble_set_pairable(true);
 }
 
-void ble_init()
+void ble_start()
 {
     GError *error = NULL;
     ble_g_conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);

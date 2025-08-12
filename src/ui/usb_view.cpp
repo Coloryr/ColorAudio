@@ -57,7 +57,7 @@ static void timer(lv_timer_t *timer)
 {
     if (update)
     {
-        lv_usb_set_format(is_connect, pcm_now_rate, pcm_now_format);
+        lv_usb_set_format(is_connect, pcm_now_rate, pcm_now_format, pcm_now_db);
         update = false;
     }
 }

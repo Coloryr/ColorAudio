@@ -2,6 +2,7 @@
 #include "usb_audio.h"
 
 #include "../sound/sound.h"
+#include "../ui/usb_view.h"
 
 #include "../lvgl/src/misc/lv_log.h"
 
@@ -61,6 +62,7 @@ void usb_monitor_run()
                             num /= -128;
                             num = 255 - num;
                             alsa_set_volume_db(num);
+                            view_usb_update(true);
                         }
                     }
                     else if (strcmp(state, "SET_MUTE") == 0)
@@ -137,6 +139,8 @@ void usb_monitor_start()
 
 void usb_monitor_stop()
 {
+    LV_LOG_USER("停止监听usb事件");
+
     running = false;
     if (mon)
     {

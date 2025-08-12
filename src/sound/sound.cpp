@@ -62,6 +62,8 @@ unsigned int *tlvp;
 long db_min = -1;
 long db_max = -1;
 bool enable_double;
+
+uint32_t pcm_now_db;
 #endif
 
 static long min_val, max_val;
@@ -292,6 +294,8 @@ void alsa_set_volume_db(long value)
     {
         return;
     }
+
+    pcm_now_db = value;
     snd_ctl_elem_value_t *control;
     snd_ctl_elem_value_alloca(&control);
 #ifdef BUILD_ARM

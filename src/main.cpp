@@ -36,7 +36,7 @@ static int quit = 0;
 static pthread_t tid;
 
 static bool mode_change;
-
+static main_mode_type mode_exit = MAIN_MODE_NONE;
 static main_mode_type now_mode = MAIN_MODE_NONE;
 
 static void sigterm_handler(int sig)
@@ -59,6 +59,11 @@ static void *main_loop(void *arg)
         if (mode_change)
         {
             continue;
+        }
+        if (mode_exit == MAIN_MODE_USB)
+        {
+            usb_audio_exit();
+            mode_exit = MAIN_MODE_NONE;
         }
         if (now_mode == MAIN_MODE_MUSIC)
         {
@@ -92,6 +97,8 @@ void change_mode(main_mode_type mode)
         return;
     }
 
+    mode_change = true;
+
     if (now_mode == MAIN_MODE_MUSIC)
     {
         music_close();
@@ -102,6 +109,7 @@ void change_mode(main_mode_type mode)
     }
     else if (now_mode == MAIN_MODE_USB)
     {
+        mode_exit = MAIN_MODE_USB;
         usb_audio_stop();
     }
 
@@ -111,7 +119,7 @@ void change_mode(main_mode_type mode)
     }
     else if (mode == MAIN_MODE_BLE)
     {
-        ble_init();
+        ble_start();
     }
     else if (mode == MAIN_MODE_USB)
     {
@@ -121,6 +129,8 @@ void change_mode(main_mode_type mode)
     now_mode = mode;
     config::set_config_main_mode(now_mode);
     config::save_config();
+
+    mode_change = false;
 }
 
 int main(int argc, char **argv)

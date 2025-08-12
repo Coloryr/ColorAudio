@@ -24,6 +24,8 @@ typedef struct
     const char* music_text7;
     const char* music_text8;
     const char* music_text9;
+    const char* music_text10;
+    const char* music_text11;
     const char* dialog_text1;
     const char* dialog_text2;
     const char* ble_text1;
@@ -37,6 +39,8 @@ typedef struct
     const char* usb_text5;
     const char* usb_text6;
     const char* usb_text7;
+    const char* usb_text8;
+    const char* usb_text9;
 } lang_t;
 
 extern const lang_t* now_lang;

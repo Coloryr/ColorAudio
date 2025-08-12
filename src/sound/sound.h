@@ -10,6 +10,8 @@ extern uint16_t pcm_now_channels;
 extern uint32_t pcm_now_rate;
 extern uint32_t pcm_now_size;
 
+extern uint32_t pcm_now_db;
+
 #ifdef __cplusplus
 extern "C" {
 #endif

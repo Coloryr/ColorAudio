@@ -14,7 +14,7 @@ uint32_t lv_usb_get_bits();
 void lv_usb_lock(bool lock);
 void lv_usb_fft_load();
 void lv_usb_set_fft_data(uint16_t index, uint16_t value);
-void lv_usb_set_format(bool connect, uint32_t rate, uint32_t bits);
+void lv_usb_set_format(bool connect, uint32_t rate, uint32_t bits, uint32_t volume);
 void lv_usb_set_enable(bool enable);
 void lv_usb_set_mode(uint8_t mode);
 void lv_usb_set_rate(uint8_t rate);

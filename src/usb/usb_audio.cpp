@@ -4,6 +4,8 @@
 #include "../sound/sound.h"
 #include "../sound/sound_fft.h"
 #include "../ui/usb_view.h"
+#include "../ui/info_view.h"
+#include "../ui/lang.h"
 #include "../config/config.h"
 
 #include "../lvgl/src/misc/lv_log.h"
@@ -29,7 +31,7 @@ static pthread_mutex_t usb_mutex;
 
 static bool uac2;
 
-static bool now_state;
+static bool open_state;
 static uint8_t change_state;
 
 static bool change_uac2;
@@ -133,17 +135,30 @@ run:
         }
         else if (format == SND_PCM_FORMAT_S24_3LE)
         {
-            // Sign extend 24-bit to 32-bit
-            // int32_t sample = (buffer[i * 3 + 2] & 0x80) ? 
-            //     (0xFF << 24) | (buffer[i * 3 + 2] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 0] :
-            //     (buffer[i * 3 + 2] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 0];
-            // memcpy(&output[i * 4], &sample, sizeof(sample));
+            // uint32_t index = 0;
+            // for (uint32_t i = 0; i < samples * 2; i += 2)
+            // {
+            //     // Sign extend 24-bit to 32-bit
+            //     int32_t sample = (buffer[i * 3 + 2] & 0x80) ? (0xFF << 24) | (buffer[i * 3 + 2] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 0] : (buffer[i * 3 + 2] << 16) | (buffer[i * 3 + 1] << 8) | buffer[i * 3 + 0];
+            //     memcpy(&sound_fft_buf[index], &sample, sizeof(sample));
+            //     index++;
+            //     // sound_fft_buf[i] = buffer1[i * 2];
+            // }
 
             int32_t *buffer1 = reinterpret_cast<int32_t *>(output);
             for (uint32_t i = 0; i < samples; i++)
             {
-                sound_fft_buf[i] = buffer1[i * 2];
+                int32_t sample = buffer1[i * 2];
+                if (sample & 0x800000)
+                    sample |= 0xFF000000;
+                sound_fft_buf[i] = sample;
             }
+
+            // int32_t *buffer1 = reinterpret_cast<int32_t *>(output);
+            // for (uint32_t i = 0; i < samples; i++)
+            // {
+            //     sound_fft_buf[i] = buffer1[i * 2];
+            // }
             fft_fill_count(0xFFFFFF, samples);
         }
         else if (format == SND_PCM_FORMAT_S32_LE)
@@ -291,8 +306,13 @@ void usb_audio_start()
 void usb_audio_stop()
 {
     running = false;
-    usb_audio(false);
+    open_state = false;
     usb_monitor_stop();
+}
+
+void usb_audio_exit()
+{
+    usb_audio(false);
 }
 
 void usb_audio_change(bool state)
@@ -319,18 +339,27 @@ void usb_audio_tick()
 {
     if (change_state != 0)
     {
-        if (change_state == 1 && now_state != true)
+        if (change_state == 1 && open_state != true)
         {
+            view_top_info_display(now_lang->usb_text8);
             usb_audio(true);
-            now_state = true;
+            open_state = true;
+            view_top_info_close();
         }
-        else if (change_state == 2 && now_state != false)
+        else if (change_state == 2 && open_state != false)
         {
+            view_top_info_display(now_lang->usb_text9);
             running = false;
             usb_audio(false);
-            now_state = false;
+            open_state = false;
+            view_top_info_close();
         }
 
         change_state = 0;
     }
+}
+
+bool usb_audio_is_connect()
+{
+    return running;
 }

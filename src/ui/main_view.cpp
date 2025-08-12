@@ -9,6 +9,7 @@
 #include "../music/music.h"
 #include "../music/local_music.h"
 #include "../music/music_player.h"
+#include "../usb/usb_audio.h"
 
 #include "lvgl.h"
 
@@ -63,6 +64,16 @@ static void reload_text()
                     lv_main_set_now(temp);
                 }
             }
+        }
+        break;
+    case MAIN_MODE_USB:
+        if (usb_audio_is_connect())
+        {
+            lv_main_set_now(now_lang->music_text11);
+        }
+        else
+        {
+            lv_main_set_now(now_lang->music_text10);
         }
         break;
     default:

@@ -24,6 +24,8 @@ const lang_t lang_ch = {
     .music_text7 = "歌词获取失败",
     .music_text8 = "正在获取歌词",
     .music_text9 = "正在扫描音乐",
+    .music_text10 = "正在等待USB连接",
+    .music_text11 = "正在播放USB音频",
     .dialog_text1 = "取消",
     .dialog_text2 = "确认",
     .ble_text1 = "启用配对",
@@ -36,7 +38,9 @@ const lang_t lang_ch = {
     .usb_text4 = "采样率：",
     .usb_text5 = "比特位：",
     .usb_text6 = "未连接",
-    .usb_text7 = "采样率：%d 位宽：%d",
+    .usb_text7 = "采样率：%d 位宽：%d 音量：-%.1fdB",
+    .usb_text8 = "正在开启USB音频",
+    .usb_text9 = "正在关闭USB音频",
 };
 
 void lang_init()

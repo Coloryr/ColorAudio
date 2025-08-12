@@ -108,11 +108,12 @@ void lv_usb_fft_load()
     lv_obj_invalidate(spectrum_obj);
 }
 
-void lv_usb_set_format(bool connect, uint32_t rate, uint32_t bits)
+void lv_usb_set_format(bool connect, uint32_t rate, uint32_t bits, uint32_t volume)
 {
     if (connect)
     {
-        lv_label_set_text_fmt(format_obj, now_lang->usb_text7, rate, bits);
+        float temp = (255 - volume) / 2;
+        lv_label_set_text_fmt(format_obj, now_lang->usb_text7, rate, bits, temp);
     }
     else
     {
