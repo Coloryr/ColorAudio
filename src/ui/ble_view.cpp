@@ -90,7 +90,7 @@ static void play_click(lv_event_t *e)
 void view_ble_set_header()
 {
     view_header_move(view);
-    view_header_back_display(true);
+    view_header_back_display(true, false);
 }
 
 void view_ble_update_info()

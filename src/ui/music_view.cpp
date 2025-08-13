@@ -518,7 +518,7 @@ void view_music_set_display(bool display)
 void view_music_set_header()
 {
     view_header_move(lv_music_get_cont());
-    view_header_back_display(true);
+    view_header_back_display(true, false);
 }
 
 void view_music_create(lv_obj_t *parent)

@@ -57,7 +57,9 @@ static void timer(lv_timer_t *timer)
 {
     if (update)
     {
+#ifdef BUILD_ARM
         lv_usb_set_format(is_connect, pcm_now_rate, pcm_now_format, pcm_now_db);
+#endif
         update = false;
     }
 }
@@ -65,7 +67,7 @@ static void timer(lv_timer_t *timer)
 void view_usb_set_header()
 {
     view_header_move(view_obj);
-    view_header_back_display(true);
+    view_header_back_display(true, false);
 }
 
 void view_usb_set_display(bool display)

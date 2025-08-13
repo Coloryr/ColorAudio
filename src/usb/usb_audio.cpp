@@ -305,14 +305,18 @@ void usb_audio_start()
 
 void usb_audio_stop()
 {
+    usb_monitor_stop();
     running = false;
     open_state = false;
-    usb_monitor_stop();
+    view_usb_update(false);
 }
 
 void usb_audio_exit()
 {
+    view_top_info_display(now_lang->usb_text9);
     usb_audio(false);
+    open_state = false;
+    view_top_info_close();
 }
 
 void usb_audio_change(bool state)

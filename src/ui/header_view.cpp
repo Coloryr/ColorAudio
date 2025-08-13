@@ -13,6 +13,7 @@
 static lv_obj_t *header;
 
 static bool update;
+static bool back_none;
 
 static void back_dialog(bool stop)
 {
@@ -28,6 +29,11 @@ static void back_dialog(bool stop)
 
 static void back_button(lv_event_t *event)
 {
+    if (back_none)
+    {
+        view_jump(VIEW_MAIN);
+        return;
+    }
     view_dialog_show(back_dialog, now_lang->main_text5);
 }
 
@@ -71,9 +77,10 @@ void view_header_move(lv_obj_t *parent)
     lv_obj_move_foreground(header);
 }
 
-void view_header_back_display(bool display)
+void view_header_back_display(bool display, bool none)
 {
     lv_header_back_display(display);
+    back_none = none;
 }
 
 void view_header_update()

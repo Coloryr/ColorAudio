@@ -33,7 +33,7 @@ static void button_event_cb(lv_event_t *e)
         view_jump(VIEW_USB);
         break;
     case MAIN_BUTTON_SETTING:
-
+        view_jump(VIEW_SETTING);
         break;
     default:
         break;
@@ -95,7 +95,7 @@ static void main_tick(lv_timer_t *timer)
 void view_main_set_header()
 {
     view_header_move(main_view);
-    view_header_back_display(false);
+    view_header_back_display(false, false);
 }
 
 void view_main_set_display(bool display)

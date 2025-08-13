@@ -295,10 +295,10 @@ void alsa_set_volume_db(long value)
         return;
     }
 
-    pcm_now_db = value;
     snd_ctl_elem_value_t *control;
     snd_ctl_elem_value_alloca(&control);
 #ifdef BUILD_ARM
+    pcm_now_db = value;
     snd_ctl_elem_value_set_id(control, ctl_id_a);
 #else
     snd_ctl_elem_value_set_id(control, ctl_id);

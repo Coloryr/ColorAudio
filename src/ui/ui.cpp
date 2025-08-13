@@ -7,6 +7,7 @@
 #include "ble_view.h"
 #include "usb_view.h"
 #include "header_view.h"
+#include "setting_view.h"
 #include "lang.h"
 
 #include "../config/config.h"
@@ -42,6 +43,10 @@ static void change_view(view_mode_type type)
     {
         view_usb_set_display(false);
     }
+    else if (now_type == VIEW_SETTING)
+    {
+        view_setting_set_display(false);
+    }
 
     if (type == VIEW_MAIN)
     {
@@ -63,6 +68,11 @@ static void change_view(view_mode_type type)
         view_usb_set_display(true);
         view_usb_set_header();
     }
+    else if (type == VIEW_SETTING)
+    {
+        view_setting_set_display(true);
+        view_setting_set_header();
+    }
 
     now_type = type;
 }
@@ -80,6 +90,8 @@ void view_init()
     view_ble_create(lv_screen_active());
     // usb
     view_usb_create(lv_screen_active());
+    // setting
+    view_setting_create(lv_screen_active());
     // top level
     view_input_create(lv_screen_active());
     view_top_info_create(lv_screen_active());
@@ -89,6 +101,7 @@ void view_init()
     view_music_set_display(false);
     view_ble_set_display(false);
     view_usb_set_display(false);
+    view_setting_set_display(false);
 
     change_view(config::get_config_view_mode());
 }
