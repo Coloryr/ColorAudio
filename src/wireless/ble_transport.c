@@ -10,7 +10,6 @@
 
 #include <gio/gio.h>
 #include <string.h>
-#include <pthread.h>
 
 static struct ba_transport *t;
 static pthread_t tid;

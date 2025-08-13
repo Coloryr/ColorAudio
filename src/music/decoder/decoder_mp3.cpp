@@ -6,7 +6,6 @@
 #include "../lvgl/src/misc/lv_log.h"
 
 #include <alsa/asoundlib.h>
-#include <pthread.h>
 #include <mad.h>
 
 #define BUFSIZE 8192

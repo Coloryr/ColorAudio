@@ -5,7 +5,7 @@
 
 extern int32_t *sound_buf;
 
-extern uint16_t pcm_now_format;
+extern uint16_t pcm_now_format_size;
 extern uint16_t pcm_now_channels;
 extern uint32_t pcm_now_rate;
 extern uint32_t pcm_now_size;
@@ -27,6 +27,12 @@ void alsa_ready();
 int alsa_write();
 int alsa_write_buffer(const void *buffer, size_t samples);
 void alsa_set_volume_db(long value);
+
+#ifdef BUILD_ARM
+
+void alsa_codec_double_change();
+
+#endif
 
 #ifdef __cplusplus
 } /*extern "C"*/

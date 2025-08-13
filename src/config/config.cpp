@@ -26,6 +26,10 @@ uint8_t config::usb_bits = 5;
 
 #ifdef BUILD_ARM
 bool config::codec_double = false;
+bool config::wifi_power;
+bool config::wifi_enable;
+std::string config::wifi_ssid;
+std::string config::wifi_pwd;
 #endif
 
 static pthread_t save_tid;
@@ -110,9 +114,30 @@ void config::load_config()
             }
 #ifdef BUILD_ARM
             json codec = j[MUSIC_CONFIG_ID_CODEC_DOUBLE];
+            json wifipower = j[MUSIC_CONFOG_ID_WIFI_POWER];
+            json wifienable = j[MUSIC_CONFOG_ID_WIFI_ENABLE];
+            json wifissid = j[MUSIC_CONFOG_ID_WIFI_SSID];
+            json wifipwd = j[MUSIC_CONFOG_ID_WIFI_PWD];
+
             if (codec.is_boolean())
             {
                 codec_double = codec.get<bool>();
+            }
+            if (wifipower.is_boolean())
+            {
+                wifi_power = wifipower.get<bool>();
+            }
+            if (wifienable.is_boolean())
+            {
+                wifi_enable = wifienable.get<bool>();
+            }
+            if (wifissid.is_string())
+            {
+                wifi_ssid = wifissid.get<std::string>();
+            }
+            if (wifipwd.is_string())
+            {
+                wifi_pwd = wifipwd.get<std::string>();
             }
 #endif
         }
@@ -161,6 +186,10 @@ void config::save_config_run()
         j[MUSIC_CONFOG_ID_USB_BITS] = usb_bits;
 #ifdef BUILD_ARM
         j[MUSIC_CONFIG_ID_CODEC_DOUBLE] = codec_double;
+        j[MUSIC_CONFOG_ID_WIFI_POWER] = wifi_power;
+        j[MUSIC_CONFOG_ID_WIFI_ENABLE] = wifi_enable;
+        j[MUSIC_CONFOG_ID_WIFI_SSID] = wifi_ssid;
+        j[MUSIC_CONFOG_ID_WIFI_PWD] = wifi_pwd;
 #endif
 
         std::string res = j.dump();

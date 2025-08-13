@@ -48,7 +48,7 @@ static boost::container::flat_map<uint32_t, view_play_item_t *> view_play_list;
 
 static bool is_search = false;
 
-static void search_done(bool iscancel);
+static void search_done(bool iscancel, void* data);
 static void clear_click_event_cb(lv_event_t *e);
 static void search_click_event_cb(lv_event_t *e);
 static void play_click_event_cb(lv_event_t *e);
@@ -194,7 +194,7 @@ static void timer_tick(lv_timer_t *timer)
         lv_music_set_album(play_album.c_str());
         lv_music_set_auther(play_auther.c_str());
 
-        lv_music_set_sound_info(pcm_now_format, pcm_now_rate, pcm_now_channels, play_music_bps, play_music_type == MUSIC_TYPE_FLAC);
+        lv_music_set_sound_info(pcm_now_format_size, pcm_now_rate, pcm_now_channels, play_music_bps, play_music_type == MUSIC_TYPE_FLAC);
 
         update_info = false;
     }
@@ -265,7 +265,7 @@ static void timer_tick(lv_timer_t *timer)
     }
 }
 
-static void search_done(bool iscancel)
+static void search_done(bool iscancel, void *data)
 {
     view_play_item_t *item = NULL;
     if (strlen(view_list_search_data) == 0)
@@ -314,7 +314,7 @@ static void search_done(bool iscancel)
 static void clear_click_event_cb(lv_event_t *e)
 {
     memset(view_list_search_data, 0, sizeof(view_list_search_data));
-    search_done(false);
+    search_done(false, NULL);
     view_play_item_t *item = view_play_list[play_now_index];
     if (item != NULL)
     {
@@ -325,7 +325,7 @@ static void clear_click_event_cb(lv_event_t *e)
 static void search_click_event_cb(lv_event_t *e)
 {
     lv_memset(view_list_search_data, 0, sizeof(view_list_search_data));
-    view_input_show(view_list_search_data, sizeof(view_list_search_data), search_done);
+    view_input_show(view_list_search_data, sizeof(view_list_search_data), search_done, now_lang->music_text12, NULL);
 }
 
 static void play_click_event_cb(lv_event_t *e)

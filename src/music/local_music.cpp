@@ -38,8 +38,6 @@ using namespace ColorAudio;
 
 bool local_music_scan_now;
 
-static pthread_t rtid;
-
 static void play_list_close()
 {
     for (const auto &it : play_list)
@@ -265,12 +263,15 @@ static void *play_scan_run(void *arg)
 
 void local_music_init()
 {
+    pthread_t rtid;
     int res = pthread_create(&rtid, NULL, play_scan_run, NULL);
     if (res)
     {
         LV_LOG_ERROR("Music play list read thread run fail: %d", res);
+        return;
     }
-    pthread_setname_np(rtid, "play list scan");
+    pthread_setname_np(rtid, "playlist_scan");
+    pthread_detach(rtid);
 }
 
 void local_music_run()

@@ -12,9 +12,8 @@
 
 #include <errno.h>
 #include <stdio.h>
-
+#include <pthread.h>
 #include <alsa/asoundlib.h>
-#include <thread>
 #include <atomic>
 
 #define UAC1_DEVICE "hw:UAC1Gadget"
@@ -25,7 +24,7 @@ using namespace ColorAudio;
 
 static std::atomic<bool> running(false);
 static snd_pcm_t *capture_handle;
-static std::thread *monitor_thread;
+static pthread_t monitor_thread;
 
 static pthread_mutex_t usb_mutex;
 
@@ -38,7 +37,7 @@ static bool change_uac2;
 static const char *change_rate;
 static const char *change_bits;
 
-static void usb_audio_run()
+static void *usb_audio_run(void *arg)
 {
     pthread_mutex_lock(&usb_mutex);
 
@@ -56,7 +55,7 @@ run:
     {
         LV_LOG_ERROR("Cannot open audio device %s (%s)", uac2 ? UAC2_DEVICE : UAC1_DEVICE, snd_strerror(err));
         pthread_mutex_unlock(&usb_mutex);
-        return;
+        return NULL;
     }
 
     rate = 48000;
@@ -190,6 +189,7 @@ run:
     }
 
     pthread_mutex_unlock(&usb_mutex);
+    return NULL;
 }
 
 static void usb_audio(bool enable)
@@ -261,8 +261,8 @@ void usb_audio_stop_run()
 
     if (monitor_thread)
     {
-        delete monitor_thread;
-        monitor_thread = NULL;
+        pthread_join(monitor_thread, NULL);
+        monitor_thread = 0;
     }
 
     pthread_mutex_unlock(&usb_mutex);
@@ -280,13 +280,13 @@ void usb_audio_start_run()
 
     if (monitor_thread)
     {
-        delete monitor_thread;
-        monitor_thread = NULL;
+        pthread_join(monitor_thread, NULL);
+        monitor_thread = 0;
     }
 
     pthread_mutex_unlock(&usb_mutex);
-    monitor_thread = new std::thread(usb_audio_run);
-    monitor_thread->detach();
+    pthread_create(&monitor_thread, NULL, usb_audio_run, NULL);
+    pthread_setname_np(monitor_thread, "usb_audio");
 }
 
 void usb_audio_init()

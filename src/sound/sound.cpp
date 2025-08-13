@@ -34,10 +34,11 @@ using namespace ColorAudio;
 
 int32_t *sound_buf;
 
-uint16_t pcm_now_format;
+uint16_t pcm_now_format_size;
 uint32_t pcm_now_size;
 uint16_t pcm_now_channels;
 uint32_t pcm_now_rate;
+snd_pcm_format_t pcm_now_format;
 
 #ifdef BUILD_ARM
 static snd_pcm_t *pcm_handle_a;
@@ -388,7 +389,8 @@ void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate)
 
     pcm_now_channels = channels;
     pcm_now_rate = rate;
-    pcm_now_format = snd_pcm_format_width(format);
+    pcm_now_format = format;
+    pcm_now_format_size = snd_pcm_format_width(format);
 
     LV_LOG_USER("ALSA change, ch:%d, rate:%d, format:%s", channels, rate, snd_pcm_format_name(format));
 
@@ -465,3 +467,32 @@ int alsa_write_buffer(const void *buffer, size_t samples)
 
     return 0;
 }
+
+#ifdef BUILD_ARM
+void alsa_codec_double_change()
+{
+    set_amp_power(false);
+    if (config::get_config_codec_double())
+    {
+        enable_double = true;
+        if (isset)
+        {
+            snd_pcm_set_params(pcm_handle_b, pcm_now_format, SND_PCM_ACCESS_RW_INTERLEAVED, pcm_now_channels, pcm_now_rate, 0, 100000);
+            snd_pcm_prepare(pcm_handle_b);
+        }
+    }
+    else
+    {
+        enable_double = false;
+        if (isset)
+        {
+            snd_pcm_drop(pcm_handle_b);
+            snd_pcm_reset(pcm_handle_b);
+
+            // snd_pcm_close(pcm_handle_b);
+            // snd_pcm_open(&pcm_handle_b, ALSA_DEVICE_B, SND_PCM_STREAM_PLAYBACK, 0);
+        }
+    }
+    set_amp_power(true);
+}
+#endif

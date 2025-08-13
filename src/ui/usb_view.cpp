@@ -58,7 +58,7 @@ static void timer(lv_timer_t *timer)
     if (update)
     {
 #ifdef BUILD_ARM
-        lv_usb_set_format(is_connect, pcm_now_rate, pcm_now_format, pcm_now_db);
+        lv_usb_set_format(is_connect, pcm_now_rate, pcm_now_format_size, pcm_now_db);
 #endif
         update = false;
     }

@@ -2,6 +2,7 @@
 
 #include "../font.h"
 #include "../anim.h"
+#include "../lang.h"
 
 #include "lvgl.h"
 
@@ -10,8 +11,14 @@
 static lv_obj_t *info_obj;
 static lv_obj_t *text_obj;
 static lv_obj_t *bar_obj;
+static lv_obj_t *button_obj;
 
 static lv_anim_t anim;
+
+static void close_event(lv_event_t *e)
+{
+    lv_info_display(false);
+}
 
 static void scroll_event_cb(lv_event_t *e)
 {
@@ -80,11 +87,32 @@ void lv_info_create(lv_obj_t *parent)
 
     bar_obj = create_bar(info_obj);
 
+    button_obj = lv_button_create(parent);
+    lv_obj_add_flag(button_obj, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_event_cb(button_obj, close_event, LV_EVENT_CLICKED, NULL);
+    lv_obj_align(button_obj, LV_ALIGN_CENTER, 0, 80);
+
+    lv_obj_t *lable = lv_label_create(button_obj);
+    lv_label_set_text(lable, now_lang->dialog_text3);
+    lv_obj_set_align(lable, LV_ALIGN_CENTER);
+
     lv_info_scr_display(false);
 
     lv_obj_align_to(bar_obj, text_obj, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
     lv_obj_add_flag(info_obj, LV_OBJ_FLAG_HIDDEN);
+}
+
+void lv_info_button_display(bool display)
+{
+    if (display)
+    {
+        lv_obj_remove_flag(button_obj, LV_OBJ_FLAG_HIDDEN);
+    }
+    else
+    {
+        lv_obj_add_flag(button_obj, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
 void lv_info_scr_display(bool display)

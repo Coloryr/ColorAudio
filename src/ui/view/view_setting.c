@@ -2,6 +2,7 @@
 #include "view_wave.h"
 
 #include "../font.h"
+#include "../lang.h"
 
 #include "lvgl.h"
 
@@ -32,50 +33,30 @@ static lv_obj_t *btn_scan_wifi;
 static lv_obj_t *wifi_list;
 static lv_obj_t *lbl_connected_wifi;
 static lv_obj_t *sw_codec;
+static lv_obj_t *btn_disconnect;
 
-static void wifi_state_change(bool enable)
+static void wifi_state_change()
 {
-    if (enable)
-    {
-        lv_obj_remove_state(btn_scan_wifi, LV_STATE_DISABLED);
-        lv_obj_remove_state(wifi_list, LV_STATE_DISABLED);
-    }
-    else
-    {
-        lv_obj_add_state(btn_scan_wifi, LV_STATE_DISABLED);
-        lv_obj_add_state(wifi_list, LV_STATE_DISABLED);
-    }
-}
-
-static void wifi_power_change(bool enable)
-{
-    if (enable)
+    if (lv_obj_has_state(sw_wifi_power, LV_STATE_CHECKED))
     {
         lv_obj_remove_state(sw_wifi_open, LV_STATE_DISABLED);
         if (lv_obj_has_state(sw_wifi_open, LV_STATE_CHECKED))
         {
-            wifi_state_change(true);
+            lv_obj_remove_state(btn_scan_wifi, LV_STATE_DISABLED);
+            lv_obj_remove_state(wifi_list, LV_STATE_DISABLED);
         }
     }
     else
     {
         lv_obj_add_state(sw_wifi_open, LV_STATE_DISABLED);
-        wifi_state_change(false);
+        lv_obj_add_state(btn_scan_wifi, LV_STATE_DISABLED);
+        lv_obj_add_state(wifi_list, LV_STATE_DISABLED);
     }
-}
-
-static void power_event(lv_event_t *event)
-{
-    lv_obj_t *sw = lv_event_get_target_obj(event);
-    bool enabled = lv_obj_has_state(sw, LV_STATE_CHECKED);
-    wifi_power_change(enabled);
 }
 
 static void wifi_event(lv_event_t *event)
 {
-    lv_obj_t *sw = lv_event_get_target_obj(event);
-    bool enabled = lv_obj_has_state(sw, LV_STATE_CHECKED);
-    wifi_power_change(enabled);
+    wifi_state_change();
 }
 
 // 创建分区标题
@@ -117,17 +98,14 @@ static lv_obj_t *create_setting_item(lv_obj_t *parent, const char *label_text, l
     return cont;
 }
 
-// 更新数据
 void lv_setting_init(const char *info, const char *version)
 {
-    // 更新系统信息
     lv_label_set_text(lbl_hardware, info);
     lv_label_set_text(lbl_version, version);
 }
 
 void lv_setting_update_power(bool charging, uint32_t level)
 {
-    // 更新电源信息
     static char bat_text[32];
     snprintf(bat_text, sizeof(bat_text), "电量: %d%%", level);
     lv_label_set_text(lbl_battery, bat_text);
@@ -136,13 +114,11 @@ void lv_setting_update_power(bool charging, uint32_t level)
 
 void lv_setting_update_tf(const char *info)
 {
-    // 更新存储信息
     lv_label_set_text(lbl_tfcard, info);
 }
 
 void lv_setting_update_wifi(const char *info)
 {
-    // 更新WiFi信息
     lv_label_set_text(lbl_connected_wifi, info);
 }
 
@@ -156,8 +132,26 @@ void lv_setting_wifi_add_list(const char *item)
     lv_dropdown_add_option(wifi_list, item, 0);
 }
 
-void lv_setting_set_wifi(bool wireless, bool wifiopen)
+void lv_setting_set_wifi(bool wifipower, bool wifiopen)
 {
+    if (wifipower)
+    {
+        lv_obj_add_state(sw_wifi_power, LV_STATE_CHECKED);
+    }
+    else
+    {
+        lv_obj_remove_state(sw_wifi_power, LV_STATE_CHECKED);
+    }
+    if (wifiopen)
+    {
+        lv_obj_add_state(sw_wifi_open, LV_STATE_CHECKED);
+    }
+    else
+    {
+        lv_obj_remove_state(sw_wifi_open, LV_STATE_CHECKED);
+    }
+
+    wifi_state_change();
 }
 
 void lv_setting_set_codec(bool enable)
@@ -172,8 +166,21 @@ void lv_setting_set_codec(bool enable)
     }
 }
 
+void lv_setting_set_disconnect(bool enable)
+{
+    if (enable)
+    {
+        lv_obj_remove_state(btn_disconnect, LV_STATE_DISABLED);
+    }
+    else
+    {
+        lv_obj_add_state(btn_disconnect, LV_STATE_DISABLED);
+    }
+}
+
 lv_obj_t *lv_setting_create(lv_obj_t *parent, lv_event_cb_t power, lv_event_cb_t wifi,
-                            lv_event_cb_t scan, lv_event_cb_t codec)
+                            lv_event_cb_t scan, lv_event_cb_t codec,
+                            lv_event_cb_t list, lv_event_cb_t disconnect)
 {
     lv_obj_t *obj = lv_obj_create(parent);
     lv_obj_remove_style_all(obj);
@@ -194,23 +201,34 @@ lv_obj_t *lv_setting_create(lv_obj_t *parent, lv_event_cb_t power, lv_event_cb_t
     lv_obj_set_style_pad_top(root_container, 60, 0);
 
     // ===== 无线控制区 =====
-    create_section_title(root_container, "无线网络");
+    create_section_title(root_container, now_lang->setting_text1);
 
     // WiFi电源开关
-    lv_obj_t *obj1 = create_setting_item(root_container, "无线模块电源", &sw_wifi_power);
+    lv_obj_t *obj1 = create_setting_item(root_container, now_lang->setting_text2, &sw_wifi_power);
     lv_obj_add_event_cb(sw_wifi_power, power, LV_EVENT_VALUE_CHANGED, NULL);
-    lv_obj_add_event_cb(sw_wifi_power, power_event, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_add_event_cb(sw_wifi_power, wifi_event, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_style_margin_top(obj1, 10, 0);
 
-    lv_obj_t *obj4 = create_setting_item(root_container, "WIFI", &sw_wifi_open);
+    lv_obj_t *obj4 = create_setting_item(root_container, now_lang->setting_text3, &sw_wifi_open);
     lv_obj_add_event_cb(sw_wifi_open, wifi, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_add_event_cb(sw_wifi_open, wifi_event, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_style_margin_top(obj4, 10, 0);
 
     // 已连接WiFi
     lbl_connected_wifi = lv_label_create(root_container);
-    lv_label_set_text(lbl_connected_wifi, "未连接网络");
-    lv_obj_set_style_margin_top(obj1, 10, 0);
+    lv_label_set_text(lbl_connected_wifi, now_lang->setting_text4);
+    lv_obj_set_size(lbl_connected_wifi, LV_PCT(100), LV_SIZE_CONTENT);
+    lv_label_set_long_mode(lbl_connected_wifi, LV_LABEL_LONG_MODE_DOTS);
+    lv_obj_set_style_margin_top(lbl_connected_wifi, 10, 0);
+
+    btn_disconnect = lv_button_create(root_container);
+    lv_obj_set_align(btn_disconnect, LV_ALIGN_CENTER);
+    lv_obj_add_event_cb(btn_disconnect, disconnect, LV_EVENT_CLICKED, NULL);
+    lv_obj_set_style_margin_top(btn_disconnect, 10, 0);
+    lv_obj_t *label1 = lv_label_create(btn_disconnect);
+    lv_label_set_text(label1, now_lang->setting_text16);
+    lv_obj_set_align(label1, LV_ALIGN_CENTER);
+    lv_obj_add_flag(btn_disconnect, LV_OBJ_FLAG_HIDDEN);
 
     lv_obj_t *obj2 = lv_obj_create(root_container);
     lv_obj_remove_style_all(obj2);
@@ -219,18 +237,19 @@ lv_obj_t *lv_setting_create(lv_obj_t *parent, lv_event_cb_t power, lv_event_cb_t
 
     lv_obj_t *label = lv_label_create(obj2);
     lv_obj_set_align(label, LV_ALIGN_LEFT_MID);
-    lv_label_set_text(label, "可用网络列表");
+    lv_label_set_text(label, now_lang->setting_text5);
 
     // 扫描按钮
     btn_scan_wifi = lv_button_create(obj2);
     lv_obj_set_align(btn_scan_wifi, LV_ALIGN_RIGHT_MID);
     lv_obj_t *btn_label = lv_label_create(btn_scan_wifi);
-    lv_label_set_text(btn_label, "扫描WiFi");
+    lv_label_set_text(btn_label, now_lang->setting_text6);
     lv_obj_add_event_cb(btn_scan_wifi, scan, LV_EVENT_CLICKED, NULL);
 
     // WiFi列表
     wifi_list = lv_dropdown_create(root_container);
-    lv_dropdown_set_options(wifi_list, "");
+    lv_dropdown_set_options(wifi_list, now_lang->empty);
+    lv_obj_add_event_cb(wifi_list, list, LV_EVENT_VALUE_CHANGED, NULL);
     lv_obj_set_width(wifi_list, LV_PCT(100));
     lv_obj_set_style_margin_top(wifi_list, 10, 0);
 
@@ -266,8 +285,6 @@ lv_obj_t *lv_setting_create(lv_obj_t *parent, lv_event_cb_t power, lv_event_cb_t
 
     lbl_tfcard = lv_label_create(root_container);
     lv_label_set_text(lbl_tfcard, "TF卡: ");
-
-    wifi_power_change(false);
 
     return obj;
 }

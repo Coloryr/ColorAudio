@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <pthread.h>
 #include <regex.h>
 #include <stdlib.h>
 

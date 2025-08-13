@@ -17,9 +17,6 @@
 #include "lvgl.h"
 
 #include <stdint.h>
-#include <pthread.h>
-#include <stack>
-#include <string>
 
 using namespace ColorAudio;
 

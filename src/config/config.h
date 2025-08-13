@@ -24,6 +24,11 @@
 #define MUSIC_CONFOG_ID_USB_RATE "usb_rate"
 #define MUSIC_CONFOG_ID_USB_BITS "usb_bits"
 
+#define MUSIC_CONFOG_ID_WIFI_POWER "wifi_power"
+#define MUSIC_CONFOG_ID_WIFI_ENABLE "wifi_enable"
+#define MUSIC_CONFOG_ID_WIFI_SSID "wifi_ssid"
+#define MUSIC_CONFOG_ID_WIFI_PWD "wifi_pwd"
+
 #define MUSIC_CONFIG_ID_VOLUME "volume"
 
 namespace ColorAudio
@@ -44,6 +49,10 @@ namespace ColorAudio
 
 #ifdef BUILD_ARM
         static bool codec_double;
+        static bool wifi_power;
+        static bool wifi_enable;
+        static std::string wifi_ssid;
+        static std::string wifi_pwd;
 #endif
 
     public:
@@ -101,6 +110,33 @@ namespace ColorAudio
             usb_bits = bits;
         }
 
+#ifdef BUILD_ARM
+        static void set_config_codec_double(bool enable)
+        {
+            codec_double = enable;
+        }
+
+        static void set_config_wifi_power(bool enable)
+        {
+            wifi_power = enable;
+        }
+
+        static void set_config_wifi_enable(bool enable)
+        {
+            wifi_enable = enable;
+        }
+
+        static void set_config_wifi_ssid(std::string& ssid)
+        {
+            wifi_ssid = ssid;
+        }
+
+        static void set_config_wifi_pwd(std::string& pwd)
+        {
+            wifi_pwd = pwd;
+        }
+#endif
+
         static music_mode_type get_config_music_mode()
         {
             return play_mode;
@@ -157,9 +193,24 @@ namespace ColorAudio
             return codec_double;
         }
 
-        static void set_config_codec_double(bool enable)
+        static bool get_config_wifi_power()
         {
-            codec_double = enable;
+            return wifi_power;
+        }
+
+        static bool get_config_wifi_enable()
+        {
+            return wifi_enable;
+        }
+
+        static std::string &get_config_wifi_ssid()
+        {
+            return wifi_ssid;
+        }
+
+        static std::string &get_config_wifi_pwd()
+        {
+            return wifi_pwd;
         }
 #endif
     };

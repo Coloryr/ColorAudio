@@ -50,7 +50,7 @@ bool wifi_wpa_start();
 void wifi_terminate_wpa_supplicant();
 bool wifi_connect(std::string &ssid, std::string &psk);
 bool wifi_scan(std::vector<wifi_item_t> &list);
-bool wifi_get_state(wifi_state *state);
+bool wifi_get_state(wifi_state *state, std::string &ssid);
 bool wifi_get_level(int16_t *level);
 
 #endif // __WIFI_H__

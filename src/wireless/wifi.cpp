@@ -230,7 +230,7 @@ bool wifi_scan(std::vector<wifi_item_t> &list)
     return true;
 }
 
-bool wifi_get_state(wifi_state *state)
+bool wifi_get_state(wifi_state *state, std::string &ssid)
 {
     wpa_ctrl *ctrl = wpa_ctrl_open(WIFI_PATH);
     if (!ctrl)
@@ -271,6 +271,14 @@ bool wifi_get_state(wifi_state *state)
                 *state = WIFI_STATE_COMPLETED;
             }
             break;
+        }
+        else if (line.find("ssid") != std::string::npos)
+        {
+            uint32_t pos = line.find("=");
+            if (pos != std::string::npos)
+            {
+                ssid = line.substr(pos);
+            }
         }
     }
     wpa_ctrl_close(ctrl);

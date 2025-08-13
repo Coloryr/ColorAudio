@@ -5,6 +5,7 @@
 
 static bool display;
 static bool use_bar;
+static bool ok_button;
 static std::string text;
 
 static bool update_top_info;
@@ -19,8 +20,9 @@ static void timer_tick(lv_timer_t *timer)
         {
             lv_info_scr_display(display);
         }
-        lv_info_display(display);
         lv_info_set_text(text.c_str());
+        lv_info_button_display(ok_button);
+        lv_info_display(display);
         update_top_info = false;
     }
 }
@@ -39,6 +41,7 @@ void view_top_info_display(std::string info)
     use_bar = true;
     display = true;
     update_top_info = true;
+    ok_button = false;
     text = info;
 }
 
@@ -47,6 +50,7 @@ void view_top_error_display(std::string info)
     use_bar = false;
     display = true;
     update_top_info = true;
+    ok_button = true;
     text = info;
 }
 

@@ -21,6 +21,7 @@ static void keyboard_event_cb(lv_event_t *e);
 
 static lv_obj_t *kb;
 static lv_obj_t *input_obj;
+static lv_obj_t *input_label_obj;
 static lv_obj_t *input_select_obj;
 static lv_obj_t *input_select_text_obj;
 static lv_obj_t *input_select_list_obj;
@@ -363,6 +364,11 @@ void lv_input_display(bool display)
     anim_set_display(input_obj, display);
 }
 
+void lv_input_label(const char* label)
+{
+    lv_label_set_text(input_label_obj, label);
+}
+
 void lv_input_create(lv_obj_t *parent, void(*cb)())
 {
     close_cb = cb;
@@ -394,8 +400,12 @@ void lv_input_create(lv_obj_t *parent, void(*cb)())
     lv_keyboard_view_set_input(kb, input_text);
     lv_obj_add_event_cb(kb, keyboard_event_cb, LV_EVENT_ALL, NULL);
 
+    input_label_obj = lv_label_create(input_obj);
+    lv_obj_align(input_label_obj, LV_ALIGN_TOP_MID, 0, 10);
+    lv_obj_set_size(input_label_obj, LV_HOR_RES - 20, LV_SIZE_CONTENT);
+
     input_text_obj = lv_textarea_create(input_obj);
-    lv_obj_align(input_text_obj, LV_ALIGN_TOP_LEFT, 10, 10);
+    lv_obj_align(input_text_obj, LV_ALIGN_TOP_LEFT, 10, 40);
     lv_obj_set_style_pad_all(input_text_obj, 8, 0);
     lv_obj_set_size(input_text_obj, LV_HOR_RES - 20, LV_SIZE_CONTENT);
 

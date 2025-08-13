@@ -7,6 +7,7 @@
 
 static input_done_cb input_call;
 static char *input_done_text;
+static void *user_data;
 
 static void view_call_close()
 {
@@ -25,7 +26,7 @@ void view_input_close()
     }
     if (input_call != NULL)
     {
-        input_call(false);
+        input_call(false, user_data);
     }
 
     lv_input_set_text("");
@@ -33,12 +34,13 @@ void view_input_close()
     input_call = NULL;
 }
 
-void view_input_show(char *input, uint16_t max_len, input_done_cb call)
+void view_input_show(char *input, uint16_t max_len, input_done_cb call, const char *label, void *data)
 {
     if (input == NULL)
     {
         return;
     }
+    user_data = data;
     input_call = call;
     lv_input_set_max_size(max_len);
     input_done_text = input;
@@ -51,6 +53,7 @@ void view_input_show(char *input, uint16_t max_len, input_done_cb call)
         lv_input_set_text("");
     }
 
+    lv_input_label(label);
     lv_input_display(true);
 }
 

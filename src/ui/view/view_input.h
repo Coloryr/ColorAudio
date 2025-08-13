@@ -12,6 +12,7 @@ extern "C" {
 void lv_input_set_max_size(uint16_t size);
 const char *lv_input_get_text();
 void lv_input_set_text(const char* text);
+void lv_input_label(const char* label);
 void lv_input_create(lv_obj_t *parent, void(*close_cb)());
 void lv_input_display(bool display);
 

@@ -12,7 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <poll.h>
-#include <thread>
+#include <pthread.h>
 
 #define UAC1_DEVPATH "/devices/virtual/u_audio/UAC1_Gadget 0"
 #define UAC2_DEVPATH "/devices/virtual/u_audio/UAC2_Gadget 0"
@@ -22,9 +22,9 @@ static struct udev_monitor *mon;
 static struct pollfd fds[1];
 
 static bool running;
-static std::thread *monitor_thread;
+static pthread_t monitor_thread;
 
-void usb_monitor_run()
+static void* usb_monitor_run(void *arg)
 {
     while (running)
     {
@@ -98,6 +98,8 @@ void usb_monitor_run()
             udev_device_unref(dev);
         }
     }
+
+    return NULL;
 }
 
 void usb_monitor_start()
@@ -133,8 +135,8 @@ void usb_monitor_start()
     LV_LOG_USER("开始监听usb事件");
 
     running = true;
-    monitor_thread = new std::thread(usb_monitor_run);
-    monitor_thread->detach();
+    pthread_create(&monitor_thread, NULL, usb_monitor_run, NULL);
+    pthread_setname_np(monitor_thread, "usb_monitor");
 }
 
 void usb_monitor_stop()
@@ -154,7 +156,7 @@ void usb_monitor_stop()
     }
     if (monitor_thread)
     {
-        delete monitor_thread;
-        monitor_thread = nullptr;
+        pthread_detach(monitor_thread);
+        monitor_thread = 0;
     }
 }

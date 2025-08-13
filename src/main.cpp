@@ -5,6 +5,8 @@
 #include "main.h"
 #include "ui/ui.h"
 #include "ui/info_view.h"
+#include "ui/setting_view.h"
+#include "ui/lang.h"
 #include "sound/sound.h"
 #include "sound/sound_fft.h"
 #include "input/rime_input.h"
@@ -24,6 +26,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <pthread.h>
+#include <queue>
 
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
@@ -34,10 +38,11 @@ using namespace ColorAudio;
 
 static int quit = 0;
 static pthread_t tid;
+static pthread_t work_tid;
 
 static bool mode_change;
-static main_mode_type mode_exit = MAIN_MODE_NONE;
 static main_mode_type now_mode = MAIN_MODE_NONE;
+static std::queue<main_work *> work_queue;
 
 static void sigterm_handler(int sig)
 {
@@ -47,6 +52,110 @@ static void sigterm_handler(int sig)
     LV_LOG_USER("ColorAudio Exit %d\n", sig);
 
     exit(0);
+}
+
+static void *work_loop(void *arg)
+{
+    for (;;)
+    {
+        usleep(100);
+        if (work_queue.empty())
+        {
+            continue;
+        }
+#ifdef BUILD_ARM
+        auto now_work = work_queue.front();
+        if (now_work == NULL)
+        {
+            continue;
+        }
+        if (now_work->type == MAIN_WORK_USB)
+        {
+            usb_audio_exit();
+        }
+        else if (now_work->type == MAIN_WORK_WIFI_POWER)
+        {
+            if (config::get_config_wifi_power())
+            {
+                view_top_info_display(now_lang->setting_text7);
+                set_wireless_power_on();
+                view_top_info_close();
+            }
+            else
+            {
+                view_top_info_display(now_lang->setting_text8);
+                set_wireless_power_off();
+                view_top_info_close();
+            }
+        }
+        else if (now_work->type == MAIN_WORK_WIFI_ENABLE)
+        {
+            if (config::get_config_wifi_power())
+            {
+                if (!wifi_have_device())
+                {
+                    view_top_error_display(now_lang->setting_text11);
+                }
+                else
+                {
+                    view_top_info_display(now_lang->setting_text9);
+                    if (wifi_is_wpa_supplicant_running())
+                    {
+                        wifi_terminate_wpa_supplicant();
+                    }
+                    wifi_wpa_start();
+                    view_top_info_close();
+                }
+            }
+            else
+            {
+                view_top_info_display(now_lang->setting_text10);
+                wifi_terminate_wpa_supplicant();
+                view_top_info_close();
+            }
+        }
+        else if (now_work->type == MAIN_WORK_WIFI_SCAN)
+        {
+            if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
+            {
+                view_top_error_display(now_lang->setting_text12);
+            }
+            else
+            {
+                std::vector<wifi_item_t> list;
+                if (wifi_scan(list))
+                {
+                    view_setting_wifi_list(list);
+                }
+                else
+                {
+                    view_top_error_display(now_lang->setting_text13);
+                }
+            }
+        }
+        else if (now_work->type == MAIN_WORK_WIFI_CONNECT)
+        {
+            if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
+            {
+                view_top_error_display(now_lang->setting_text12);
+            }
+            else
+            {
+                wifi_connect_t *wifi = static_cast<wifi_connect_t *>(now_work->data);
+                std::string ssid = std::string(wifi->ssid);
+                std::string pwd = std::string(wifi->pwd);
+                delete wifi;
+                if (!wifi_connect(ssid, pwd))
+                {
+                    view_top_error_display(now_lang->setting_text15);
+                }
+            }
+        }
+        work_queue.pop();
+        delete now_work;
+#endif
+    }
+    return NULL;
 }
 
 static void *main_loop(void *arg)
@@ -59,11 +168,6 @@ static void *main_loop(void *arg)
         if (mode_change)
         {
             continue;
-        }
-        if (mode_exit == MAIN_MODE_USB)
-        {
-            usb_audio_exit();
-            mode_exit = MAIN_MODE_NONE;
         }
         if (now_mode == MAIN_MODE_MUSIC)
         {
@@ -83,11 +187,21 @@ static void *main_loop(void *arg)
             usb_audio_tick();
         }
     }
+
+    return NULL;
 }
 
 main_mode_type get_mode()
 {
     return now_mode;
+}
+
+void add_work(main_work_type work, void *data)
+{
+    main_work *item = new main_work();
+    item->type = work;
+    item->data = data;
+    work_queue.push(item);
 }
 
 void change_mode(main_mode_type mode)
@@ -109,7 +223,7 @@ void change_mode(main_mode_type mode)
     }
     else if (now_mode == MAIN_MODE_USB)
     {
-        mode_exit = MAIN_MODE_USB;
+        add_work(MAIN_WORK_USB, NULL);
         usb_audio_stop();
     }
 
@@ -156,7 +270,10 @@ int main(int argc, char **argv)
 #endif
 
     pthread_create(&tid, NULL, main_loop, NULL);
-    pthread_setname_np(tid, "main loop");
+    pthread_setname_np(tid, "main_loop");
+
+    pthread_create(&work_tid, NULL, work_loop, NULL);
+    pthread_setname_np(work_tid, "work_loop");
 
 #ifdef BUILD_ARM
     struct timespec ts;
