@@ -4,11 +4,11 @@
 #include "view_wave.h"
 #include "view_volume.h"
 
-#include "../lang.h"
-#include "../view_setting.h"
-#include "../font.h"
-#include "../anim.h"
-#include "../common/utils.h"
+#include "ui/lang.h"
+#include "ui/view_setting.h"
+#include "ui/font.h"
+#include "ui/anim.h"
+#include "common/utils.h"
 
 #include <malloc.h>
 

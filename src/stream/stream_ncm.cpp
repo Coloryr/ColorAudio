@@ -1,28 +1,19 @@
+#include "common/utils.h"
+
 #include "stream_ncm.h"
 
-#include "../common/utils.h"
+using namespace coloraudio::stream;
 
-#include "malloc.h"
-
-using namespace ColorAudio;
-
-StreamNcm::StreamNcm(Stream *st1, NeteaseCrypt *cy) : Stream(STREAM_TYPE_NCM)
+NcmStream::NcmStream(BaseStream *st1, NeteaseCrypt *cy)
+    : BaseStream(STREAM_TYPE_NCM),
+      st(st1),
+      cry(cy)
 {
-    buffer = static_cast<uint8_t *>(malloc(BLOCK_SIZE));
-    buffer_size = BLOCK_SIZE;
-    buffer_pos = 0;
-    buffer_write = 0;
-    st = st1;
-    cry = cy;
     mark = st1->get_pos();
 }
 
-StreamNcm::~StreamNcm()
+NcmStream::~NcmStream()
 {
-    if (buffer)
-    {
-        free(buffer);
-    }
     if (st)
     {
         delete st;
@@ -33,7 +24,7 @@ StreamNcm::~StreamNcm()
     }
 }
 
-void StreamNcm::read_block()
+void NcmStream::read_block()
 {
     uint32_t size = st->read(buffer, BLOCK_SIZE);
     cry->decode(buffer, BLOCK_SIZE);
@@ -42,7 +33,7 @@ void StreamNcm::read_block()
     buffer_write = size;
 }
 
-uint32_t StreamNcm::read(uint8_t *buf, uint32_t len)
+uint32_t NcmStream::read(uint8_t *buf, uint32_t len)
 {
     uint32_t read = 0;
     for (;;)
@@ -74,31 +65,31 @@ uint32_t StreamNcm::read(uint8_t *buf, uint32_t len)
         }
     }
 }
-uint32_t StreamNcm::write(uint8_t *buf, uint32_t len)
+uint32_t NcmStream::write(uint8_t *buf, uint32_t len)
 {
     return st->write(buf, len);
 }
-uint32_t StreamNcm::peek(uint8_t *buf, uint32_t len)
+uint32_t NcmStream::peek(uint8_t *buf, uint32_t len)
 {
     uint32_t size = st->peek(buf, len);
     cry->decode(buf, len);
 
     return size;
 }
-uint32_t StreamNcm::get_pos()
+uint32_t NcmStream::get_pos()
 {
     return st->get_pos() - mark - buffer_write + buffer_pos;
 }
-uint32_t StreamNcm::get_all_size()
+uint32_t NcmStream::get_all_size()
 {
     return st->get_all_size() - mark;
 }
-uint32_t StreamNcm::get_less_read()
+uint32_t NcmStream::get_less_read()
 {
     return st->get_less_read();
 }
 
-void StreamNcm::seek(int32_t pos, uint8_t where)
+void NcmStream::seek(int32_t pos, uint8_t where)
 {
     if (where == SEEK_CUR)
     {
@@ -161,11 +152,11 @@ void StreamNcm::seek(int32_t pos, uint8_t where)
     }
 }
 
-bool StreamNcm::test_read_size(uint32_t size)
+bool NcmStream::test_read_size(uint32_t size)
 {
     return st->test_read_size(size);
 }
-bool StreamNcm::can_read()
+bool NcmStream::can_read()
 {
     return st->can_read();
 }

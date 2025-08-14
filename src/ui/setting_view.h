@@ -1,11 +1,11 @@
 #ifndef __SETTING_VIEW_H__
 #define __SETTING_VIEW_H__
 
-#include "../wireless/wifi.h"
+#include <vector>
 
 #include "lvgl.h"
 
-#include <vector>
+#include "wireless/wifi.h"
 
 typedef struct
 {

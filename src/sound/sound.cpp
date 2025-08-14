@@ -1,16 +1,17 @@
-#include "sound.h"
-#include "sound_fft.h"
-
-#include "../config/config.h"
-#include "../ui/music_view.h"
-#include "../io/gpio.h"
-#include "../io/event.h"
-#include "../lvgl/src/misc/lv_log.h"
-
-#include <alsa/asoundlib.h>
 #include <math.h>
 
-using namespace ColorAudio;
+#include <alsa/asoundlib.h>
+#include "lvgl/src/misc/lv_log.h"
+
+#include "sound_fft.h"
+#include "config/config.h"
+#include "ui/music_view.h"
+#include "io/gpio.h"
+#include "io/event.h"
+
+#include "sound.h"
+
+using namespace coloraudio::config;
 
 #ifdef BUILD_ARM
 #define ALSA_DEVICE_A "hw:0"
@@ -196,12 +197,12 @@ void alsa_init()
     snd_ctl_elem_id_malloc(&ctl_id_b);
     pcm_ctl = find_controls(ctl_handle_a, ctl_id_a, &headphone_1_in) &&
               find_controls(ctl_handle_b, ctl_id_b, &headphone_2_in);
-    enable_double = config::get_config_codec_double();
+    enable_double = Config::get_config_codec_double();
 #else
     snd_ctl_elem_id_malloc(&ctl_id);
     pcm_ctl = find_controls(ctl_handle, ctl_id, NULL);
 #endif
-    float volume = config::get_config_volume();
+    float volume = Config::get_config_volume();
     if (volume >= 0 && volume <= 100)
     {
         alsa_set_volume(volume);
@@ -285,8 +286,8 @@ void alsa_set_volume(float value)
     snd_ctl_elem_write(ctl_handle, control);
 #endif
 
-    config::set_config_volume(value);
-    config::save_config();
+    Config::set_config_volume(value);
+    Config::save_config();
 }
 
 void alsa_set_volume_db(long value)
@@ -472,7 +473,7 @@ int alsa_write_buffer(const void *buffer, size_t samples)
 void alsa_codec_double_change()
 {
     set_amp_power(false);
-    if (config::get_config_codec_double())
+    if (Config::get_config_codec_double())
     {
         enable_double = true;
         if (isset)

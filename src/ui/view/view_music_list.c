@@ -1,8 +1,8 @@
 #include "view_music_list.h"
 
-#include "../lang.h"
-#include "../view_setting.h"
-#include "../font.h"
+#include "ui/lang.h"
+#include "ui/view_setting.h"
+#include "ui/font.h"
 
 #include <stdbool.h>
 #include <malloc.h>

@@ -1,19 +1,21 @@
-#include "flac_metadata.h"
-
-#include "../music_player.h"
-#include "../sound/sound.h"
-#include "../sound/sound_fft.h"
-#include "../common/data_item.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
 #include <string.h>
 #include <unistd.h>
 #include <string>
 
-using namespace ColorAudio;
+#include "lvgl/src/misc/lv_log.h"
 
-FlacMetadata::FlacMetadata(ColorAudio::Stream *st)
+#include "music/music_player.h"
+#include "sound/sound.h"
+#include "sound/sound_fft.h"
+#include "common/data_item.h"
+
+#include "flac_metadata.h"
+
+using namespace coloraudio::stream;
+using namespace coloraudio::flac;
+using namespace coloraudio::common;
+
+FlacMetadata::FlacMetadata(BaseStream *st)
     : st(st)
 {
     set_md5_checking(true);
@@ -119,19 +121,19 @@ void FlacMetadata::metadata_callback(const ::FLAC__StreamMetadata *metadata)
             {
                 continue;
             }
-            if (strcasecmp(key, "title") == 0)
+            if (strcasecmp(key, FLAC_TAG_TITLE) == 0)
             {
                 info.title = save;
             }
-            else if (strcasecmp(key, "artist") == 0)
+            else if (strcasecmp(key, FLAC_TAG_ARTLIST) == 0)
             {
                 info.auther = save;
             }
-            else if (strcasecmp(key, "album") == 0)
+            else if (strcasecmp(key, FLAC_TAG_ALBUM) == 0)
             {
                 info.album = save;
             }
-            else if (strcasecmp(key, "DESCRIPTION") == 0)
+            else if (strcasecmp(key, FLAC_TAG_DESCRIPTION) == 0)
             {
                 info.comment = save;
             }
@@ -140,7 +142,7 @@ void FlacMetadata::metadata_callback(const ::FLAC__StreamMetadata *metadata)
     else if (metadata->type == FLAC__METADATA_TYPE_PICTURE)
     {
         uint32_t size = metadata->data.picture.data_length;
-        info.image = new data_item(size);
+        info.image = new DataItem(size);
         memcpy(info.image->data, metadata->data.picture.data, size);
     }
 }

@@ -1,10 +1,10 @@
 #include "view_input.h"
 #include "view_keyborad.h"
 
-#include "../anim.h"
-#include "../font.h"
+#include "ui/anim.h"
+#include "ui/font.h"
 
-#include "../input/rime_input.h"
+#include "input/rime_input.h"
 
 #include <string.h>
 

@@ -1,13 +1,18 @@
 #ifndef _FLAC_METADATA_H_
 #define _FLAC_METADATA_H_
 
-#include "../stream/stream.h"
-#include "../common/data_item.h"
+#include <stdbool.h>
+#include <string>
 
 #include "FLAC++/decoder.h"
 
-#include <stdbool.h>
-#include <string>
+#include "stream/stream.h"
+#include "common/data_item.h"
+
+#define FLAC_TAG_TITLE "title"
+#define FLAC_TAG_ARTLIST "artist"
+#define FLAC_TAG_ALBUM "album"
+#define FLAC_TAG_DESCRIPTION "DESCRIPTION"
 
 typedef struct
 {
@@ -16,18 +21,18 @@ typedef struct
     std::string album;
     std::string auther;
     std::string comment;
-    data_item* image;
+    coloraudio::common::DataItem* image;
 } music_info_t;
 
-namespace ColorAudio
+namespace coloraudio::flac
 {
     class FlacMetadata : FLAC::Decoder::Stream
     {
     public:
-        ColorAudio::Stream *st;
+        coloraudio::stream::BaseStream *st;
         music_info_t info;
 
-        FlacMetadata(ColorAudio::Stream *st);
+        FlacMetadata(coloraudio::stream::BaseStream *st);
         ~FlacMetadata();
 
         bool decode_get_info();

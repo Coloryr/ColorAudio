@@ -1,13 +1,13 @@
-#include "ble_info.h"
-#include "ble.h"
-
-#include "../ui/ble_view.h"
-
-#include "../lvgl/src/misc/lv_log.h"
+#include <string>
 
 #include <stdio.h>
 #include <gio/gio.h>
-#include <string>
+#include "lvgl/src/misc/lv_log.h"
+
+#include "ble.h"
+#include "ui/ble_view.h"
+
+#include "ble_info.h"
 
 static gint property_id;
 static gint music_id;

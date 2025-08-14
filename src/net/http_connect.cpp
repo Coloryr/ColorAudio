@@ -1,13 +1,7 @@
-#include "http_connect.h"
-
-#include "../stream/stream.h"
-#include "../common/data_item.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
 #include <string>
 #include <regex>
 #include <iomanip>
+
 #include <boost/asio.hpp>
 #include <boost/regex.hpp>
 #include <boost/url.hpp>
@@ -16,6 +10,12 @@
 #include <boost/beast/ssl.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/algorithm/string.hpp>
+#include "lvgl/src/misc/lv_log.h"
+
+#include "stream/stream.h"
+#include "common/data_item.h"
+
+#include "http_connect.h"
 
 namespace beast = boost::beast;
 namespace http = boost::beast::http;
@@ -24,7 +24,10 @@ namespace ip = boost::asio::ip;
 namespace urls = boost::urls;
 namespace ssl = boost::asio::ssl;
 
-parsed_url_t parse_url(const std::string &url_str)
+using namespace coloraudio::net;
+using namespace coloraudio::common;
+
+static parsed_url_t parse_url(const std::string &url_str)
 {
     parsed_url_t parsed;
 
@@ -84,7 +87,7 @@ parsed_url_t parse_url(const std::string &url_str)
     return parsed;
 }
 
-void http_get_impl(const parsed_url_t &parsed, http::response<http::dynamic_body> &res)
+static void http_get_impl(const parsed_url_t &parsed, http::response<http::dynamic_body> &res)
 {
     asio::io_context ioc;
     beast::error_code ec;
@@ -129,7 +132,7 @@ void http_get_impl(const parsed_url_t &parsed, http::response<http::dynamic_body
     }
 }
 
-std::string http_get_string(const std::string &url)
+std::string HttpConnection::http_get_string(const std::string &url)
 {
     http::response<http::dynamic_body> res;
     try
@@ -146,7 +149,7 @@ std::string http_get_string(const std::string &url)
     }
 }
 
-data_item *http_get_data(const std::string &url)
+DataItem *HttpConnection::http_get_data(const std::string &url)
 {
     http::response<http::dynamic_body> res;
     try
@@ -154,7 +157,7 @@ data_item *http_get_data(const std::string &url)
         auto parsed = parse_url(url);
         http_get_impl(parsed, res);
         auto data = res.body().data();
-        data_item *item = new data_item(data.buffer_bytes());
+        DataItem *item = new DataItem(data.buffer_bytes());
         asio::buffer_copy(asio::buffer(item->data, item->size), data);
         return item;
     }
@@ -165,9 +168,7 @@ data_item *http_get_data(const std::string &url)
     return NULL;
 }
 
-using namespace ColorAudio;
-
-HttpStream::HttpStream(std::string &url)
+HttpConnection::HttpConnection(std::string &url)
 {
     parsed = parse_url(url);
 
@@ -194,16 +195,16 @@ HttpStream::HttpStream(std::string &url)
     }
     else
     {
-       stream = new beast::tcp_stream(ioc);
+        stream = new beast::tcp_stream(ioc);
     }
 }
 
-HttpStream::~HttpStream()
+HttpConnection::~HttpConnection()
 {
     close();
 }
 
-bool HttpStream::connect()
+bool HttpConnection::connect()
 {
     auto const results = resolver->resolve(parsed.host, parsed.port);
 
@@ -238,7 +239,7 @@ bool HttpStream::connect()
     return true;
 }
 
-void HttpStream::disconnect()
+void HttpConnection::disconnect()
 {
     if (sslstream)
     {
@@ -250,7 +251,7 @@ void HttpStream::disconnect()
     }
 }
 
-void HttpStream::close()
+void HttpConnection::close()
 {
     if (sslstream)
     {
@@ -290,12 +291,12 @@ void HttpStream::close()
     }
 }
 
-uint32_t HttpStream::get_size()
+uint32_t HttpConnection::get_size()
 {
     return size;
 }
 
-uint32_t HttpStream::read(uint8_t *buffer, uint32_t len)
+uint32_t HttpConnection::read(uint8_t *buffer, uint32_t len)
 {
     if (!parser->is_done())
     {
@@ -325,7 +326,7 @@ uint32_t HttpStream::read(uint8_t *buffer, uint32_t len)
     return 0;
 }
 
-uint32_t HttpStream::re_connect(uint32_t pos)
+uint32_t HttpConnection::re_connect(uint32_t pos)
 {
     return 0;
 }

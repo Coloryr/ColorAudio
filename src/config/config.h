@@ -1,9 +1,9 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#include "../music/music.h"
-#include "../main.h"
-#include "../ui/ui.h"
+#include "music/music.h"
+#include "main.h"
+#include "ui/ui.h"
 
 #include <stdint.h>
 #include <string>
@@ -31,9 +31,9 @@
 
 #define MUSIC_CONFIG_ID_VOLUME "volume"
 
-namespace ColorAudio
+namespace coloraudio::config
 {
-    class config
+    class Config
     {
     private:
         static music_mode_type play_mode;
@@ -214,7 +214,6 @@ namespace ColorAudio
         }
 #endif
     };
-
 }
 
 #endif // __CONFIG_H__

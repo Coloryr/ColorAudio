@@ -1,24 +1,27 @@
-#include "utils.h"
-#include "../stream/stream.h"
-#include "../stream/stream_mem.h"
-
 #include <malloc.h>
 #include <string.h>
-#include <turbojpeg.h>
-#include <png.h>
 #include <string>
 #include <fcntl.h>
 #include <unistd.h>
 
-uint32_t get_length(uint8_t *buffer)
-{
-    uint32_t count = 0;
-    while (*buffer++ != 0)
-    {
-        count++;
-    }
-    return count;
-}
+#include <turbojpeg.h>
+#include <png.h>
+
+#include "stream/stream_mem.h"
+
+#include "utils.h"
+
+using namespace coloraudio::stream;
+
+// uint32_t get_length(uint8_t *buffer)
+// {
+//     uint32_t count = 0;
+//     while (*buffer++ != 0)
+//     {
+//         count++;
+//     }
+//     return count;
+// }
 
 typedef enum
 {
@@ -173,7 +176,7 @@ static int is_png(uint8_t *raw_data, size_t len)
 
 static void istream_png_reader(png_structp png_ptr, png_bytep png_data, png_size_t data_size)
 {
-    ColorAudio::StreamMemory *st = static_cast<ColorAudio::StreamMemory *>(png_get_io_ptr(png_ptr));
+    MemoryStream *st = static_cast<MemoryStream *>(png_get_io_ptr(png_ptr));
 
     if (st->test_read_size(data_size) == false)
     {
@@ -241,7 +244,7 @@ bool load_image(uint8_t *data, uint32_t size, lv_image_dsc_t *img_dsc)
             return false;
         }
 
-        ColorAudio::StreamMemory st = ColorAudio::StreamMemory(data, size);
+        MemoryStream st = MemoryStream(data, size);
 
         if (setjmp(png_jmpbuf(png_ptr)))
         {
@@ -322,7 +325,10 @@ uint32_t read_random()
 {
     uint32_t temp;
     int fd = open("/dev/random", O_RDONLY);
-    read(fd, &temp, 4);
+    if (read(fd, &temp, 4) != 4)
+    {
+        LV_LOG_ERROR("random gen fail");
+    }
     close(fd);
 
     return temp;

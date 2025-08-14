@@ -1,9 +1,9 @@
-#include "gpio.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
+
+#include "gpio.h"
 
 #ifdef BUILD_ARM
 

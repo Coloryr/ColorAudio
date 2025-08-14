@@ -10,6 +10,20 @@
 
 using namespace nlohmann;
 
+#define MUSIC_API "https://zm.armoe.cn"
+#define MUSIC_API_SEARCH_ARG "/cloudsearch?limit=%d&offset=%d&keywords=%s"
+#if BUILD_ARM
+#define MUSIC_API_URL_ARG "/song/url?id=%lld"
+#define MUSIC_API_LYRIC_ARG "/lyric?id=%lld"
+#define MUSIC_API_LYRIC_ARG_NEW "/lyric/new?id=%lld"
+#define MUSIC_API_DYNAMIC_COVER_ARG "/song/dynamic/cover?id=%lld"
+#else
+#define MUSIC_API_URL_ARG "/song/url?id=%ld"
+#define MUSIC_API_LYRIC_ARG "/lyric?id=%ld"
+#define MUSIC_API_LYRIC_ARG_NEW "/lyric/new?id=%ld"
+#define MUSIC_API_DYNAMIC_COVER_ARG "/song/dynamic/cover?id=%ld"
+#endif
+
 typedef enum
 {
     NET_MUSIC_NETEASE = 0,

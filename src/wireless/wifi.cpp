@@ -1,7 +1,3 @@
-#include "wifi.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
 #include <fcntl.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -14,11 +10,15 @@
 #include <string.h>
 #include <stdio.h>
 #include <cstdlib>
-#include <wpa_ctrl.h>
 #include <sys/stat.h>
 #include <sstream>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
+
+#include <wpa_ctrl.h>
+#include "lvgl/src/misc/lv_log.h"
+
+#include "wifi.h"
 
 static char reply[2048];
 
@@ -73,6 +73,40 @@ void wifi_terminate_wpa_supplicant()
     // }
 
     std::system(WIFI_STOP);
+}
+
+bool wifi_remove()
+{
+    wpa_ctrl *ctrl = wpa_ctrl_open(WIFI_PATH);
+    if (!ctrl)
+    {
+        LV_LOG_ERROR("Failed to connect wpa");
+        return false;
+    }
+
+    size_t len = sizeof(reply);
+    reply[2047] = 0;
+
+    int net_id;
+    int size;
+
+    int ret = wpa_ctrl_request(ctrl, WIFI_REMOVE_ALL_NETWORK, sizeof(WIFI_REMOVE_ALL_NETWORK), reply, &len, nullptr);
+    if (ret != 0)
+    {
+        LV_LOG_ERROR("Failed to send command");
+        goto wifi_error;
+    }
+    if (!strstr(reply, WIFI_RES_OK))
+    {
+        LV_LOG_ERROR("Failed to remove network %s", reply);
+        goto wifi_error;
+    }
+
+    wpa_ctrl_close(ctrl);
+    return true;
+wifi_error:
+    wpa_ctrl_close(ctrl);
+    return false;
 }
 
 bool wifi_connect(std::string &ssid, std::string &psk)

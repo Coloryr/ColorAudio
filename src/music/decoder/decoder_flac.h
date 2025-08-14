@@ -1,16 +1,19 @@
 #ifndef _PLAY_FLAC_H_
 #define _PLAY_FLAC_H_
 
-#include "decoder.h"
-#include "../stream/stream.h"
-#include "../common/data_item.h"
-
-#include "FLAC++/decoder.h"
-
 #include <stdbool.h>
 #include <string>
 
-namespace ColorAudio
+#include "FLAC++/decoder.h"
+
+#include "stream/stream.h"
+#include "common/data_item.h"
+
+#include "decoder.h"
+
+using namespace coloraudio::stream;
+
+namespace coloraudio::decoder
 {
     class DecoderFlac : public Decoder, FLAC::Decoder::Stream
     {
@@ -18,7 +21,7 @@ namespace ColorAudio
         uint32_t sample_rate;
         uint32_t bits_per_sample;
 
-        DecoderFlac(ColorAudio::Stream *st);
+        DecoderFlac(BaseStream *st);
         ~DecoderFlac();
 
         bool decode_start();

@@ -1,11 +1,3 @@
-#include "usb_monitor.h"
-#include "usb_audio.h"
-
-#include "../sound/sound.h"
-#include "../ui/usb_view.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
 #include <libudev.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,6 +5,14 @@
 #include <unistd.h>
 #include <poll.h>
 #include <pthread.h>
+
+#include "lvgl/src/misc/lv_log.h"
+
+#include "usb_audio.h"
+#include "sound/sound.h"
+#include "ui/usb_view.h"
+
+#include "usb_monitor.h"
 
 #define UAC1_DEVPATH "/devices/virtual/u_audio/UAC1_Gadget 0"
 #define UAC2_DEVPATH "/devices/virtual/u_audio/UAC2_Gadget 0"

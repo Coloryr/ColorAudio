@@ -2,7 +2,6 @@
 #define __BLE_TRANSPORT_H__
 
 #include <gio/gio.h>
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"

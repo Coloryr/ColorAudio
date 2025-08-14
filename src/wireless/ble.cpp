@@ -1,20 +1,20 @@
-#include "ble.h"
-#include "ble_agent.h"
-#include "ble_battery.h"
-#include "ble_transport.h"
-#include "ble_info.h"
-
-#include "../sound/sound.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
-#include <gio/gio.h>
-#include <dbus.h>
 #include <stdio.h>
 #include <vector>
 #include <string>
 #include <regex.h>
 #include <stdlib.h>
+
+#include <gio/gio.h>
+#include <dbus.h>
+#include "lvgl/src/misc/lv_log.h"
+
+#include "ble_agent.h"
+#include "ble_battery.h"
+#include "ble_transport.h"
+#include "ble_info.h"
+#include "sound/sound.h"
+
+#include "ble.h"
 
 GDBusConnection *ble_g_conn;
 ble_state ble_now_state = BLE_STATE_UNKNOW;

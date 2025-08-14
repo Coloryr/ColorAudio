@@ -1,13 +1,16 @@
-#include "ncmcrypt.h"
-#include "aes.h"
-#include "base64.h"
-#include "json/json.hpp"
-
 #include <stdexcept>
 #include <string>
 #include <filesystem>
 #include <malloc.h>
 
+#include "aes.h"
+#include "base64.h"
+#include "json/json.hpp"
+#include "stream/stream.h"
+
+#include "ncmcrypt.h"
+
+using namespace coloraudio::stream;
 using namespace nlohmann;
 
 const unsigned char NeteaseCrypt::sCoreKey[17] = {0x68, 0x7A, 0x48, 0x52, 0x41, 0x6D, 0x73, 0x6F, 0x35, 0x6B, 0x49, 0x6E, 0x62, 0x61, 0x78, 0x57, 0};
@@ -15,7 +18,7 @@ const unsigned char NeteaseCrypt::sModifyKey[17] = {0x23, 0x31, 0x34, 0x6C, 0x6A
 
 const unsigned char NeteaseCrypt::mPng[8] = {0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A};
 
-static void aesEcbDecrypt(const unsigned char *key, std::string &src, std::string &dst)
+void aesEcbDecrypt(const unsigned char *key, std::string &src, std::string &dst)
 {
     int n, i;
 
@@ -183,7 +186,7 @@ NeteaseCrypt::~NeteaseCrypt()
     }
 }
 
-NeteaseCrypt::NeteaseCrypt(ColorAudio::Stream *st, bool meta)
+NeteaseCrypt::NeteaseCrypt(BaseStream *st, bool meta)
 {
     mFile = st;
 

@@ -1,26 +1,26 @@
-#include "usb_audio.h"
-#include "usb_monitor.h"
-
-#include "../sound/sound.h"
-#include "../sound/sound_fft.h"
-#include "../ui/usb_view.h"
-#include "../ui/info_view.h"
-#include "../ui/lang.h"
-#include "../config/config.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
 #include <errno.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <alsa/asoundlib.h>
 #include <atomic>
+
+#include "lvgl/src/misc/lv_log.h"
+#include <alsa/asoundlib.h>
+
+#include "usb_monitor.h"
+#include "sound/sound.h"
+#include "sound/sound_fft.h"
+#include "ui/usb_view.h"
+#include "ui/info_view.h"
+#include "ui/lang.h"
+#include "config/config.h"
+
+#include "usb_audio.h"
 
 #define UAC1_DEVICE "hw:UAC1Gadget"
 #define UAC2_DEVICE "hw:UAC2Gadget"
 #define CHANNELS 2
 
-using namespace ColorAudio;
+using namespace coloraudio::config;
 
 static std::atomic<bool> running(false);
 static snd_pcm_t *capture_handle;
@@ -297,7 +297,7 @@ void usb_audio_init()
 void usb_audio_start()
 {
     usb_monitor_start();
-    if (config::get_config_usb_enable())
+    if (Config::get_config_usb_enable())
     {
         change_state = 1;
     }

@@ -2,8 +2,8 @@
 #include "view_wave.h"
 #include "view_spectrum.h"
 
-#include "../lang.h"
-#include "../font.h"
+#include "ui/lang.h"
+#include "ui/font.h"
 
 #include "lvgl.h"
 

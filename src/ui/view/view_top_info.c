@@ -1,8 +1,8 @@
 #include "view_top_info.h"
 
-#include "../font.h"
-#include "../anim.h"
-#include "../lang.h"
+#include "ui/font.h"
+#include "ui/anim.h"
+#include "ui/lang.h"
 
 #include "lvgl.h"
 

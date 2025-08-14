@@ -1,8 +1,9 @@
 #include "decoder.h"
 
-using namespace ColorAudio;
+using namespace coloraudio::stream;
+using namespace coloraudio::decoder;
 
-Decoder::Decoder(ColorAudio::Stream *st) : st(st)
+Decoder::Decoder(BaseStream *st) : st(st)
 {
 }
 

@@ -1,7 +1,7 @@
-#include "info_view.h"
-
 #include "view/view_top_info.h"
 #include "view/view_dialog.h"
+
+#include "info_view.h"
 
 static bool display;
 static bool use_bar;

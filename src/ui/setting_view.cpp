@@ -1,19 +1,19 @@
-#include "setting_view.h"
+#include <vector>
+
+#include "lvgl.h"
+
 #include "header_view.h"
 #include "input_view.h"
 #include "lang.h"
 #include "view/view_setting.h"
+#include "main.h"
+#include "sound/sound.h"
+#include "config/config.h"
+#include "wireless/wifi.h"
 
-#include "../main.h"
-#include "../sound/sound.h"
-#include "../config/config.h"
-#include "../wireless/wifi.h"
+#include "setting_view.h"
 
-#include "lvgl.h"
-
-#include <vector>
-
-using namespace ColorAudio;
+using namespace coloraudio::config;
 
 static lv_obj_t *view_obj;
 
@@ -22,20 +22,20 @@ static void wifi_power_handler(lv_event_t *e)
     lv_obj_t *sw = lv_event_get_target_obj(e);
     bool enabled = lv_obj_has_state(sw, LV_STATE_CHECKED);
 #ifdef BUILD_ARM
-    config::set_config_wifi_power(enabled);
-    config::save_config();
+    Config::set_config_wifi_power(enabled);
+    Config::save_config();
 
     add_work(MAIN_WORK_WIFI_POWER, NULL);
 #endif
 }
-
+#include <vector>
 static void wifi_state_handler(lv_event_t *e)
 {
     lv_obj_t *sw = lv_event_get_target_obj(e);
     bool enabled = lv_obj_has_state(sw, LV_STATE_CHECKED);
 #ifdef BUILD_ARM
-    config::set_config_wifi_enable(enabled);
-    config::save_config();
+    Config::set_config_wifi_enable(enabled);
+    Config::save_config();
 
     add_work(MAIN_WORK_WIFI_ENABLE, NULL);
 #endif
@@ -46,8 +46,8 @@ static void codec_switch_handler(lv_event_t *e)
     lv_obj_t *sw = lv_event_get_target_obj(e);
     bool enabled = lv_obj_has_state(sw, LV_STATE_CHECKED);
 #ifdef BUILD_ARM
-    config::set_config_codec_double(enabled);
-    config::save_config();
+    Config::set_config_codec_double(enabled);
+    Config::save_config();
 
     alsa_codec_double_change();
 #endif
@@ -82,7 +82,7 @@ static void wifi_list_handler(lv_event_t *e)
 
 static void wifi_disconnect_handler(lv_event_t *e)
 {
-    
+    add_work(MAIN_WORK_WIFI_DISCONNECT, NULL);
 }
 
 static void timer(lv_timer_t *timer)
@@ -151,6 +151,6 @@ void view_setting_create(lv_obj_t *parent)
     lv_timer_create(timer, 500, NULL);
     lv_setting_set_wifi(false, false);
 #ifdef BUILD_ARM
-    lv_setting_set_codec(config::get_config_codec_double());
+    lv_setting_set_codec(Config::get_config_codec_double());
 #endif
 }

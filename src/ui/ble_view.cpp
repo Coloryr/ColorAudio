@@ -1,18 +1,17 @@
-#include "ble_view.h"
+#include <string>
+
+#include "lvgl.h"
+
 #include "info_view.h"
 #include "ui.h"
 #include "info_view.h"
 #include "header_view.h"
 #include "lang.h"
-
 #include "view/view_ble.h"
+#include "wireless/ble.h"
+#include "wireless/ble_info.h"
 
-#include "../wireless/ble.h"
-#include "../wireless/ble_info.h"
-
-#include "lvgl.h"
-
-#include <string>
+#include "ble_view.h"
 
 static lv_obj_t *view;
 

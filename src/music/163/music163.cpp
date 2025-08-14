@@ -1,12 +1,15 @@
-#include "music163.h"
-#include "cryp163.h"
-
-#include "../lyric.h"
-#include "../net/music_api.h"
-#include "../ui/music_view.h"
+#include <string>
 
 #include <json/json.hpp>
-#include <string>
+
+#include "music/lyric.h"
+#include "net/music_api.h"
+#include "ui/music_view.h"
+
+#include "cryp163.h"
+#include "music163.h"
+
+using namespace coloraudio::lyric;
 
 bool music_lyric_163(uint64_t id, LyricParser **ldata, LyricParser **trdata)
 {

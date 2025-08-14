@@ -1,11 +1,12 @@
-#include "ble_agent.h"
-#include "ble.h"
-
-#include "../ui/ble_view.h"
-#include "../lvgl/src/misc/lv_log.h"
-
 #include <glib.h>
 #include <gio/gio.h>
+
+#include "lvgl/src/misc/lv_log.h"
+
+#include "ble.h"
+#include "ui/ble_view.h"
+
+#include "ble_agent.h"
 
 static guint registration_id;
 
@@ -85,7 +86,7 @@ static void handle_request_confirmation(
     guint32 passkey;
     g_variant_get(parameters, "(&ou)", &device_path, &passkey);
 
-    LV_LOG_USER("  Device: %s  Passkey: %06u", device_path, passkey);
+    LV_LOG_USER("Device: %s  Passkey: %06u", device_path, passkey);
 
     view_ble_set_par(passkey);
 
@@ -95,7 +96,6 @@ static void handle_request_confirmation(
     g_dbus_method_invocation_return_value(invocation, NULL);
 }
 
-// 处理 Cancel 方法调用
 static void handle_cancel(
     GDBusConnection *connection,
     const gchar *sender,

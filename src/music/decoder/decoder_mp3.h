@@ -1,13 +1,14 @@
 #ifndef _PLAYER_MP3_H_
 #define _PLAYER_MP3_H_
 
-#include "decoder.h"
-#include "../stream/stream.h"
-
 #include <stdbool.h>
 #include <mad.h>
 
-namespace ColorAudio
+#include "stream/stream.h"
+
+#include "decoder.h"
+
+namespace coloraudio::decoder
 {
     class DecoderMp3 : public Decoder
     {
@@ -17,7 +18,7 @@ namespace ColorAudio
         uint32_t pos;
 
     public:
-        DecoderMp3(ColorAudio::Stream *st);
+        DecoderMp3(coloraudio::stream::BaseStream *st);
         ~DecoderMp3();
 
         void copy(uint32_t data_size);

@@ -1,23 +1,23 @@
 #ifndef _STREAM_MEM_H_
 #define _STREAM_MEM_H_
 
+#include "common/data_item.h"
+
 #include "stream.h"
 
-#include "../common/data_item.h"
-
-namespace ColorAudio
+namespace coloraudio::stream
 {
-    class StreamMemory : public Stream
+    class MemoryStream : public BaseStream
     {
     private:
         uint8_t *buffer_mem;
-        uint32_t buffer_pos;
+        uint32_t buffer_pos = 0;
         uint32_t buffer_size;
 
     public:
-        StreamMemory(uint8_t *buffer, uint32_t size);
-        StreamMemory(data_item *item);
-        ~StreamMemory();
+        MemoryStream(uint8_t *buffer, uint32_t size);
+        MemoryStream(coloraudio::common::DataItem *item);
+        ~MemoryStream();
 
         uint32_t read(uint8_t *buffer, uint32_t len);
         uint32_t write(uint8_t *buffer, uint32_t len);

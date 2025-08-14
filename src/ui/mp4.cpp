@@ -1,25 +1,25 @@
-#include "mp4.h"
-
-#include "../common/data_item.h"
-#include "../stream/stream_mem.h"
-
-#include "ui.h"
-#include "music_view.h"
-
-#include "lvgl.h"
-#include <minimp4/minimp4.h>
-
+#include <algorithm>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <fstream>
 #include <vector>
 #include <memory>
-#include <wels/codec_api.h>
-#include <algorithm>
-#include <unistd.h>
 
-using namespace ColorAudio;
+#include "lvgl.h"
+#include <minimp4/minimp4.h>
+#include <wels/codec_api.h>
+
+#include "common/data_item.h"
+#include "stream/stream_mem.h"
+#include "ui.h"
+#include "music_view.h"
+
+#include "mp4.h"
+
+using namespace coloraudio::stream;
+using namespace coloraudio::common;
 
 static lv_image_dsc_t video_dsc;
 
@@ -88,14 +88,14 @@ public:
 
 static int mp4_read_cb(int64_t offset, void *buffer, size_t size, void *token)
 {
-    StreamMemory *st = static_cast<StreamMemory *>(token);
+    MemoryStream *st = static_cast<MemoryStream *>(token);
     st->seek(offset, SEEK_SET);
     return st->read(static_cast<uint8_t *>(buffer), size) == 0;
 }
 
-void load_mp4(data_item *item)
+void load_mp4(DataItem *item)
 {
-    StreamMemory st = StreamMemory(item);
+    MemoryStream st = MemoryStream(item);
     H264Decoder dec = H264Decoder();
     YUVtoRGBConverter cov = YUVtoRGBConverter();
     MP4D_demux_t demuxer = {0};

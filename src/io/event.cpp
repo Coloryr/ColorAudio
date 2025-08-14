@@ -1,12 +1,12 @@
-#include "event.h"
-
-#include "../ui/header_view.h"
-
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
+
+#include "ui/header_view.h"
+
+#include "event.h"
 
 #ifdef BUILD_ARM
 

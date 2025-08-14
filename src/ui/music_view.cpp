@@ -1,4 +1,6 @@
-#include "music_view.h"
+#include "lvgl.h"
+#include <boost/container/flat_map.hpp>
+
 #include "header_view.h"
 #include "input_view.h"
 #include "info_view.h"
@@ -8,15 +10,14 @@
 #include "view/view_lyric.h"
 #include "view/view_music_main.h"
 #include "view/view_music_list.h"
+#include "music/music_player.h"
+#include "sound/sound.h"
+#include "music/lyric.h"
+#include "main.h"
 
-#include "../music/music_player.h"
-#include "../sound/sound.h"
-#include "../music/lyric.h"
-#include "../main.h"
+#include "music_view.h"
 
-#include "lvgl.h"
-
-#include <boost/container/flat_map.hpp>
+using namespace coloraudio::lyric;
 
 static LyricParser *lyric_data = NULL;
 static LyricParser *lyric_tr_data = NULL;

@@ -1,15 +1,15 @@
-#include "ble_transport.h"
-
-#include "../lib_src/bluez-alsa/src/ba-transport.h"
-#include "../lib_src/bluez-alsa/src/ba-transport-pcm.h"
-#include "../lib_src/bluez-alsa/src/bluez.h"
-#include "../lib_src/bluez-alsa/src/dbus.h"
-
-#include "../sound/sound.h"
-#include "../lvgl/src/misc/lv_log.h"
+#include <string.h>
 
 #include <gio/gio.h>
-#include <string.h>
+#include "lvgl/src/misc/lv_log.h"
+
+#include "ba-transport.h"
+#include "ba-transport-pcm.h"
+#include "bluez.h"
+#include "dbus.h"
+#include "sound/sound.h"
+
+#include "ble_transport.h"
 
 static struct ba_transport *t;
 static pthread_t tid;

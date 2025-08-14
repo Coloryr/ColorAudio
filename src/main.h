@@ -17,6 +17,7 @@ typedef enum
     MAIN_WORK_WIFI_ENABLE,
     MAIN_WORK_WIFI_SCAN,
     MAIN_WORK_WIFI_CONNECT,
+    MAIN_WORK_WIFI_DISCONNECT,
 } main_work_type;
 
 typedef struct

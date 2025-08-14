@@ -1,25 +1,28 @@
-#include "net_music.h"
+#include <unistd.h>
+#include <pthread.h>
+#include <string.h>
+#include <semaphore.h>
+
+#include "lvgl/src/misc/lv_log.h"
+#include <json/json.hpp>
 
 #include "lyric.h"
 #include "music_player.h"
 #include "mp3/mp3_id3.h"
 #include "163/music163.h"
+#include "net/music_api.h"
+#include "ui/music_view.h"
+#include "ui/ui.h"
+#include "ui/mp4.h"
 
-#include "../net/music_api.h"
-#include "../ui/music_view.h"
-#include "../ui/ui.h"
-#include "../ui/mp4.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
-#include <unistd.h>
-#include <pthread.h>
-#include <string.h>
-#include <semaphore.h>
-#include <json/json.hpp>
+#include "net_music.h"
 
 using namespace nlohmann;
-using namespace ColorAudio;
+using namespace coloraudio::net;
+using namespace coloraudio::common;
+using namespace coloraudio::stream;
+using namespace coloraudio::lyric;
+using namespace coloraudio::mp3;
 
 static void *net_pic_run(void *arg)
 {
@@ -35,7 +38,7 @@ static void *net_pic_run(void *arg)
     // std::string pic_url;
     // if (!api_music_get_dynamic_cover(j, pic_url))
     // {
-    data_item *data = http_get_data(item->image);
+    DataItem *data = HttpConnection::http_get_data(item->image);
 
     if (data != NULL)
     {
@@ -46,7 +49,7 @@ static void *net_pic_run(void *arg)
     // }
     // else
     // {
-    //     data_item *item = http_get_data(pic_url);
+    //     DataItem *item = HttpConnection::http_get_data(pic_url);
     //     if (item != NULL)
     //     {
     //         play_update_image(nullptr, MUSIC_INFO_IMAGE);
@@ -150,11 +153,11 @@ static void *play_run(void *arg)
         }
     }
 
-    HttpStream http = HttpStream(url);
+    HttpConnection http = HttpConnection(url);
 
     if (http.connect())
     {
-        Stream *st = new StreamHttp(&http);
+        BaseStream *st = new HttpStream(&http);
 
         music_type type = music_test_type(st);
         if (type == MUSIC_TYPE_UNKNOW)

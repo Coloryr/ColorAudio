@@ -1,26 +1,13 @@
 #include "view_setting.h"
 #include "view_wave.h"
 
-#include "../font.h"
-#include "../lang.h"
+#include "ui/font.h"
+#include "ui/lang.h"
 
 #include "lvgl.h"
 
 #include <stdio.h>
 
-// // 假设有以下外部函数可用（实际项目中需要实现）
-// extern const char *get_hardware_info();
-// extern const char *get_firmware_version();
-// extern int get_battery_level();
-// extern bool is_charging();
-// extern const char *get_tf_card_info();
-// extern void wifi_power_set(bool enable);
-// extern void scan_wifi_networks();
-// extern const char **get_wifi_list(int *count);
-// extern const char *get_connected_wifi();
-// extern void codec_set_enabled(bool enable);
-
-// 界面组件指针
 static lv_obj_t *root_container;
 static lv_obj_t *lbl_hardware;
 static lv_obj_t *lbl_version;
@@ -59,7 +46,6 @@ static void wifi_event(lv_event_t *event)
     wifi_state_change();
 }
 
-// 创建分区标题
 static lv_obj_t *create_section_title(lv_obj_t *parent, const char *text)
 {
     lv_obj_t *label = lv_label_create(parent);
@@ -76,7 +62,6 @@ static lv_obj_t *create_section_title(lv_obj_t *parent, const char *text)
     return label;
 }
 
-// 创建带标签的设置项
 static lv_obj_t *create_setting_item(lv_obj_t *parent, const char *label_text, lv_obj_t **control)
 {
     lv_obj_t *cont = lv_obj_create(parent);

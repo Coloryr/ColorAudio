@@ -1,14 +1,13 @@
-#include "header_view.h"
+#include "lvgl.h"
+
 #include "info_view.h"
 #include "ui.h"
 #include "lang.h"
-
 #include "view/view_header.h"
+#include "io/event.h"
+#include "main.h"
 
-#include "../main.h"
-#include "../io/event.h"
-
-#include "lvgl.h"
+#include "header_view.h"
 
 static lv_obj_t *header;
 

@@ -1,12 +1,12 @@
 #ifndef __MUSIC163_H__
 #define __MUSIC163_H__
 
-#include "../lyric.h"
-
 #include <stdint.h>
 #include <string>
 
-bool music_lyric_163(uint64_t id, LyricParser **ldata, LyricParser **trdata);
-bool music_lyric_163(std::string &comment, LyricParser **ldata, LyricParser **trdata);
+#include "music/lyric.h"
+
+bool music_lyric_163(uint64_t id, coloraudio::lyric::LyricParser **ldata, coloraudio::lyric::LyricParser **trdata);
+bool music_lyric_163(std::string &comment, coloraudio::lyric::LyricParser **ldata, coloraudio::lyric::LyricParser **trdata);
 
 #endif // __MUSIC163_H__

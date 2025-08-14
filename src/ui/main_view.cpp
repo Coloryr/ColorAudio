@@ -1,17 +1,16 @@
-#include "main_view.h"
+#include "lvgl.h"
+
 #include "header_view.h"
 #include "lang.h"
 #include "ui.h"
-
 #include "view/view_main.h"
+#include "main.h"
+#include "music/music.h"
+#include "music/local_music.h"
+#include "music/music_player.h"
+#include "usb/usb_audio.h"
 
-#include "../main.h"
-#include "../music/music.h"
-#include "../music/local_music.h"
-#include "../music/music_player.h"
-#include "../usb/usb_audio.h"
-
-#include "lvgl.h"
+#include "main_view.h"
 
 static lv_obj_t *main_view;
 

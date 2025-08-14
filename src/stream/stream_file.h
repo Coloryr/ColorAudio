@@ -1,25 +1,25 @@
 #ifndef _STREAM_FILE_H_
 #define _STREAM_FILE_H_
 
-#include "stream.h"
-
 #include <stdio.h>
 #include <string>
 
-namespace ColorAudio
+#include "stream.h"
+
+namespace coloraudio::stream
 {
-    class StreamFile : public Stream
+    class FileStream : public BaseStream
     {
     private:
         uint32_t size;
-        uint32_t pos;
+        uint32_t pos = 0;
         FILE *file;
         char *path;
 
     public:
-        StreamFile(const char *path);
-        StreamFile(std::string stp) : StreamFile(stp.c_str()) {}
-        ~StreamFile();
+        FileStream(const char *path);
+        FileStream(std::string &stp) : FileStream(stp.c_str()) {}
+        ~FileStream();
 
         uint32_t read(uint8_t *buffer, uint32_t len);
         uint32_t write(uint8_t *buffer, uint32_t len);
@@ -48,7 +48,7 @@ namespace ColorAudio
             return this->pos < this->size;
         }
 
-        StreamFile *copy();
+        FileStream *copy();
     };
 }
 

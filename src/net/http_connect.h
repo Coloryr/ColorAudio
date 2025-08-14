@@ -1,15 +1,16 @@
 #ifndef _HTTP_CONNECT_H_
 #define _HTTP_CONNECT_H_
 
-#include "../stream/stream_http.h"
-#include "../common/data_item.h"
+#include <string>
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/ssl.hpp>
 #include <boost/system/error_code.hpp>
-#include <string>
+
+#include "stream/stream_http.h"
+#include "common/data_item.h"
 
 #define HTTP_HEADER_CONTENT_JSON "Content-Type: application/json"
 #define HTTP_USER_AGENT "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36 Edg/138.0.0.0"
@@ -29,9 +30,9 @@ namespace http = boost::beast::http;
 namespace asio = boost::asio;
 namespace ip = boost::asio::ip;
 
-namespace ColorAudio
+namespace coloraudio::net
 {
-    class HttpStream : public IStreamHttp
+    class HttpConnection : public coloraudio::stream::IStreamHttp
     {
     private:
         parsed_url_t parsed;
@@ -49,8 +50,11 @@ namespace ColorAudio
         beast::http::response_parser<http::buffer_body> *parser;
 
     public:
-        HttpStream(std::string &url);
-        ~HttpStream();
+        static std::string http_get_string(const std::string &url);
+        static coloraudio::common::DataItem *http_get_data(const std::string &url);
+
+        HttpConnection(std::string &url);
+        ~HttpConnection();
 
         bool connect();
         void disconnect();
@@ -60,8 +64,5 @@ namespace ColorAudio
         uint32_t re_connect(uint32_t pos);
     };
 }
-
-std::string http_get_string(const std::string &url);
-data_item *http_get_data(const std::string &url);
 
 #endif

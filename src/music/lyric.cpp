@@ -1,9 +1,3 @@
-#include "lyric.h"
-
-#include "../common/utils.h"
-
-#include <json/json.hpp>
-
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +7,14 @@
 #include <string>
 #include <sstream>
 
+#include <json/json.hpp>
+
+#include "common/utils.h"
+
+#include "lyric.h"
+
 using namespace nlohmann;
+using namespace coloraudio::lyric;
 
 std::string trim(std::string &str)
 {

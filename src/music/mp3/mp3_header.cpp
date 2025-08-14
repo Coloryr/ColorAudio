@@ -7,6 +7,8 @@
 #include <string.h>
 #include <math.h>
 
+using namespace coloraudio::stream;
+
 typedef struct
 {
     uint16_t sync : 11;          // 同步字 0x7FF
@@ -81,7 +83,7 @@ const uint32_t bitrates[4][4][16] = {
         {0, 32000, 64000, 96000, 128000, 160000, 192000, 224000, 256000, 288000, 320000, 352000, 384000, 416000, 448000, 0} // Layer I
     }};
 
-static int parse_frame_header(ColorAudio::Stream *st, MP3FrameHeader *hdr)
+static int parse_frame_header(BaseStream *st, MP3FrameHeader *hdr)
 {
     uint8_t buffer[4];
 
@@ -151,7 +153,7 @@ static int calculate_frame_size(MP3FrameHeader *hdr)
     }
 }
 
-static int parse_vbr_header(ColorAudio::Stream *st, VBRHeader *vbr, const MP3FrameHeader *hdr)
+static int parse_vbr_header(BaseStream *st, VBRHeader *vbr, const MP3FrameHeader *hdr)
 {
     int32_t start_pos = st->get_pos();
     uint8_t buffer[16];
@@ -178,7 +180,7 @@ static int parse_vbr_header(ColorAudio::Stream *st, VBRHeader *vbr, const MP3Fra
     return 1;
 }
 
-float mp3_get_time_len(ColorAudio::Stream *st)
+float mp3_get_time_len(BaseStream *st)
 {
     float scan_time = 0;
     uint32_t pos = st->get_pos();

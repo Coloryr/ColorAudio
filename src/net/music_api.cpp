@@ -7,21 +7,8 @@
 
 #include <string>
 
-#define MUSIC_API "https://zm.armoe.cn"
-#define MUSIC_API_SEARCH_ARG "/cloudsearch?limit=%d&offset=%d&keywords=%s"
-#if BUILD_ARM
-#define MUSIC_API_URL_ARG "/song/url?id=%lld"
-#define MUSIC_API_LYRIC_ARG "/lyric?id=%lld"
-#define MUSIC_API_LYRIC_ARG_NEW "/lyric/new?id=%lld"
-#define MUSIC_API_DYNAMIC_COVER_ARG "/song/dynamic/cover?id=%lld"
-#else
-#define MUSIC_API_URL_ARG "/song/url?id=%ld"
-#define MUSIC_API_LYRIC_ARG "/lyric?id=%ld"
-#define MUSIC_API_LYRIC_ARG_NEW "/lyric/new?id=%ld"
-#define MUSIC_API_DYNAMIC_COVER_ARG "/song/dynamic/cover?id=%ld"
-#endif
-
 using namespace nlohmann;
+using namespace coloraudio::net;
 
 json api_dynamic_cover(uint64_t lyric_id)
 {
@@ -29,7 +16,7 @@ json api_dynamic_cover(uint64_t lyric_id)
 
     sprintf(data, MUSIC_API MUSIC_API_DYNAMIC_COVER_ARG, lyric_id);
 
-    std::string res = http_get_string(data);
+    std::string res = HttpConnection::http_get_string(data);
     return json::parse(res);
 }
 
@@ -39,7 +26,7 @@ json api_lyric_music(uint64_t lyric_id)
 
     sprintf(data, MUSIC_API MUSIC_API_LYRIC_ARG, lyric_id);
 
-    std::string res = http_get_string(data);
+    std::string res = HttpConnection::http_get_string(data);
     return json::parse(res);
 }
 
@@ -49,7 +36,7 @@ json api_lyric_music_new(uint64_t lyric_id)
 
     sprintf(data, MUSIC_API MUSIC_API_LYRIC_ARG_NEW, lyric_id);
 
-    std::string res = http_get_string(data);
+    std::string res = HttpConnection::http_get_string(data);
     return json::parse(res);
 }
 
@@ -58,7 +45,7 @@ json api_url_music(uint64_t url_id)
     char data[512];
     sprintf(data, MUSIC_API MUSIC_API_URL_ARG, url_id);
 
-    std::string res = http_get_string(data);
+    std::string res = HttpConnection::http_get_string(data);
     return json::parse(res);
 }
 
@@ -67,7 +54,7 @@ json api_search_music(uint32_t size, uint32_t page, const char *name)
     char data[512];
     sprintf(data, MUSIC_API MUSIC_API_SEARCH_ARG, size, (page - 1) * size, name);
 
-    std::string res = http_get_string(data);
+    std::string res = HttpConnection::http_get_string(data);
     return json::parse(res);
 }
 
@@ -76,7 +63,7 @@ json api_search_music(uint32_t size, uint32_t page, const char *name)
 //     char data[512];
 //     sprintf(data, MUSIC_API "?" MUSIC_API_PIC_ARG, pic_id);
 
-//     std::string res = http_get_string(data);
+//     std::string res = HttpConnection::http_get_string(data);
 //     return json::parse(res);
 // }
 

@@ -1,12 +1,14 @@
-#include "mp3_id3.h"
-
-#include "../common/utils.h"
-
 #include <malloc.h>
 #include <string.h>
 #include <string>
 
-using namespace ColorAudio;
+#include "common/utils.h"
+
+#include "mp3_id3.h"
+
+using namespace coloraudio::stream;
+using namespace coloraudio::common;
+using namespace coloraudio::mp3;
 
 /**
  * 判断MP3ID3帧类型
@@ -54,7 +56,7 @@ static id3_type test_id3_type(char *buffer)
 /**
  * 一直读取数据，直到是0数据
  */
-static uint32_t skip_data(ColorAudio::Stream *st)
+static uint32_t skip_data(BaseStream*st)
 {
     uint32_t size = 0;
     uint8_t b;
@@ -68,7 +70,7 @@ static uint32_t skip_data(ColorAudio::Stream *st)
     return size;
 }
 
-static void cov_str(ColorAudio::Stream *st, char **tag, uint32_t size)
+static void cov_str(BaseStream *st, char **tag, uint32_t size)
 {
     *tag = nullptr;
     uint8_t type = st->read_byte();
@@ -101,7 +103,7 @@ static void cov_str(ColorAudio::Stream *st, char **tag, uint32_t size)
     }
 }
 
-bool mp3id3_have(ColorAudio::Stream *st)
+bool mp3id3_have(BaseStream *st)
 {
     uint8_t buffer[3];
     st->peek(buffer, sizeof(buffer));
@@ -114,7 +116,7 @@ bool mp3id3_have(ColorAudio::Stream *st)
     return true;
 }
 
-void mp3id3_skip(ColorAudio::Stream *st)
+void mp3id3_skip(BaseStream *st)
 {
     if (mp3id3_have(st))
     {
@@ -127,7 +129,7 @@ void mp3id3_skip(ColorAudio::Stream *st)
     }
 }
 
-Mp3Id3::Mp3Id3(ColorAudio::Stream *st)
+Mp3Id3::Mp3Id3(BaseStream *st)
     : st(st), image(nullptr)
 {
     
@@ -221,7 +223,7 @@ bool Mp3Id3::get_info()
             uint32_t mimeType = skip_data(st);
             uint32_t description = skip_data(st);
             uint32_t imageSize = size - (1 + mimeType + 1 + 1 + description + 1);
-            image = new data_item(size);
+            image = new DataItem(size);
             st->read(image->data, size);
             break;
         }

@@ -2,9 +2,8 @@
 #define _STREAM_HTTP_H_
 
 #include "stream.h"
-#include "stream_cir.h"
 
-namespace ColorAudio
+namespace coloraudio::stream
 {
     class IStreamHttp
     {
@@ -15,14 +14,14 @@ namespace ColorAudio
         virtual uint32_t re_connect(uint32_t pos) = 0;
     };
 
-    class StreamHttp : public Stream
+    class HttpStream : public BaseStream
     {
     private:
-        uint8_t *buffer;
+        uint8_t buffer[STREAM_BUFFER_SIZE];
 
         IStreamHttp *http;
-        uint32_t buffer_size;
-        uint32_t buffer_pos;
+        uint32_t buffer_size = STREAM_BUFFER_SIZE;
+        uint32_t buffer_pos = 0;
         uint32_t buffer_write;
         uint32_t http_size;
         uint32_t http_pos;
@@ -36,8 +35,8 @@ namespace ColorAudio
         void re_connect(uint32_t pos);
 
     public:
-        StreamHttp(IStreamHttp *http);
-        ~StreamHttp();
+        HttpStream(IStreamHttp *http);
+        ~HttpStream();
 
         uint32_t read(uint8_t *buffer, uint32_t len);
         uint32_t write(uint8_t *buffer, uint32_t len);
@@ -51,7 +50,6 @@ namespace ColorAudio
         bool test_read_size(uint32_t size);
         bool can_read();
     };
-
 }
 
 #endif // !_STREAM_HTTP_H_

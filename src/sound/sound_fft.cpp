@@ -1,14 +1,14 @@
-#include "sound_fft.h"
-#include "sound.h"
-
-#include "../fft/arduinoFFT.h"
-#include "../ui/ui.h"
-
-#include "lvgl.h"
-
 #include <stdint.h>
 #include <malloc.h>
 #include <math.h>
+
+#include "fft/arduinoFFT.h"
+#include "lvgl.h"
+
+#include "sound.h"
+#include "ui/ui.h"
+
+#include "sound_fft.h"
 
 #define POINTS (1024 * 4)
 #define OUT_POINTS 20

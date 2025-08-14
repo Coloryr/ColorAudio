@@ -1,9 +1,10 @@
-#include "input_view.h"
+#include <string.h>
+
+#include "lvgl.h"
 
 #include "view/view_input.h"
 
-#include "lvgl.h"
-#include <string.h>
+#include "input_view.h"
 
 static input_done_cb input_call;
 static char *input_done_text;

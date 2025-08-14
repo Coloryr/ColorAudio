@@ -3,10 +3,10 @@
  *********************/
 #include "view_keyborad.h"
 
-#include "../lvgl/src/core/lv_obj_class_private.h"
-#include "../lvgl/src/widgets/textarea/lv_textarea.h"
-#include "../lvgl/src/misc/lv_assert.h"
-#include "../lvgl/src/stdlib/lv_string.h"
+#include "lvgl/src/core/lv_obj_class_private.h"
+#include "lvgl/src/widgets/textarea/lv_textarea.h"
+#include "lvgl/src/misc/lv_assert.h"
+#include "lvgl/src/stdlib/lv_string.h"
 
 /*********************
  *      DEFINES

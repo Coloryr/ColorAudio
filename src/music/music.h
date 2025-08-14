@@ -4,6 +4,8 @@
 #include <string>
 #include <stdint.h>
 
+#include "stream/stream.h"
+
 typedef struct
 {
     uint32_t index;
@@ -75,6 +77,8 @@ extern uint32_t play_list_count;
 extern float time_all;
 extern float time_now;
 extern float target_time;
+
+music_type music_test_type(coloraudio::stream::BaseStream *st);
 
 void music_get_lyric(std::string &comment);
 

@@ -1,29 +1,25 @@
 #include "stream.h"
-#include "stream_file.h"
-#include "../common/utils.h"
 
-#include "../lvgl/src/misc/lv_log.h"
+using namespace coloraudio::stream;
 
-#include <malloc.h>
-#include <string.h>
-
-using namespace ColorAudio;
-
-Stream::Stream(steam_type type) : type(type)
-{
-    
-}
-
-Stream::~Stream()
+BaseStream::BaseStream(StreamType type) : stream_type(type)
 {
 }
 
-uint8_t Stream::read_byte()
+BaseStream::~BaseStream()
+{
+}
+
+uint8_t BaseStream::read_byte()
 {
     uint8_t byte;
     if (read(&byte, 1) == 1)
     {
         return byte;
+    }
+    else
+    {
+        throw "stream read error";
     }
 
     return 0;

@@ -1,9 +1,10 @@
 #ifndef __BLE_INFO_H__
 #define __BLE_INFO_H__
 
-#include <gio/gio.h>
 #include <stdint.h>
 #include <string>
+
+#include <gio/gio.h>
 
 typedef enum
 {

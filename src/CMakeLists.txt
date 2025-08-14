@@ -39,18 +39,20 @@ endif()
 
 # includes
 
+include_directories(./)
 include_directories(./lib_src)
 include_directories(./lib_src/bluez-alsa/src)
 include_directories(./lib_src/ncmdump/include)
 
-#def
+# def
 add_definitions(-DHAVE_CONFIG_H -DMINIMP4_IMPLEMENTATION)
 
-#src
+# src
 
 file(GLOB_RECURSE LIB_SOURCES
 "./lib_src/bluez-alsa/src/*.*"
 "./lib_src/ncmdump/*.*"
+"./lib_src/fft/*.*"
 )
 
 file(GLOB_RECURSE SOURCES 
@@ -67,7 +69,6 @@ file(GLOB_RECURSE SOURCES
 "./usb/*.*"
 "./wireless/*.*"
 "./config/*.*"
-"./fft/*.*"
 "./io/*.*"
 )
 

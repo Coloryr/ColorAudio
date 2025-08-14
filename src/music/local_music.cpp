@@ -1,25 +1,3 @@
-#include "local_music.h"
-
-#include "music.h"
-#include "music_player.h"
-#include "mp3/mp3_id3.h"
-#include "mp3/mp3_header.h"
-#include "flac/flac_metadata.h"
-
-#include "../common/timestamp.h"
-#include "../stream/stream_file.h"
-#include "../stream/stream_ncm.h"
-#include "../net/music_api.h"
-#include "../ui/music_view.h"
-#include "../ui/info_view.h"
-#include "../config/config.h"
-#include "../common/utilspp.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-#include "ncmcrypt.h"
-
-#include <boost/container/vector.hpp>
-#include <boost/locale.hpp>
 #include <unistd.h>
 #include <stdbool.h>
 #include <execution>
@@ -32,9 +10,34 @@
 #include <assert.h>
 #include <pthread.h>
 #include <fcntl.h>
-#include <json/json.hpp>
 
-using namespace ColorAudio;
+#include <boost/container/vector.hpp>
+#include <boost/locale.hpp>
+#include <json/json.hpp>
+#include "lvgl/src/misc/lv_log.h"
+#include "ncmcrypt.h"
+
+#include "music.h"
+#include "music_player.h"
+#include "mp3/mp3_id3.h"
+#include "mp3/mp3_header.h"
+#include "flac/flac_metadata.h"
+#include "common/timestamp.h"
+#include "common/utilspp.h"
+#include "stream/stream_file.h"
+#include "stream/stream_ncm.h"
+#include "net/music_api.h"
+#include "ui/music_view.h"
+#include "ui/info_view.h"
+#include "config/config.h"
+
+#include "local_music.h"
+
+using namespace coloraudio::config;
+using namespace coloraudio::stream;
+using namespace coloraudio::common;
+using namespace coloraudio::mp3;
+using namespace coloraudio::flac;
 
 bool local_music_scan_now;
 
@@ -84,7 +87,7 @@ static void play_read_list(const char *path)
         }
         else if (S_ISREG(file_stat.st_mode))
         {
-            StreamFile st = StreamFile(full_path);
+            FileStream st = FileStream(full_path);
             music_type type = music_test_type(&st);
             if (type == MUSIC_TYPE_UNKNOW)
             {
@@ -231,8 +234,8 @@ static void *play_scan_run(void *arg)
         item->index = play_list_count++;
     }
 
-    std::string name = config::get_config_music_name();
-    uint32_t index = config::get_config_music_index();
+    std::string name = Config::get_config_music_name();
+    uint32_t index = Config::get_config_music_index();
 
     play_now_index = 0;
 
@@ -279,7 +282,7 @@ void local_music_run()
     pthread_mutex_lock(&play_mutex);
     play_item *item = play_list[play_now_index];
 
-    StreamFile st = StreamFile(item->path);
+    FileStream st = FileStream(item->path);
     music_type type = music_test_type(&st);
     if (type == MUSIC_TYPE_UNKNOW)
     {
@@ -347,7 +350,7 @@ void local_music_run()
     else if (type == MUSIC_TYPE_NCM)
     {
         NeteaseCrypt *cry = new NeteaseCrypt(&st, true);
-        play_st = new StreamNcm(st.copy(), cry);
+        play_st = new NcmStream(st.copy(), cry);
 
         pthread_cond_signal(&play_start);
         pthread_mutex_unlock(&play_mutex);
@@ -361,7 +364,7 @@ void local_music_run()
             play_update_text(cry->mMetaData->album(), MUSIC_INFO_ALBUM);
             if (cry->mImageData)
             {
-                play_update_image(new data_item(cry->mImageData, cry->imageSize), MUSIC_INFO_IMAGE);
+                play_update_image(new DataItem(cry->mImageData, cry->imageSize), MUSIC_INFO_IMAGE);
             }
 
             time_all = cry->mMetaData->duration() / 1000;
@@ -384,9 +387,9 @@ void local_music_run()
 
     std::string name;
     getfilename(item->path, name);
-    config::set_config_music_name(name);
-    config::set_config_music_index(play_now_index);
-    config::save_config();
+    Config::set_config_music_name(name);
+    Config::set_config_music_index(play_now_index);
+    Config::save_config();
 
     // 等待播放结束
     pthread_mutex_lock(&play_mutex);

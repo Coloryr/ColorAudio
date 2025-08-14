@@ -18,7 +18,9 @@
 #include <pthread.h>
 #include <deque>
 
-using namespace ColorAudio;
+using namespace coloraudio::lyric;
+using namespace coloraudio::stream;
+using namespace coloraudio::config;
 
 static music_run_type music_run = MUSIC_RUN_UNKNOW;
 
@@ -41,6 +43,36 @@ uint32_t play_list_count;
 float target_time = 0;
 float time_all = 0;
 float time_now = 0;
+
+music_type music_test_type(BaseStream *st)
+{
+    uint8_t buffer[8];
+    st->peek(buffer, sizeof(buffer));
+
+    if (buffer[0] == 'R' && buffer[1] == 'I' && buffer[2] == 'F' && buffer[3] == 'F')
+    {
+        return MUSIC_TYPE_WAV;
+    }
+    else if (buffer[0] == 'f' && buffer[1] == 'L' && buffer[2] == 'a' && buffer[3] == 'C')
+    {
+        return MUSIC_TYPE_FLAC;
+    }
+    else if (buffer[0] == 'I' && buffer[1] == 'D' && buffer[2] == '3')
+    {
+        return MUSIC_TYPE_MP3;
+    }
+    else if (buffer[0] == 0xFF && buffer[1] == 0xFB)
+    {
+        return MUSIC_TYPE_MP3;
+    }
+    else if (buffer[0] == 'C' && buffer[1] == 'T' && buffer[2] == 'E' && buffer[3] == 'N' &&
+             buffer[4] == 'F' && buffer[5] == 'D' && buffer[6] == 'A' && buffer[7] == 'M')
+    {
+        return MUSIC_TYPE_NCM;   
+    }
+
+    return MUSIC_TYPE_UNKNOW;
+}
 
 void music_start()
 {
@@ -212,7 +244,7 @@ void music_init()
 {
     play_last_stack.clear();
 
-    play_music_mode = config::get_config_music_mode();
+    play_music_mode = Config::get_config_music_mode();
 
     local_music_init();
 }

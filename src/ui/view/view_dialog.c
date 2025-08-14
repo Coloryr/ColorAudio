@@ -1,8 +1,8 @@
 #include "view_dialog.h"
 
-#include "../font.h"
-#include "../lang.h"
-#include "../anim.h"
+#include "ui/font.h"
+#include "ui/lang.h"
+#include "ui/anim.h"
 
 #include "lvgl.h"
 

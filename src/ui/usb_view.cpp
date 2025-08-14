@@ -1,14 +1,14 @@
-#include "usb_view.h"
-#include "header_view.h"
-
-#include "view/view_usb.h"
-#include "../config/config.h"
-#include "../sound/sound.h"
-#include "../usb/usb_audio.h"
-
 #include "lvgl.h"
 
-using namespace ColorAudio;
+#include "header_view.h"
+#include "view/view_usb.h"
+#include "config/config.h"
+#include "sound/sound.h"
+#include "usb/usb_audio.h"
+
+#include "usb_view.h"
+
+using namespace coloraudio::config;
 
 static lv_obj_t *view_obj;
 static bool update, is_connect;
@@ -20,10 +20,10 @@ const static char *bits_arg[] = {"2", "3", "4", "2,3", "2,3,4"};
 
 static void change_event(lv_event_t *change)
 {
-    config::set_config_usb_mode(lv_usb_get_mode());
-    config::set_config_usb_rate(lv_usb_get_rate());
-    config::set_config_usb_bits(lv_usb_get_bits());
-    config::save_config();
+    Config::set_config_usb_mode(lv_usb_get_mode());
+    Config::set_config_usb_rate(lv_usb_get_rate());
+    Config::set_config_usb_bits(lv_usb_get_bits());
+    Config::save_config();
 }
 
 static void click_event(lv_event_t *event)
@@ -48,8 +48,8 @@ static void click_event(lv_event_t *event)
             lv_usb_lock(false);
         }
 
-        config::set_config_usb_enable(chk);
-        config::save_config();
+        Config::set_config_usb_enable(chk);
+        Config::save_config();
     }
 }
 
@@ -113,10 +113,10 @@ void view_usb_create(lv_obj_t *parent)
     view_obj = lv_usb_create(parent, click_event, change_event);
     lv_timer_create(timer, 500, NULL);
 
-    lv_usb_set_mode(config::get_config_usb_mode());
-    lv_usb_set_rate(config::get_config_usb_rate());
-    lv_usb_set_bits(config::get_config_usb_bits());
-    if (config::get_config_usb_enable())
+    lv_usb_set_mode(Config::get_config_usb_mode());
+    lv_usb_set_rate(Config::get_config_usb_rate());
+    lv_usb_set_bits(Config::get_config_usb_bits());
+    if (Config::get_config_usb_enable())
     {
         lv_usb_set_enable(true);
         lv_usb_lock(true);

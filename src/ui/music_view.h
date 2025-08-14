@@ -1,13 +1,13 @@
 #ifndef __MUSIC_VIEW_H__
 #define __MUSIC_VIEW_H__
 
-#include "../music/lyric.h"
-#include "../music/music.h"
+#include <stdint.h>
+#include <stdbool.h>
 
 #include "lvgl.h"
 
-#include <stdint.h>
-#include <stdbool.h>
+#include "music/lyric.h"
+#include "music/music.h"
 
 typedef enum
 {
@@ -22,7 +22,7 @@ void view_music_set_header();
 void view_music_set_image_data(uint32_t width, uint32_t height, uint8_t *data);
 void view_music_set_lyric_state(lyric_state state);
 void view_music_set_check(uint32_t index, bool enable);
-void view_music_set_lyric(LyricParser *lyric, LyricParser *tlyric);
+void view_music_set_lyric(coloraudio::lyric::LyricParser *lyric, coloraudio::lyric::LyricParser *tlyric);
 void view_music_set_display(bool display);
 
 void view_muisc_list_clear();

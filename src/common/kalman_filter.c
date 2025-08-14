@@ -25,4 +25,3 @@ void KalmanUpdate(KalmanFilter *kf, double measurement, int first)
     kf->v = kf->v + kf->K * (measurement - kf->v);
     kf->P = (1 - kf->K) * kf->P;
 }
-

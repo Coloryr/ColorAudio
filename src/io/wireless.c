@@ -1,10 +1,10 @@
-#include "wireless.h"
-#include "gpio.h"
-
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdbool.h>
+
+#include "wireless.h"
+#include "gpio.h"
 
 #if BUILD_ARM
 

@@ -1,29 +1,32 @@
-#include "data_item.h"
-
 #include <malloc.h>
 #include <string.h>
 
-data_item::data_item(uint32_t size)
+#include "data_item.h"
+
+using namespace coloraudio::common;
+
+DataItem::DataItem(uint32_t size)
 {
+    if (size == 0)
+    {
+        throw "size is zero";
+    }
     this->size = size;
-    if (size > 0)
-    {
-        data = static_cast<uint8_t *>(calloc(1, size));
-    }
-    else
-    {
-        data = NULL;
-    }
+    data = static_cast<uint8_t *>(calloc(1, size));
 }
 
-data_item::data_item(uint8_t* buffer, uint32_t size)
+DataItem::DataItem(uint8_t *buffer, uint32_t size)
 {
+    if (size == 0)
+    {
+        throw "size is zero";
+    }
     this->size = size;
     data = static_cast<uint8_t *>(malloc(size));
     memcpy(data, buffer, size);
 }
 
-data_item::~data_item()
+DataItem::~DataItem()
 {
     if (data)
     {
@@ -31,10 +34,7 @@ data_item::~data_item()
     }
 }
 
-data_item *data_item::copy()
+DataItem *DataItem::copy()
 {
-    data_item *item = new data_item(size);
-    memcpy(item->data, data, size);
-
-    return item;
+    return new DataItem(data, size);
 }

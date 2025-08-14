@@ -1,31 +1,31 @@
 #ifndef __STREAM_NCM_H__
 #define __STREAM_NCM_H__
 
-#include "stream.h"
-
 #include "ncmcrypt.h"
+
+#include "stream.h"
 
 #define BLOCK_SIZE 0x8000
 
-namespace ColorAudio
+namespace coloraudio::stream
 {
-    class StreamNcm : public Stream
+    class NcmStream : public BaseStream
     {
     private:
-        uint8_t* buffer;
-        uint32_t buffer_size;
-        uint32_t buffer_pos;
-        uint32_t buffer_write;
+        uint8_t buffer[BLOCK_SIZE];
+        uint32_t buffer_size = BLOCK_SIZE;
+        uint32_t buffer_pos = 0;
+        uint32_t buffer_write = 0;
 
-        Stream *st;
+        BaseStream *st;
         NeteaseCrypt *cry;
         uint32_t mark;
 
         void read_block();
 
     public:
-        StreamNcm(Stream *st1, NeteaseCrypt *cy);
-        ~StreamNcm();
+        NcmStream(BaseStream *st1, NeteaseCrypt *cy);
+        ~NcmStream();
 
         uint32_t read(uint8_t *buffer, uint32_t len);
         uint32_t write(uint8_t *buffer, uint32_t len);

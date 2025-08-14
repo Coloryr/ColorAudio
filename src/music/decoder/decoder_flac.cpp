@@ -1,18 +1,18 @@
-#include "decoder_flac.h"
-
-#include "../music_player.h"
-#include "../sound/sound.h"
-#include "../sound/sound_fft.h"
-#include "../common/data_item.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
-#include <string.h>
+#include <cstring>
 #include <unistd.h>
-
 #include <string>
 
-using namespace ColorAudio;
+#include "lvgl/src/misc/lv_log.h"
+
+#include "music/music_player.h"
+#include "sound/sound.h"
+#include "sound/sound_fft.h"
+#include "common/data_item.h"
+
+#include "decoder_flac.h"
+
+using namespace coloraudio::stream;
+using namespace coloraudio::decoder;
 
 static snd_pcm_format_t get_format(uint32_t bps)
 {
@@ -31,7 +31,7 @@ static snd_pcm_format_t get_format(uint32_t bps)
     }
 }
 
-DecoderFlac::DecoderFlac(ColorAudio::Stream *st) : Decoder(st)
+DecoderFlac::DecoderFlac(BaseStream *st) : Decoder(st)
 {
     set_md5_checking(true);
 }

@@ -61,6 +61,7 @@ const lang_t lang_ch = {
     .setting_text16 = "断开连接",
     .setting_text17 = "已连接网络：%s",
     .setting_text18 = "未知的WIFI状态",
+    .setting_text19 = "WIFI操作失败",
 };
 
 void lang_init()

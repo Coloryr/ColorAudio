@@ -1,4 +1,6 @@
-#include "ui.h"
+#include <stdint.h>
+
+#include "lvgl.h"
 
 #include "music_view.h"
 #include "info_view.h"
@@ -9,16 +11,13 @@
 #include "header_view.h"
 #include "setting_view.h"
 #include "lang.h"
+#include "config/config.h"
+#include "music/music_player.h"
+#include "sound/sound.h"
 
-#include "../config/config.h"
-#include "../music/music_player.h"
-#include "../sound/sound.h"
+#include "ui.h"
 
-#include "lvgl.h"
-
-#include <stdint.h>
-
-using namespace ColorAudio;
+using namespace coloraudio::config;
 
 static view_mode_type now_type = VIEW_MAIN;
 
@@ -100,7 +99,7 @@ void view_init()
     view_usb_set_display(false);
     view_setting_set_display(false);
 
-    change_view(config::get_config_view_mode());
+    change_view(Config::get_config_view_mode());
 }
 
 view_mode_type get_view_mode()
@@ -117,8 +116,8 @@ void view_jump(view_mode_type type)
 
     change_view(type);
 
-    config::set_config_view_mode(now_type);
-    config::save_config();
+    Config::set_config_view_mode(now_type);
+    Config::save_config();
 }
 
 void view_set_fft_data(uint16_t size, float *value)

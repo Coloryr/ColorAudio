@@ -61,6 +61,7 @@ typedef struct
     const char* setting_text16;
     const char* setting_text17;
     const char* setting_text18;
+    const char* setting_text19;
 } lang_t;
 
 extern const lang_t* now_lang;

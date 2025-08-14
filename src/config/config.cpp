@@ -1,35 +1,36 @@
-#include "config.h"
-
-#include "../stream/stream_file.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-#include <json/json.hpp>
-
 #include <stdio.h>
 #include <string>
 #include <unistd.h>
 #include <pthread.h>
 
-using namespace ColorAudio;
+#include "lvgl/src/misc/lv_log.h"
+#include <json/json.hpp>
+
+#include "stream/stream_file.h"
+
+#include "config.h"
+
+using namespace coloraudio::config;
+using namespace coloraudio::stream;
 using namespace nlohmann;
 
-music_mode_type config::play_mode = MUSIC_MODE_LOOP;
-uint32_t config::play_index = 0;
-std::string config::play_name;
-float config::play_volume = 20;
-main_mode_type config::main_mode = MAIN_MODE_NONE;
-view_mode_type config::view_mode = VIEW_MAIN;
-bool config::usb_enable = false;
-uint8_t config::usb_mode = 1;
-uint8_t config::usb_rate = 7;
-uint8_t config::usb_bits = 5;
+music_mode_type Config::play_mode = MUSIC_MODE_LOOP;
+uint32_t Config::play_index = 0;
+std::string Config::play_name;
+float Config::play_volume = 20;
+main_mode_type Config::main_mode = MAIN_MODE_NONE;
+view_mode_type Config::view_mode = VIEW_MAIN;
+bool Config::usb_enable = false;
+uint8_t Config::usb_mode = 1;
+uint8_t Config::usb_rate = 7;
+uint8_t Config::usb_bits = 5;
 
 #ifdef BUILD_ARM
-bool config::codec_double = false;
-bool config::wifi_power;
-bool config::wifi_enable;
-std::string config::wifi_ssid;
-std::string config::wifi_pwd;
+bool Config::codec_double = false;
+bool Config::wifi_power;
+bool Config::wifi_enable;
+std::string Config::wifi_ssid;
+std::string Config::wifi_pwd;
 #endif
 
 static pthread_t save_tid;
@@ -42,18 +43,18 @@ static void *config_save(void *arg)
     {
         if (need_save)
         {
-            config::save_config_run();
+            Config::save_config_run();
             need_save = false;
         }
         usleep(1000000);
     }
 }
 
-void config::load_config()
+void Config::load_config()
 {
     if (access(MUSIC_CONFIG_NAME, F_OK) == 0)
     {
-        StreamFile st = StreamFile(MUSIC_CONFIG_NAME);
+        FileStream st = FileStream(MUSIC_CONFIG_NAME);
         uint8_t *temp = static_cast<uint8_t *>(malloc(st.get_all_size() + 1));
         st.read(temp, st.get_all_size());
         temp[st.get_all_size()] = 0;
@@ -164,12 +165,12 @@ void config::load_config()
     }
 }
 
-void config::save_config()
+void Config::save_config()
 {
     need_save = true;
 }
 
-void config::save_config_run()
+void Config::save_config_run()
 {
     try
     {

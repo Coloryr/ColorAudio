@@ -1,6 +1,6 @@
 #include "view_spectrum.h"
 
-#include "../view_setting.h"
+#include "ui/view_setting.h"
 
 #include "lvgl.h"
 

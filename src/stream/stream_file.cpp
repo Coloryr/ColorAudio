@@ -1,20 +1,19 @@
-#include "stream_file.h"
-
-#include "../common/utils.h"
-
 #include <string.h>
 #include <malloc.h>
 
-#include "../lvgl/src/misc/lv_log.h"
+#include "lvgl/src/misc/lv_log.h"
 
-using namespace ColorAudio;
+#include "common/utils.h"
 
-StreamFile::StreamFile(const char *path) : Stream(STREAM_TYPE_FILE), pos(0)
+#include "stream_file.h"
+
+using namespace coloraudio::stream;
+
+FileStream::FileStream(const char *path) : BaseStream(STREAM_TYPE_FILE)
 {
     if (path == nullptr)
     {
-        LV_LOG_ERROR("[stream] Can't open null file");
-        return;
+        throw "[stream] Can't open null file";
     }
     file = fopen(path, "r");
     if (file == nullptr)
@@ -37,7 +36,7 @@ StreamFile::StreamFile(const char *path) : Stream(STREAM_TYPE_FILE), pos(0)
     size = flen;
 }
 
-StreamFile::~StreamFile()
+FileStream::~FileStream()
 {
     if (file)
     {
@@ -52,35 +51,35 @@ StreamFile::~StreamFile()
     }
 }
 
-StreamFile* StreamFile::copy()
+FileStream *FileStream::copy()
 {
-    StreamFile* st1 = new StreamFile(path);
+    FileStream *st1 = new FileStream(path);
     st1->seek(pos, SEEK_SET);
     return st1;
 }
 
-uint32_t StreamFile::read(uint8_t* buffer, uint32_t len)
+uint32_t FileStream::read(uint8_t *buffer, uint32_t len)
 {
     uint32_t temp = fread(buffer, 1, len, file);
     pos += temp;
     return temp;
 }
 
-uint32_t StreamFile::write(uint8_t* buffer, uint32_t len)
+uint32_t FileStream::write(uint8_t *buffer, uint32_t len)
 {
     uint32_t written = fwrite(buffer, 1, len, file);
     pos += written;
     return written;
 }
 
-uint32_t StreamFile::peek(uint8_t* buffer, uint32_t len)
+uint32_t FileStream::peek(uint8_t *buffer, uint32_t len)
 {
     uint32_t temp = fread(buffer, 1, len, file);
     fseek(file, pos, SEEK_SET);
     return temp;
 }
 
-void StreamFile::seek(int32_t pos, uint8_t where)
+void FileStream::seek(int32_t pos, uint8_t where)
 {
     fseek(file, pos, where);
     this->pos = ftell(file);

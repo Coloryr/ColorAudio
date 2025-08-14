@@ -1,38 +1,25 @@
-#include "stream_http.h"
-
-#include "../common/utils.h"
-
 #include <malloc.h>
 #include <string.h>
 
-using namespace ColorAudio;
+#include "common/utils.h"
 
-StreamHttp::StreamHttp(IStreamHttp *http) : Stream(STREAM_TYPE_HTTP),
-                                            http(http)
+#include "stream_http.h"
+
+using namespace coloraudio::stream;
+
+HttpStream::HttpStream(IStreamHttp *http)
+    : BaseStream(STREAM_TYPE_HTTP),
+      http(http)
 {
-    buffer = static_cast<uint8_t *>(malloc(STREAM_BUFFER_SIZE));
-    buffer_size = STREAM_BUFFER_SIZE;
-    if (buffer == nullptr)
-    {
-        return;
-    }
-
     http_size = http->get_size();
-    http_pos = 0;
 }
 
-StreamHttp::~StreamHttp()
+HttpStream::~HttpStream()
 {
-    if (buffer)
-    {
-        free(buffer);
-        buffer = nullptr;
-    }
-
     http->close();
 }
 
-void StreamHttp::read_block()
+void HttpStream::read_block()
 {
     memcpy(buffer, buffer + buffer_pos, buffer_write);
     buffer_pos = 0;
@@ -56,7 +43,7 @@ void StreamHttp::read_block()
     buffer_write += rsize;
 }
 
-uint32_t StreamHttp::buffer_read(uint8_t *buf, uint32_t len)
+uint32_t HttpStream::buffer_read(uint8_t *buf, uint32_t len)
 {
     if (buffer_write >= len)
     {
@@ -76,7 +63,7 @@ uint32_t StreamHttp::buffer_read(uint8_t *buf, uint32_t len)
     return 0;
 }
 
-uint32_t StreamHttp::read(uint8_t *buffer, uint32_t len)
+uint32_t HttpStream::read(uint8_t *buffer, uint32_t len)
 {
     if (buffer_write == 0 && get_less_read() == 0)
     {
@@ -92,12 +79,12 @@ uint32_t StreamHttp::read(uint8_t *buffer, uint32_t len)
     return buffer_read(buffer, len);
 }
 
-uint32_t StreamHttp::write(uint8_t *buffer, uint32_t len)
+uint32_t HttpStream::write(uint8_t *buffer, uint32_t len)
 {
     return 0;
 }
 
-uint32_t StreamHttp::buffer_peek(uint8_t *buf, uint32_t len)
+uint32_t HttpStream::buffer_peek(uint8_t *buf, uint32_t len)
 {
     if (buffer_write >= len)
     {
@@ -113,7 +100,7 @@ uint32_t StreamHttp::buffer_peek(uint8_t *buf, uint32_t len)
     return 0;
 }
 
-uint32_t StreamHttp::peek(uint8_t *buffer, uint32_t len)
+uint32_t HttpStream::peek(uint8_t *buffer, uint32_t len)
 {
     if (buffer_write == 0 && get_less_read() == 0)
     {
@@ -129,17 +116,17 @@ uint32_t StreamHttp::peek(uint8_t *buffer, uint32_t len)
     return buffer_peek(buffer, len);
 }
 
-uint32_t StreamHttp::get_pos()
+uint32_t HttpStream::get_pos()
 {
     return http_pos - buffer_write;
 }
 
-uint32_t StreamHttp::get_all_size()
+uint32_t HttpStream::get_all_size()
 {
     return http_size;
 }
 
-uint32_t StreamHttp::get_less_read()
+uint32_t HttpStream::get_less_read()
 {
     if (http_size > 0)
     {
@@ -149,14 +136,14 @@ uint32_t StreamHttp::get_less_read()
     return 0;
 }
 
-void StreamHttp::re_connect(uint32_t pos)
+void HttpStream::re_connect(uint32_t pos)
 {
     http_pos = http->re_connect(get_pos() + pos);
     buffer_pos = 0;
     buffer_write = 0;
 }
 
-void StreamHttp::seek(int32_t pos, uint8_t where)
+void HttpStream::seek(int32_t pos, uint8_t where)
 {
     if (where == SEEK_SET)
     {
@@ -236,7 +223,7 @@ void StreamHttp::seek(int32_t pos, uint8_t where)
     }
 }
 
-bool StreamHttp::test_read_size(uint32_t size)
+bool HttpStream::test_read_size(uint32_t size)
 {
     if (buffer_write == 0 && get_less_read() == 0)
     {
@@ -251,7 +238,7 @@ bool StreamHttp::test_read_size(uint32_t size)
     return true;
 }
 
-bool StreamHttp::can_read()
+bool HttpStream::can_read()
 {
     if (http_size == 0)
     {

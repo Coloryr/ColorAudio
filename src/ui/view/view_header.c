@@ -1,6 +1,6 @@
 #include "view_header.h"
 
-#include "../font.h"
+#include "ui/font.h"
 
 #include "lvgl.h"
 

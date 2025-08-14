@@ -1,17 +1,19 @@
-#include "decoder_mp3.h"
-
-#include "../music_player.h"
-#include "../sound/sound.h"
-#include "../sound/sound_fft.h"
-#include "../lvgl/src/misc/lv_log.h"
-
 #include <alsa/asoundlib.h>
 #include <mad.h>
+
+#include "lvgl/src/misc/lv_log.h"
+
+#include "music/music_player.h"
+#include "sound/sound.h"
+#include "sound/sound_fft.h"
+
+#include "decoder_mp3.h"
 
 #define BUFSIZE 8192
 #define SHIFT 24
 
-using namespace ColorAudio;
+using namespace coloraudio::decoder;
+using namespace coloraudio::stream;
 
 static inline int32_t sample_scale(mad_fixed_t sample)
 {
@@ -160,7 +162,7 @@ static enum mad_flow play_mp3_error(void *data, struct mad_stream *mad, struct m
     return MAD_FLOW_CONTINUE;
 }
 
-DecoderMp3::DecoderMp3(ColorAudio::Stream *st) : Decoder(st)
+DecoderMp3::DecoderMp3(BaseStream*st) : Decoder(st)
 {
     decoder = static_cast<struct mad_decoder *>(malloc(sizeof(struct mad_decoder)));
     buffer = static_cast<uint8_t *>(malloc(STREAM_BUFFER_SIZE));

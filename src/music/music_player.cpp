@@ -1,25 +1,27 @@
-#include "music_player.h"
+#include <stdint.h>
+#include <pthread.h>
+#include <string>
+#include <map>
+
+#include "lvgl/src/misc/lv_log.h"
+#include <boost/container/vector.hpp>
 
 #include "mp3/mp3_id3.h"
 #include "music.h"
 #include "decoder/decoder.h"
 #include "decoder/decoder_flac.h"
 #include "decoder/decoder_mp3.h"
+#include "sound/sound.h"
+#include "stream/stream.h"
+#include "ui/music_view.h"
+#include "config/config.h"
 
-#include "../sound/sound.h"
-#include "../stream/stream.h"
-#include "../ui/music_view.h"
-#include "../config/config.h"
+#include "music_player.h"
 
-#include "../lvgl/src/misc/lv_log.h"
-
-#include <boost/container/vector.hpp>
-#include <stdint.h>
-#include <pthread.h>
-#include <string>
-#include <map>
-
-using namespace ColorAudio;
+using namespace coloraudio::common;
+using namespace coloraudio::decoder;
+using namespace coloraudio::stream;
+using namespace coloraudio::config;
 
 static pthread_t tid;
 
@@ -32,44 +34,14 @@ boost::container::vector<play_item *> play_list;
 std::string play_title;
 std::string play_album;
 std::string play_auther;
-data_item *play_image;
+DataItem *play_image;
 
-ColorAudio::Stream *play_st;
+BaseStream *play_st;
 
 pthread_mutex_t play_mutex;
 pthread_cond_t play_start;
 
 bool play_need_seek;
-
-music_type music_test_type(ColorAudio::Stream *st)
-{
-    uint8_t buffer[8];
-    st->peek(buffer, sizeof(buffer));
-
-    if (buffer[0] == 'R' && buffer[1] == 'I' && buffer[2] == 'F' && buffer[3] == 'F')
-    {
-        return MUSIC_TYPE_WAV;
-    }
-    else if (buffer[0] == 'f' && buffer[1] == 'L' && buffer[2] == 'a' && buffer[3] == 'C')
-    {
-        return MUSIC_TYPE_FLAC;
-    }
-    else if (buffer[0] == 'I' && buffer[1] == 'D' && buffer[2] == '3')
-    {
-        return MUSIC_TYPE_MP3;
-    }
-    else if (buffer[0] == 0xFF && buffer[1] == 0xFB)
-    {
-        return MUSIC_TYPE_MP3;
-    }
-    else if (buffer[0] == 'C' && buffer[1] == 'T' && buffer[2] == 'E' && buffer[3] == 'N' &&
-             buffer[4] == 'F' && buffer[5] == 'D' && buffer[6] == 'A' && buffer[7] == 'M')
-    {
-        return MUSIC_TYPE_NCM;   
-    }
-
-    return MUSIC_TYPE_UNKNOW;
-}
 
 static void *play_run(void *arg)
 {
@@ -181,7 +153,7 @@ void play_clear()
     view_music_update_img();
 }
 
-void play_update_image(data_item *data, music_info_type type)
+void play_update_image(DataItem *data, music_info_type type)
 {
     switch (type)
     {
@@ -241,8 +213,8 @@ bool play_set_command(music_command command)
         return true;
     case MUSIC_COMMAND_CHANGE_MODE:
         play_music_mode = static_cast<music_mode_type>((play_music_mode + 1) % 2);
-        config::set_config_music_code(play_music_mode);
-        config::save_config();
+        Config::set_config_music_code(play_music_mode);
+        Config::save_config();
         view_music_update_state();
         return true;
     case MUSIC_COMMAND_UNKNOW:

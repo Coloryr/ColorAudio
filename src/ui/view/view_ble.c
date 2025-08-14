@@ -3,10 +3,10 @@
 #include "view_spectrum.h"
 #include "view_volume.h"
 
-#include "../view_setting.h"
-#include "../font.h"
-#include "../lang.h"
-#include "../anim.h"
+#include "ui/view_setting.h"
+#include "ui/font.h"
+#include "ui/lang.h"
+#include "ui/anim.h"
 
 static lv_obj_t *state_obj;
 static lv_obj_t *title_label;

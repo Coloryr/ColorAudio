@@ -1,22 +1,22 @@
 #ifndef _DECODER_H_
 #define _DECODER_H_
 
-#include "../stream/stream.h"
-#include "../common/data_item.h"
-
 #include <stdbool.h>
 #include <string>
 
-namespace ColorAudio
+#include "stream/stream.h"
+#include "common/data_item.h"
+
+namespace coloraudio::decoder
 {
     class Decoder
     {
 
     protected:
-        ColorAudio::Stream *st;
+        coloraudio::stream::BaseStream *st;
 
     public:
-        Decoder(ColorAudio::Stream *st);
+        Decoder(coloraudio::stream::BaseStream *st);
         virtual ~Decoder();
 
         virtual bool decode_start() = 0;

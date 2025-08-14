@@ -2,30 +2,29 @@
 #define _STREAM_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-typedef enum
+#define STREAM_BUFFER_SIZE 1024 * 8
+
+namespace coloraudio::stream
 {
-    STREAM_TYPE_FILE = 0,
-    STREAM_TYPE_MEM,
-    STREAM_TYPE_CIR,
-    STREAM_TYPE_HTTP,
-    STREAM_TYPE_NCM,
-    STREAM_TYPE_UNKNOW = -1
-} steam_type;
+    typedef enum
+    {
+        STREAM_TYPE_FILE = 0,
+        STREAM_TYPE_MEM,
+        STREAM_TYPE_CIR,
+        STREAM_TYPE_HTTP,
+        STREAM_TYPE_NCM,
+        STREAM_TYPE_UNKNOW = -1
+    } StreamType;
 
-constexpr auto STREAM_BUFFER_SIZE = 1024 * 8;
-
-namespace ColorAudio
-{
-    class Stream
+    class BaseStream
     {
     private:
-        steam_type type;
+        StreamType stream_type;
 
     public:
-        Stream(steam_type type);
-        virtual ~Stream();
+        BaseStream(StreamType type);
+        virtual ~BaseStream();
 
         virtual uint32_t read(uint8_t *buffer, uint32_t len) = 0;
         virtual uint32_t write(uint8_t *buffer, uint32_t len) = 0;

@@ -2,10 +2,10 @@
 #include "view_wave.h"
 #include "view_header.h"
 
-#include "../lang.h"
-#include "../view_setting.h"
-#include "../font.h"
-#include "../main.h"
+#include "ui/lang.h"
+#include "ui/view_setting.h"
+#include "ui/font.h"
+#include "main.h"
 
 #include "lvgl.h"
 

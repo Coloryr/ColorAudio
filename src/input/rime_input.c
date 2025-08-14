@@ -1,8 +1,3 @@
-#include "rime_input.h"
-
-#include "../lvgl/src/misc/lv_log.h"
-
-#include <rime_api.h>
 #include <stdio.h>
 #include <dirent.h>
 #include <stdlib.h>
@@ -12,6 +7,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <pthread.h>
+
+#include <rime_api.h>
+#include "lvgl/src/misc/lv_log.h"
+
+#include "rime_input.h"
 
 #define RIME_DATA_DIR "data"
 #define RIME_LOG_DIR "log"
@@ -134,6 +134,6 @@ void rime_close_session()
 }
 
 bool rime_change_page(bool backward)
-{  
+{
     return rime_api->change_page(rime_session, backward);
 }

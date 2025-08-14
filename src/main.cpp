@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <pthread.h>
+#include <queue>
+
 #include "lvgl.h"
 #include "lv_conf.h"
 
@@ -23,18 +29,12 @@
 #include "io/wireless.h"
 #include "usb/usb_audio.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <pthread.h>
-#include <queue>
-
 #ifndef BUILD_ARM
 #define SDL_MAIN_HANDLED /*To fix SDL's "undefined reference to WinMain" issue*/
 #include <SDL2/SDL.h>
 #endif
 
-using namespace ColorAudio;
+using namespace coloraudio::config;
 
 static int quit = 0;
 static pthread_t tid;
@@ -75,7 +75,7 @@ static void *work_loop(void *arg)
         }
         else if (now_work->type == MAIN_WORK_WIFI_POWER)
         {
-            if (config::get_config_wifi_power())
+            if (Config::get_config_wifi_power())
             {
                 view_top_info_display(now_lang->setting_text7);
                 set_wireless_power_on();
@@ -90,7 +90,7 @@ static void *work_loop(void *arg)
         }
         else if (now_work->type == MAIN_WORK_WIFI_ENABLE)
         {
-            if (config::get_config_wifi_power())
+            if (Config::get_config_wifi_power())
             {
                 if (!wifi_have_device())
                 {
@@ -151,6 +151,20 @@ static void *work_loop(void *arg)
                 }
             }
         }
+        else if (now_work->type == MAIN_WORK_WIFI_DISCONNECT)
+        {
+            if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
+            {
+                view_top_error_display(now_lang->setting_text12);
+            }
+            else
+            {
+                if (!wifi_remove())
+                {
+                    view_top_error_display(now_lang->setting_text19);
+                }
+            }
+        }
         work_queue.pop();
         delete now_work;
 #endif
@@ -160,7 +174,7 @@ static void *work_loop(void *arg)
 
 static void *main_loop(void *arg)
 {
-    change_mode(config::get_config_main_mode());
+    change_mode(Config::get_config_main_mode());
 
     for (;;)
     {
@@ -241,8 +255,8 @@ void change_mode(main_mode_type mode)
     }
 
     now_mode = mode;
-    config::set_config_main_mode(now_mode);
-    config::save_config();
+    Config::set_config_main_mode(now_mode);
+    Config::save_config();
 
     mode_change = false;
 }
@@ -251,7 +265,7 @@ int main(int argc, char **argv)
 {
     signal(SIGINT, sigterm_handler);
 
-    config::load_config();
+    Config::load_config();
 
     alsa_init();
 #ifdef BUILD_ARM

@@ -1,11 +1,10 @@
 #ifndef _MP3ID3_H_
 #define _MP3ID3_H_
 
-#include "../stream/stream.h"
-
-#include "../common/data_item.h"
-
 #include <string>
+
+#include "stream/stream.h"
+#include "common/data_item.h"
 
 #define TITLE_TAG "TIT2"
 #define AUTHER_TAG "TPE1"
@@ -29,12 +28,12 @@ typedef enum
     ID3_UNKNOW_TAG = -1
 } id3_type;
 
-namespace ColorAudio
+namespace coloraudio::mp3
 {
     class Mp3Id3
     {
     private:
-        ColorAudio::Stream *st;
+        coloraudio::stream::BaseStream *st;
 
     public:
         uint8_t version;
@@ -45,17 +44,17 @@ namespace ColorAudio
         std::string album;
         std::string auther;
         std::string comment;
-        data_item *image;
+        coloraudio::common::DataItem *image;
 
-        Mp3Id3(ColorAudio::Stream *st);
+        Mp3Id3(coloraudio::stream::BaseStream *st);
         ~Mp3Id3();
 
         bool get_info();
     };
 }
 
-bool mp3id3_have(ColorAudio::Stream *st);
+bool mp3id3_have(coloraudio::stream::BaseStream *st);
 
-void mp3id3_skip(ColorAudio::Stream *st);
+void mp3id3_skip(coloraudio::stream::BaseStream *st);
 
 #endif
