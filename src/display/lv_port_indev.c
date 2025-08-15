@@ -4,7 +4,7 @@
 #ifdef BUILD_ARM
 static lv_indev_t *lv_touchpad = NULL;
 #else
-#include "drivers/sdl/lv_sdl_mouse.h"
+#include "lvgl/src/drivers/sdl/lv_sdl_mouse.h"
 static lv_indev_t *lv_mouse;
 static lv_indev_t *lv_mouse_wheel;
 static lv_indev_t *lv_keyboard;

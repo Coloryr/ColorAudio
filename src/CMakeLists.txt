@@ -41,6 +41,7 @@ endif()
 
 include_directories(./)
 include_directories(./lib_src)
+include_directories(./lib_src/lvgl)
 include_directories(./lib_src/bluez-alsa/src)
 include_directories(./lib_src/ncmdump/include)
 
@@ -53,10 +54,10 @@ file(GLOB_RECURSE LIB_SOURCES
 "./lib_src/bluez-alsa/src/*.*"
 "./lib_src/ncmdump/*.*"
 "./lib_src/fft/*.*"
+"./lib_src/lvgl/src/*.*"
 )
 
 file(GLOB_RECURSE SOURCES 
-"./lvgl/src/*.*"
 "./display/*.*" 
 "./sys/*.*" 
 "./common/*.*"

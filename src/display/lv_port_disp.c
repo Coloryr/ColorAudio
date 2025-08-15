@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "lvgl.h"
-#include "drivers/display/drm/lv_linux_drm.h"
-#include "drivers/sdl/lv_sdl_window.h"
+#include "lvgl/src/drivers/display/drm/lv_linux_drm.h"
+#include "lvgl/src/drivers/sdl/lv_sdl_window.h"
 
 static lv_display_t * disp;
 
