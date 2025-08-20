@@ -118,23 +118,23 @@
         "open": true,
         "window": {
           "display": 0,
-          "maximized": true,
-          "pos_x": -8,
-          "pos_y": -8,
-          "size_x": 1936,
-          "size_y": 1048
+          "maximized": false,
+          "pos_x": 1273,
+          "pos_y": 0,
+          "size_x": 1294,
+          "size_y": 1559
         }
       },
       {
         "name": "coloryr.kicad_pcb",
-        "open": false,
+        "open": true,
         "window": {
           "display": 0,
-          "maximized": true,
-          "pos_x": 1283,
+          "maximized": false,
+          "pos_x": -7,
           "pos_y": 0,
-          "size_x": 1268,
-          "size_y": 1475
+          "size_x": 1294,
+          "size_y": 1559
         }
       }
     ]

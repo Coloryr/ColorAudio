@@ -350,6 +350,12 @@
 			rockchip,pins = <1 RK_PB3 RK_FUNC_GPIO &pcfg_pull_none>, <1 RK_PB2 RK_FUNC_GPIO &pcfg_pull_none>;
 		};
 	};
+
+	charger {
+		charger_gpio: charger-gpio {
+			rockchip,pins = <0 RK_PA0 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
 	
 	codec {
 		codec_en_gpio: codec-en-gpio {
@@ -440,7 +446,24 @@
 &i2c1 {
 	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&rm_io2_i2c1_scl &rm_io1_i2c1_sda>;
+	pinctrl-0 = <&rm_io1_i2c1_scl
+		     &rm_io2_i2c1_sda>;
+	
+	bq25895: charger@6a {
+		compatible = "ti,bq25895", "ti,bq25890";
+		reg = <0x6a>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&charger_gpio>;
+		interrupt-parent = <&gpio0>;
+		interrupts = <RK_PA0 IRQ_TYPE_EDGE_FALLING>;
+		ti,battery-regulation-voltage = <4200000>; /* 4.2V */
+		ti,charge-current = <2000000>; /* 2A */
+		ti,termination-current = <66000>;  /* 66mA */
+		ti,precharge-current = <130000>; /* 130mA */
+		ti,minimum-sys-voltage = <3000000>; /* 3V */
+		ti,boost-voltage = <5000000>; /* 5V */
+		ti,boost-max-current = <1600000>; /* 1600mA */
+	};
 };
 
 &i2c2 {
