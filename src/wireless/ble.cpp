@@ -22,9 +22,6 @@ ble_state ble_now_state = BLE_STATE_UNKNOW;
 const char *adapter_path = "/org/bluez/hci0";
 
 static GMainLoop *main_loop = NULL;
-static pthread_t tid;
-
-static GMainLoop *loop;
 
 static const char *ble_state_to_string(ble_state state)
 {
@@ -94,7 +91,7 @@ void ble_device_add()
     ble_set_pairable(true);
 }
 
-void ble_start()
+void ble_init()
 {
     GError *error = NULL;
     ble_g_conn = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
@@ -121,30 +118,32 @@ void ble_stop()
 
 void ble_run_loop()
 {
-    loop = g_main_loop_new(NULL, FALSE);
-    ble_agent_init();
-    ble_info_init();
+    main_loop = g_main_loop_new(NULL, FALSE);
+
+    LV_LOG_USER("蓝牙服务正在启动");
+
+    // ble_agent_init();
+    // ble_info_init();
     bluez_alsa_start(ble_g_conn);
 
-    ble_device_add();
+    // ble_device_add();
 
     LV_LOG_USER("蓝牙服务已启动");
 
-    main_loop = g_main_loop_new(NULL, FALSE);
     g_main_loop_run(main_loop);
 
     LV_LOG_USER("蓝牙服务正在关闭");
 
-    ble_set_discoverable(false);
-    ble_set_pairable(false);
-    ble_set_power(false);
+    // ble_set_discoverable(false);
+    // ble_set_pairable(false);
+    // ble_set_power(false);
 
-    ble_agent_close();
-    ble_info_close();
+    // ble_agent_close();
+    // ble_info_close();
 
-    bluez_alsa_close();
-    g_main_loop_unref(main_loop);
-    g_object_unref(ble_g_conn);
-    ble_g_conn = NULL;
-    main_loop = NULL;
+    // bluez_alsa_close();
+    // g_main_loop_unref(main_loop);
+    // g_object_unref(ble_g_conn);
+    // ble_g_conn = NULL;
+    // main_loop = NULL;
 }

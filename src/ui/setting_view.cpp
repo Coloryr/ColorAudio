@@ -10,12 +10,15 @@
 #include "sound/sound.h"
 #include "config/config.h"
 #include "wireless/wifi.h"
+#include "io/gpio.h"
 
 #include "setting_view.h"
 
 using namespace coloraudio::config;
 
 static lv_obj_t *view_obj;
+static std::vector<wifi_item_t> wifi_list;
+static bool update_wifi;
 
 static void wifi_power_handler(lv_event_t *e)
 {
@@ -29,6 +32,7 @@ static void wifi_power_handler(lv_event_t *e)
 #endif
 }
 #include <vector>
+#include <algorithm>
 static void wifi_state_handler(lv_event_t *e)
 {
     lv_obj_t *sw = lv_event_get_target_obj(e);
@@ -112,6 +116,16 @@ static void timer(lv_timer_t *timer)
             lv_setting_update_wifi(now_lang->setting_text18);
         }
     }
+
+    if (update_wifi)
+    {
+        lv_setting_wifi_clear_list();
+        for (auto &item1 : wifi_list)
+        {
+            lv_setting_wifi_add_list(item1.ssid.c_str());
+        }
+        update_wifi = false;
+    }
 }
 
 void view_setting_set_header()
@@ -122,14 +136,13 @@ void view_setting_set_header()
 
 void view_setting_wifi_list(std::vector<wifi_item_t> &list)
 {
-    lv_setting_wifi_clear_list();
-    for (auto &item : list)
-    {
-        if (!item.ssid.empty())
-        {
-            lv_setting_wifi_add_list(item.ssid.c_str());
-        }
-    }
+    wifi_list.clear();
+
+    std::copy_if(list.begin(), list.end(), std::back_inserter(wifi_list),
+                 [](const wifi_item_t &item)
+                 { return !item.ssid.empty(); });
+
+    update_wifi = true;
 }
 
 void view_setting_set_display(bool display)
@@ -152,5 +165,7 @@ void view_setting_create(lv_obj_t *parent)
     lv_setting_set_wifi(false, false);
 #ifdef BUILD_ARM
     lv_setting_set_codec(Config::get_config_codec_double());
+
+    lv_setting_set_wifi(get_wireless_power(), wifi_is_wpa_supplicant_running());
 #endif
 }

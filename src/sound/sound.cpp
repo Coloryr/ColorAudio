@@ -57,6 +57,7 @@ static snd_ctl_elem_id_t *ctl_id;
 static bool pcm_enable;
 static bool pcm_ctl;
 static bool isset = false;
+static bool have_double = false;
 
 #ifdef BUILD_ARM
 unsigned int tlv[256];
@@ -165,25 +166,30 @@ void alsa_init()
         return;
     }
     err = snd_pcm_open(&pcm_handle_b, ALSA_DEVICE_B, SND_PCM_STREAM_PLAYBACK, 0);
+    have_double = true;
 #else
     int err = snd_pcm_open(&pcm_handle, ALSA_DEVICE, SND_PCM_STREAM_PLAYBACK, 0);
 #endif
     if (err < 0)
     {
         LV_LOG_ERROR("ALSA open error: %s\n", snd_strerror(err));
-        return;
+        have_double = false;
     }
 
     LV_LOG_USER("ALSA open");
 
 #ifdef BUILD_ARM
     err = snd_ctl_open(&ctl_handle_a, ALSA_DEVICE_A, 0);
-    if (err < 0)
+    if (have_double)
     {
-        LV_LOG_ERROR("ALSA Control open error: %s\n", snd_strerror(err));
-        return;
+        if (err < 0)
+        {
+            LV_LOG_ERROR("ALSA Control open error: %s\n", snd_strerror(err));
+            return;
+        }
+
+        err = snd_ctl_open(&ctl_handle_b, ALSA_DEVICE_B, 0);
     }
-    err = snd_ctl_open(&ctl_handle_b, ALSA_DEVICE_B, 0);
 #else
     err = snd_ctl_open(&ctl_handle, ALSA_DEVICE, 0);
 #endif
@@ -194,9 +200,15 @@ void alsa_init()
     }
 #ifdef BUILD_ARM
     snd_ctl_elem_id_malloc(&ctl_id_a);
-    snd_ctl_elem_id_malloc(&ctl_id_b);
-    pcm_ctl = find_controls(ctl_handle_a, ctl_id_a, &headphone_1_in) &&
-              find_controls(ctl_handle_b, ctl_id_b, &headphone_2_in);
+    if (have_double)
+    {
+        snd_ctl_elem_id_malloc(&ctl_id_b);
+    }
+    pcm_ctl = find_controls(ctl_handle_a, ctl_id_a, &headphone_1_in);
+    if (have_double)
+    {
+        pcm_ctl = pcm_ctl && find_controls(ctl_handle_b, ctl_id_b, &headphone_2_in);
+    }
     enable_double = Config::get_config_codec_double();
 #else
     snd_ctl_elem_id_malloc(&ctl_id);
@@ -245,6 +257,24 @@ float alsa_get_volume()
 #endif
 }
 
+#ifdef BUILD_ARM
+void alsa_mute_double()
+{
+    if (!pcm_ctl || !have_double)
+    {
+        return;
+    }
+    snd_ctl_elem_value_t *control;
+    snd_ctl_elem_value_alloca(&control);
+
+    snd_ctl_elem_value_set_integer(control, 0, min_val);
+    snd_ctl_elem_value_set_integer(control, 1, min_val);
+
+    snd_ctl_elem_value_set_id(control, ctl_id_b);
+    snd_ctl_elem_write(ctl_handle_b, control);
+}
+#endif
+
 void alsa_set_volume(float value)
 {
     if (!pcm_ctl)
@@ -277,7 +307,7 @@ void alsa_set_volume(float value)
     snd_ctl_elem_value_set_integer(control, 1, target_val);
 #ifdef BUILD_ARM
     snd_ctl_elem_write(ctl_handle_a, control);
-    if (enable_double)
+    if (have_double)
     {
         snd_ctl_elem_value_set_id(control, ctl_id_b);
         snd_ctl_elem_write(ctl_handle_b, control);
@@ -309,6 +339,11 @@ void alsa_set_volume_db(long value)
     snd_ctl_elem_value_set_integer(control, 1, value);
 #ifdef BUILD_ARM
     snd_ctl_elem_write(ctl_handle_a, control);
+    if (have_double)
+    {
+        snd_ctl_elem_value_set_id(control, ctl_id_b);
+        snd_ctl_elem_write(ctl_handle_b, control);
+    }
 #else
     snd_ctl_elem_write(ctl_handle, control);
 #endif
@@ -344,7 +379,7 @@ void alsa_set(snd_pcm_format_t format, uint16_t channels, uint32_t rate)
     {
         LV_LOG_ERROR("ALSA format set fail");
     }
-    if (enable_double)
+    if (enable_double && have_double)
     {
         snd_pcm_drop(pcm_handle_b);
         snd_pcm_reset(pcm_handle_b);
@@ -404,7 +439,7 @@ void alsa_clear()
 {
 #ifdef BUILD_ARM
     snd_pcm_reset(pcm_handle_a);
-    if (enable_double)
+    if (enable_double && have_double)
     {
         snd_pcm_reset(pcm_handle_b);
     }
@@ -417,7 +452,7 @@ void alsa_ready()
 {
 #ifdef BUILD_ARM
     snd_pcm_prepare(pcm_handle_a);
-    if (enable_double)
+    if (enable_double && have_double)
     {
         snd_pcm_prepare(pcm_handle_b);
     }
@@ -476,7 +511,8 @@ void alsa_codec_double_change()
     if (Config::get_config_codec_double())
     {
         enable_double = true;
-        if (isset)
+
+        if (isset && have_double)
         {
             snd_pcm_set_params(pcm_handle_b, pcm_now_format, SND_PCM_ACCESS_RW_INTERLEAVED, pcm_now_channels, pcm_now_rate, 0, 100000);
             snd_pcm_prepare(pcm_handle_b);
@@ -485,13 +521,13 @@ void alsa_codec_double_change()
     else
     {
         enable_double = false;
-        if (isset)
+
+        if (isset && have_double)
         {
             snd_pcm_drop(pcm_handle_b);
             snd_pcm_reset(pcm_handle_b);
 
-            // snd_pcm_close(pcm_handle_b);
-            // snd_pcm_open(&pcm_handle_b, ALSA_DEVICE_B, SND_PCM_STREAM_PLAYBACK, 0);
+            alsa_mute_double();
         }
     }
     set_amp_power(true);

@@ -3,6 +3,7 @@
 #include <time.h>
 #include <pthread.h>
 #include <queue>
+#include <semaphore.h>
 
 #include "lvgl.h"
 #include "lv_conf.h"
@@ -39,6 +40,7 @@ using namespace coloraudio::config;
 static int quit = 0;
 static pthread_t tid;
 static pthread_t work_tid;
+static sem_t work_sem;
 
 static bool mode_change;
 static main_mode_type now_mode = MAIN_MODE_NONE;
@@ -58,116 +60,115 @@ static void *work_loop(void *arg)
 {
     for (;;)
     {
-        usleep(100);
-        if (work_queue.empty())
+        sem_wait(&work_sem);
+        while (!work_queue.empty())
         {
-            continue;
-        }
 #ifdef BUILD_ARM
-        auto now_work = work_queue.front();
-        if (now_work == NULL)
-        {
-            continue;
-        }
-        if (now_work->type == MAIN_WORK_USB)
-        {
-            usb_audio_exit();
-        }
-        else if (now_work->type == MAIN_WORK_WIFI_POWER)
-        {
-            if (Config::get_config_wifi_power())
+            auto now_work = work_queue.front();
+            if (now_work == NULL)
             {
-                view_top_info_display(now_lang->setting_text7);
-                set_wireless_power_on();
-                view_top_info_close();
+                continue;
             }
-            else
+            if (now_work->type == MAIN_WORK_USB)
             {
-                view_top_info_display(now_lang->setting_text8);
-                set_wireless_power_off();
-                view_top_info_close();
+                usb_audio_exit();
             }
-        }
-        else if (now_work->type == MAIN_WORK_WIFI_ENABLE)
-        {
-            if (Config::get_config_wifi_power())
+            else if (now_work->type == MAIN_WORK_WIFI_POWER)
             {
-                if (!wifi_have_device())
+                if (Config::get_config_wifi_power())
                 {
-                    view_top_error_display(now_lang->setting_text11);
+                    view_top_info_display(now_lang->setting_text7);
+                    set_wireless_power_on();
+                    view_top_info_close();
                 }
                 else
                 {
-                    view_top_info_display(now_lang->setting_text9);
-                    if (wifi_is_wpa_supplicant_running())
-                    {
-                        wifi_terminate_wpa_supplicant();
-                    }
-                    wifi_wpa_start();
+                    view_top_info_display(now_lang->setting_text8);
+                    set_wireless_power_off();
                     view_top_info_close();
                 }
             }
-            else
+            else if (now_work->type == MAIN_WORK_WIFI_ENABLE)
             {
-                view_top_info_display(now_lang->setting_text10);
-                wifi_terminate_wpa_supplicant();
-                view_top_info_close();
-            }
-        }
-        else if (now_work->type == MAIN_WORK_WIFI_SCAN)
-        {
-            if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
-            {
-                view_top_error_display(now_lang->setting_text12);
-            }
-            else
-            {
-                std::vector<wifi_item_t> list;
-                if (wifi_scan(list))
+                if (Config::get_config_wifi_power())
                 {
-                    view_setting_wifi_list(list);
+                    if (!wifi_have_device())
+                    {
+                        view_top_error_display(now_lang->setting_text11);
+                    }
+                    else
+                    {
+                        view_top_info_display(now_lang->setting_text9);
+                        if (wifi_is_wpa_supplicant_running())
+                        {
+                            wifi_terminate_wpa_supplicant();
+                        }
+                        wifi_wpa_start();
+                        view_top_info_close();
+                    }
                 }
                 else
                 {
-                    view_top_error_display(now_lang->setting_text13);
+                    view_top_info_display(now_lang->setting_text10);
+                    wifi_terminate_wpa_supplicant();
+                    view_top_info_close();
                 }
             }
-        }
-        else if (now_work->type == MAIN_WORK_WIFI_CONNECT)
-        {
-            if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
+            else if (now_work->type == MAIN_WORK_WIFI_SCAN)
             {
-                view_top_error_display(now_lang->setting_text12);
-            }
-            else
-            {
-                wifi_connect_t *wifi = static_cast<wifi_connect_t *>(now_work->data);
-                std::string ssid = std::string(wifi->ssid);
-                std::string pwd = std::string(wifi->pwd);
-                delete wifi;
-                if (!wifi_connect(ssid, pwd))
+                if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
                 {
-                    view_top_error_display(now_lang->setting_text15);
+                    view_top_error_display(now_lang->setting_text12);
                 }
-            }
-        }
-        else if (now_work->type == MAIN_WORK_WIFI_DISCONNECT)
-        {
-            if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
-            {
-                view_top_error_display(now_lang->setting_text12);
-            }
-            else
-            {
-                if (!wifi_remove())
+                else
                 {
-                    view_top_error_display(now_lang->setting_text19);
+                    std::vector<wifi_item_t> list;
+                    if (wifi_scan(list))
+                    {
+                        view_setting_wifi_list(list);
+                    }
+                    else
+                    {
+                        view_top_error_display(now_lang->setting_text13);
+                    }
                 }
             }
-        }
-        work_queue.pop();
-        delete now_work;
+            else if (now_work->type == MAIN_WORK_WIFI_CONNECT)
+            {
+                if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
+                {
+                    view_top_error_display(now_lang->setting_text12);
+                }
+                else
+                {
+                    wifi_connect_t *wifi = static_cast<wifi_connect_t *>(now_work->data);
+                    std::string ssid = std::string(wifi->ssid);
+                    std::string pwd = std::string(wifi->pwd);
+                    delete wifi;
+                    if (!wifi_connect(ssid, pwd))
+                    {
+                        view_top_error_display(now_lang->setting_text15);
+                    }
+                }
+            }
+            else if (now_work->type == MAIN_WORK_WIFI_DISCONNECT)
+            {
+                if (!wifi_have_device() || !wifi_is_wpa_supplicant_running())
+                {
+                    view_top_error_display(now_lang->setting_text12);
+                }
+                else
+                {
+                    if (!wifi_remove())
+                    {
+                        view_top_error_display(now_lang->setting_text19);
+                    }
+                }
+            }
+            work_queue.pop();
+            delete now_work;
 #endif
+        }
     }
     return NULL;
 }
@@ -216,6 +217,7 @@ void add_work(main_work_type work, void *data)
     item->type = work;
     item->data = data;
     work_queue.push(item);
+    sem_post(&work_sem);
 }
 
 void change_mode(main_mode_type mode)
@@ -247,7 +249,7 @@ void change_mode(main_mode_type mode)
     }
     else if (mode == MAIN_MODE_BLE)
     {
-        ble_start();
+        ble_init();
     }
     else if (mode == MAIN_MODE_USB)
     {
@@ -282,6 +284,8 @@ int main(int argc, char **argv)
 #ifdef BUILD_ARM
     event_init();
 #endif
+
+    sem_init(&work_sem, 0, 0);
 
     pthread_create(&tid, NULL, main_loop, NULL);
     pthread_setname_np(tid, "main_loop");

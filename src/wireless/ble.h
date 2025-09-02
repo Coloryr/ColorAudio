@@ -18,7 +18,7 @@ extern const char *adapter_path;
 extern ble_state ble_now_state;
 
 void ble_log_state_change();
-void ble_start();
+void ble_init();
 void ble_stop();
 void ble_run_loop();
 

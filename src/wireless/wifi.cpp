@@ -62,16 +62,6 @@ bool wifi_wpa_start()
 
 void wifi_terminate_wpa_supplicant()
 {
-    // std::string ctrl_path = "/var/run/wpa_supplicant/" WIFI_NAME;
-    // wpa_ctrl *ctrl = wpa_ctrl_open(ctrl_path.c_str());
-    // if (ctrl)
-    // {
-    //     char reply[128];
-    //     size_t len = sizeof(reply);
-    //     wpa_ctrl_request(ctrl, "TERMINATE", 9, reply, &len, nullptr);
-    //     wpa_ctrl_close(ctrl);
-    // }
-
     std::system(WIFI_STOP);
 }
 
@@ -311,7 +301,7 @@ bool wifi_get_state(wifi_state *state, std::string &ssid)
             uint32_t pos = line.find("=");
             if (pos != std::string::npos)
             {
-                ssid = line.substr(pos);
+                ssid = line.substr(pos + 1);
             }
         }
     }
@@ -384,35 +374,3 @@ bool wifi_get_level(int16_t *level)
 
     return true;
 }
-
-// void wifi_test()
-// {
-//     while (!have_wifi_device())
-//     {
-//         usleep(500000);
-//     }
-
-//     // terminate_wpa_supplicant();
-
-//     // usleep(500000);
-
-//     // wifi_wpa_start();
-
-//     // usleep(5000000);
-
-//     // std::vector<wifi_item_t> list;
-
-//     // if (wifi_scan(list))
-//     // {
-//     // }
-
-//     // std::string wifi = "coloryr";
-//     // std::string psk = "1234567890";
-//     // wifi_connect(wifi, psk);
-
-//     wifi_state state;
-//     wifi_get_state(&state);
-
-//     int16_t level;
-//     wifi_get_level(&level);
-// }
