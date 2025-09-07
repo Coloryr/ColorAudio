@@ -1,4 +1,4 @@
-26347065092644232
+26348824384234921
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -105055,6 +105055,13 @@ IPEX-SMD_BWIPX-1-001E
 0
 3
 3
+coloryr
+IPEX-SMD_BWIPX-3-001E-1
+
+
+0
+4
+4
 coloryr
 SOT-23
 SOT, 3 Pin (JEDEC TO-236 Var AB https://www.jedec.org/document_search?search_api_views_fulltext=TO-236), generated with kicad-footprint-generator ipc_gullwing_generator.py
