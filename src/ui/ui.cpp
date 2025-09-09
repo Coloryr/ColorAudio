@@ -136,6 +136,13 @@ void view_set_fft_data(uint16_t size, float *value)
             view_usb_set_fft_data(i, (uint16_t)(value[i] * 20));
         }
     }
+    else if (now_type == VIEW_BLE)
+    {
+        for (uint16_t i = 0; i < size; i++)
+        {
+            view_ble_set_fft_data(i, (uint16_t)(value[i] * 20));
+        }
+    }
 }
 
 void view_tick()

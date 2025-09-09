@@ -18,6 +18,7 @@
 
 GDBusConnection *ble_g_conn;
 ble_state ble_now_state = BLE_STATE_UNKNOW;
+bool is_playing = false;
 
 const char *adapter_path = "/org/bluez/hci0";
 
@@ -122,11 +123,11 @@ void ble_run_loop()
 
     LV_LOG_USER("蓝牙服务正在启动");
 
-    // ble_agent_init();
-    // ble_info_init();
+    ble_agent_init();
+    ble_info_init();
     bluez_alsa_start(ble_g_conn);
 
-    // ble_device_add();
+    ble_device_add();
 
     LV_LOG_USER("蓝牙服务已启动");
 
@@ -134,16 +135,16 @@ void ble_run_loop()
 
     LV_LOG_USER("蓝牙服务正在关闭");
 
-    // ble_set_discoverable(false);
-    // ble_set_pairable(false);
-    // ble_set_power(false);
+    ble_set_discoverable(false);
+    ble_set_pairable(false);
+    ble_set_power(false);
 
-    // ble_agent_close();
-    // ble_info_close();
+    ble_agent_close();
+    ble_info_close();
 
-    // bluez_alsa_close();
-    // g_main_loop_unref(main_loop);
-    // g_object_unref(ble_g_conn);
-    // ble_g_conn = NULL;
-    // main_loop = NULL;
+    bluez_alsa_close();
+    g_main_loop_unref(main_loop);
+    g_object_unref(ble_g_conn);
+    ble_g_conn = NULL;
+    main_loop = NULL;
 }

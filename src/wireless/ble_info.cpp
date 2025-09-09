@@ -81,6 +81,16 @@ static void on_music_properties_changed(
         {
             const gchar *status = g_variant_get_string(value, NULL);
             LV_LOG_USER("播放状态: %s", status);
+
+            if (g_str_equal(status, "playing"))
+            {
+                is_playing = true;
+            }
+            else
+            {
+                is_playing = false;
+            }
+            view_ble_update_info();
         }
         else if (g_str_equal(key, "Track"))
         {
@@ -102,6 +112,7 @@ static void on_music_properties_changed(
             if (g_variant_lookup(value, "Duration", "u", &duration))
             {
                 ble_duration = duration;
+                view_ble_update_time();
             }
 
             view_ble_update_info();
@@ -110,7 +121,7 @@ static void on_music_properties_changed(
         {
             ble_position = g_variant_get_uint32(value);
 
-            view_ble_update_info();
+            view_ble_update_time();
         }
         g_variant_unref(value);
     }
@@ -228,6 +239,7 @@ static void on_property_changed(
                 }
                 else
                 {
+                    is_playing = false;
                     ble_now_state = BLE_STATE_DISCONNECTED;
                     ble_log_state_change();
                     clear_device_path();
@@ -243,6 +255,7 @@ static void on_property_changed(
                     ble_duration = 0;
                     ble_position = 0;
                     view_ble_update_info();
+                    view_ble_update_time();
                 }
             }
             g_variant_unref(value);
@@ -346,29 +359,12 @@ fail:
 
 void ble_send_media_command(ble_music_command command)
 {
-    if (!device_player_path || !command)
+    if (!device_player_path)
     {
         return;
     }
 
     const char *method = NULL;
-    GError *error = NULL;
-    GVariant *result;
-    GDBusProxy *proxy = g_dbus_proxy_new_sync(
-        ble_g_conn,
-        G_DBUS_PROXY_FLAGS_NONE,
-        NULL,
-        "org.bluez",
-        device_player_path,
-        "org.bluez.MediaPlayer1",
-        NULL,
-        &error);
-    if (error)
-    {
-        LV_LOG_ERROR("Failed to create MediaControl proxy: %s", error->message);
-        g_error_free(error);
-        goto fail;
-    }
 
     if (command == BLE_MUSIC_COMMAND_NEXT)
     {
@@ -389,12 +385,18 @@ void ble_send_media_command(ble_music_command command)
     else
     {
         LV_LOG_ERROR("Unknown media command: %d", command);
-        goto fail;
+        return;
     }
 
-    result = g_dbus_proxy_call_sync(
-        proxy,
+    GError *error = NULL;
+
+    GVariant *result = g_dbus_connection_call_sync(
+        ble_g_conn,
+        "org.bluez",
+        device_player_path,
+        "org.bluez.MediaPlayer1",
         method,
+        NULL,
         NULL,
         G_DBUS_CALL_FLAGS_NONE,
         -1,
@@ -402,16 +404,16 @@ void ble_send_media_command(ble_music_command command)
         &error);
     if (error)
     {
-        LV_LOG_ERROR("Failed to send %s command: %s", method, error->message);
+        LV_LOG_ERROR("Failed to create MediaControl proxy: %s", error->message);
         g_error_free(error);
     }
-    else if (result)
+    else
     {
-        g_variant_unref(result);
+        if (result != NULL)
+        {
+            g_variant_unref(result); // 释放结果变量
+        }
     }
-
-fail:
-    g_object_unref(proxy);
 }
 
 void ble_info_init()

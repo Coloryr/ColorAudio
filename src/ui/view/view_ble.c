@@ -20,7 +20,6 @@ static lv_obj_t *volume_obj;
 static lv_obj_t *play_obj;
 static lv_obj_t *slider_obj;
 static lv_obj_t *button_par_obj;
-static lv_obj_t *volume_pan_obj;
 
 static lv_obj_t *create_title_box(lv_obj_t *parent)
 {
@@ -173,7 +172,6 @@ static lv_obj_t *create_timer_box(lv_obj_t *parent)
 
 lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t prev,
                         lv_event_cb_t play, lv_event_cb_t next,
-                        lv_event_cb_t volume, lv_event_cb_t mute,
                         lv_event_cb_t par)
 {
     lv_obj_t *obj = lv_obj_create(parent);
@@ -201,19 +199,13 @@ lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t prev,
     lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 120);
 
     spectrum_obj = lv_spectrum_create(obj);
-    lv_obj_align(spectrum_obj, LV_ALIGN_TOP_MID, 0, 420);
+    lv_obj_align(spectrum_obj, LV_ALIGN_TOP_MID, 0, 380);
 
     lv_obj_t *ctrl = create_ctrl_box(obj, prev, play, next);
     lv_obj_align(ctrl, LV_ALIGN_DEFAULT, 0, 440);
 
-    volume_pan_obj = lv_volume_create(obj, volume, mute);
-    lv_volume_set_dir_hor(volume_pan_obj, 360);
-    lv_volume_show(volume_pan_obj);
-    lv_volume_timer_close(volume_pan_obj);
-    lv_obj_align(volume_pan_obj, LV_ALIGN_TOP_MID, 0, 560);
-
     lv_obj_t *time_box = create_timer_box(obj);
-    lv_obj_align(time_box, LV_ALIGN_DEFAULT, 0, 610);
+    lv_obj_align(time_box, LV_ALIGN_DEFAULT, 0, 580);
 
     button_par_obj = lv_button_create(obj);
     lv_obj_align(button_par_obj, LV_ALIGN_TOP_MID, 0, 660);
@@ -289,4 +281,14 @@ void lv_ble_connect(const char *text)
 void lv_ble_disconnect()
 {
     lv_label_set_text(state_obj, now_lang->ble_text3);
+}
+
+void lv_ble_fft_load()
+{
+    lv_obj_invalidate(spectrum_obj);
+}
+
+void lv_ble_set_fft_data(uint16_t index, uint16_t value)
+{
+    lv_spectrum_set_value(spectrum_obj, index, value);
 }

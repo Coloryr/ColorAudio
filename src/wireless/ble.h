@@ -16,6 +16,7 @@ typedef enum
 extern GDBusConnection *ble_g_conn;
 extern const char *adapter_path;
 extern ble_state ble_now_state;
+extern bool is_playing;
 
 void ble_log_state_change();
 void ble_init();

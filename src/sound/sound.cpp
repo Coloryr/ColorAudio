@@ -113,6 +113,7 @@ static bool find_controls(snd_ctl_t *ctl, snd_ctl_elem_id_t *ctl_id, bool *on)
                 snd_ctl_elem_read(ctl, value);
 
                 *on = snd_ctl_elem_value_get_boolean(value, 0);
+                LV_LOG_USER("Headphone Jack: %d", *on);
             }
 #endif
         }
