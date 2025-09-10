@@ -262,39 +262,38 @@ void play_list_add_item(std::string &path, std::string &title, std::string &auth
 {
     play_item *item = new play_item();
     item->time = time;
-    item->path = path;
-    item->title = title;
-    item->auther = auther;
 
-    // if (path.length() + str_map_index >= str_map.get_size())
-    // {
-    //     str_map.resize(str_map.get_size() + DEFAULT_STR_MAP);
-    // }
-    // item->path = reinterpret_cast<char *>(str_map.get_data()) + str_map_index;
-    // memcpy(item->path, path.c_str(), path.length());
-    // str_map_index += path.length();
-    // str_map.get_data()[str_map_index] = 0;
-    // str_map_index += 1;
+    if (path.length() + str_map_index >= str_map.get_size())
+    {
+        str_map.resize(str_map.get_size() + DEFAULT_STR_MAP);
+    }
+    item->path = reinterpret_cast<char *>(str_map.get_data()) + str_map_index;
+    memcpy(item->path, path.c_str(), path.length());
+    str_map_index += path.length();
+    str_map.get_data()[str_map_index] = 0;
+    str_map_index += 1;
 
-    // if (title.length() + str_map_index >= str_map.get_size())
-    // {
-    //     str_map.resize(str_map.get_size() + DEFAULT_STR_MAP);
-    // }
-    // item->title = reinterpret_cast<char *>(str_map.get_data()) + str_map_index;
-    // memcpy(item->title, title.c_str(), title.length());
-    // str_map_index += title.length();
-    // str_map.get_data()[str_map_index] = 0;
-    // str_map_index += 1;
+    if (title.length() + str_map_index >= str_map.get_size())
+    {
+        str_map.resize(str_map.get_size() + DEFAULT_STR_MAP);
+    }
+    item->title = reinterpret_cast<char *>(str_map.get_data()) + str_map_index;
+    memcpy(item->title, title.c_str(), title.length());
+    str_map_index += title.length();
+    str_map.get_data()[str_map_index] = 0;
+    str_map_index += 1;
 
-    // if (auther.length() + str_map_index >= str_map.get_size())
-    // {
-    //     str_map.resize(str_map.get_size() + DEFAULT_STR_MAP);
-    // }
-    // item->auther = reinterpret_cast<char *>(str_map.get_data()) + str_map_index;
-    // memcpy(item->auther, auther.c_str(), auther.length());
-    // str_map_index += auther.length();
-    // str_map.get_data()[str_map_index] = 0;
-    // str_map_index += 1;
+    if (auther.length() + str_map_index >= str_map.get_size())
+    {
+        str_map.resize(str_map.get_size() + DEFAULT_STR_MAP);
+    }
+    item->auther = reinterpret_cast<char *>(str_map.get_data()) + str_map_index;
+    memcpy(item->auther, auther.c_str(), auther.length());
+    str_map_index += auther.length();
+    str_map.get_data()[str_map_index] = 0;
+    str_map_index += 1;
+
+    LV_LOG_USER("add music: %s", item->path);
 
     play_list.push_back(item);
 }

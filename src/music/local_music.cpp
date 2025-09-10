@@ -145,7 +145,7 @@ static void *play_scan_run(void *arg)
     uint32_t time = clock_ms();
     uint32_t time1;
     local_music_scan_now = true;
-    play_list_close();
+    // play_list_close();
     play_read_list(READ_DIR);
 
     time1 = clock_ms();
@@ -158,7 +158,7 @@ static void *play_scan_run(void *arg)
         return NULL;
     }
 
-    play_list_sort_by_pinyin();
+    // play_list_sort_by_pinyin();
 
     time1 = clock_ms();
     LV_LOG_USER("sort time: %d", time1 - time);

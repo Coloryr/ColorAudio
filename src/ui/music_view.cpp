@@ -448,15 +448,15 @@ void view_muisc_list_reload(play_item *item)
     if (view != NULL)
     {
         uint32_t time = static_cast<uint32_t>(item->time);
-        lv_label_set_text(view->title, item->title.c_str());
-        lv_label_set_text(view->auther, item->auther.c_str());
+        lv_label_set_text(view->title, item->title);
+        lv_label_set_text(view->auther, item->auther);
         lv_label_set_text_fmt(view->time, "%" LV_PRIu32 ":%02" LV_PRIu32, time / 60, time % 60);
     }
 }
 
 void view_muisc_list_add(play_item *item)
 {
-    view_play_item_t *view = view_list_add_item(item->title.c_str(), item->auther.c_str(),
+    view_play_item_t *view = view_list_add_item(item->title, item->auther,
                                                 static_cast<uint32_t>(item->time), play_click_event_cb);
     view->index = item->index;
     view_play_list[item->index] = view;
