@@ -6,10 +6,23 @@
 #include "net/music_api.h"
 #include "ui/music_view.h"
 
-#include "cryp163.h"
+#include "ncmcrypt.h"
+#include "aes.h"
+#include "base64.h"
 #include "music163.h"
 
 using namespace coloraudio::lyric;
+
+std::string music_163_dep(std::string &input)
+{
+    std::string decoded;
+    std::string dst;
+
+    Base64::Decode(input, decoded);
+
+    aesEcbDecrypt(NeteaseCrypt::sModifyKey, decoded, dst);
+    return dst;
+}
 
 bool music_lyric_163(uint64_t id, LyricParser **ldata, LyricParser **trdata)
 {
@@ -45,7 +58,7 @@ bool music_lyric_163(uint64_t id, LyricParser **ldata, LyricParser **trdata)
 bool music_lyric_163(std::string &comment, LyricParser **ldata, LyricParser **trdata)
 {
     std::string key = comment.substr(22);
-    std::string temp = dep(key);
+    std::string temp = music_163_dep(key);
     if (temp.empty())
     {
         return false;

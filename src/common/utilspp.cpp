@@ -1,13 +1,13 @@
-#include <string>
-
 #include "utilspp.h"
 
-bool startsWith(const std::string &str, const std::string prefix)
+#include <string>
+
+bool start_with(const std::string &str, const std::string &prefix)
 {
     return (str.rfind(prefix, 0) == 0);
 }
 
-bool endsWith(const std::string &str, const std::string suffix)
+bool end_with(const std::string &str, const std::string &suffix)
 {
     if (suffix.length() > str.length())
     {
@@ -17,16 +17,23 @@ bool endsWith(const std::string &str, const std::string suffix)
     return (str.rfind(suffix) == (str.length() - suffix.length()));
 }
 
-void getfilename(std::string &filename, std::string &name)
+std::string get_file_name(std::string &path)
 {
-    int len = filename.length();
+    int len = path.length();
     int i;
     for (i = (len - 1); i >= 0; i--)
     {
-        if ((filename[i] == '\\') || (filename[i] == '/'))
+        if ((path[i] == '\\') || (path[i] == '/'))
         {
             break;
         }
     }
-    name = filename.substr(i + 1);
+    return path.substr(i + 1);
+}
+
+std::string trim(std::string &str)
+{
+    str.erase(0, str.find_first_not_of(" \t")); // 去掉头部空格
+    str.erase(str.find_last_not_of(" \t") + 1); // 去掉尾部空格
+    return str;
 }

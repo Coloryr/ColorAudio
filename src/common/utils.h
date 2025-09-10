@@ -10,12 +10,12 @@
 extern "C" {
 #endif
 
-// /**
-//  * 计算一个数据长度，到0结束计算
-//  * @param buffer 数据
-//  * @return 数据长度
-//  */
-// uint32_t get_length(uint8_t *buffer);
+/**
+ * 计算一个数据长度，到0结束计算
+ * @param buffer 数据
+ * @return 数据长度
+ */
+uint32_t get_length(uint8_t *buffer);
 /**
  * 将utf16字符转utf8字符
  * @param input 输入的字符

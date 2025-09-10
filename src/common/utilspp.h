@@ -3,8 +3,27 @@
 
 #include <string>
 
-bool startsWith(const std::string &str, const std::string prefix);
-bool endsWith(const std::string &str, const std::string suffix);
-void getfilename(std::string &filename, std::string &name);
+/**
+ * 查找字符串是否以某个字符串开始
+ * @param str 需要判断的字符串
+ * @param prefix 需要查找的字符串
+ * @return 判断结果
+ */
+bool start_with(const std::string &str, const std::string &prefix);
+/**
+ * 查找字符串是否以某个字符串结束
+ * @param str 需要判断的字符串
+ * @param prefix 需要查找的字符串
+ * @return 判断结果
+ */
+bool end_with(const std::string &str, const std::string &suffix);
+/**
+ * 获取路径中的文件名
+ * @param path 路径
+ * @return 文件名
+ */
+std::string get_file_name(std::string &path);
+
+std::string trim(std::string &str);
 
 #endif // __UTILSPP_H__

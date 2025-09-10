@@ -107,7 +107,7 @@ void load_mp4(DataItem *item)
     uint8_t *temp = static_cast<uint8_t *>(malloc(8192));
     uint32_t temp_size = 8192;
     uint32_t i = 0;
-    if (MP4D_open(&demuxer, mp4_read_cb, &st, item->size))
+    if (MP4D_open(&demuxer, mp4_read_cb, &st, item->get_size()))
     {
         if (demuxer.track_count < 1)
         {

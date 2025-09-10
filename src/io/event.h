@@ -1,30 +1,53 @@
 #ifndef __EVENT_H__
 #define __EVENT_H__
 
-#include <linux/input.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <thread>
-#include <vector>
-#include <mutex>
-
 #ifdef BUILD_ARM
 
-class InputDeviceListener
+#include <string>
+
+enum KEY_EVENT
 {
-public:
-    InputDeviceListener(const char *device_path);
-    ~InputDeviceListener();
-
-    int fd;
-    std::string device_path;
-    bool running;
-
-    void read_event();
+    KEY_0 = 0b000001,
+    KEY_1 = 0b000010,
+    KEY_2 = 0b000100,
+    KEY_3 = 0b001000,
+    KEY_POWER = 0b010000,
+    KEY_DOWN  = 0b100000,
+    KEY_UNKNOW = -1
 };
+
+enum ROTATE_EVENT
+{
+    ROTATE_LEFT,
+    ROTATE_RIGHT,
+    ROTATE_UNKNOW
+};
+
+namespace coloraudio::io::event
+{
+    class InputDeviceListener
+    {
+    private:
+        int fd;
+        std::string device_path;
+        bool is_run;
+
+    public:
+        InputDeviceListener(const char *device);
+        ~InputDeviceListener();
+
+        void read_event();
+
+        const bool can_run()
+        {
+            return is_run;
+        }
+    };
+}
 
 extern bool headphone_1_in;
 extern bool headphone_2_in;
+extern KEY_EVENT key_data;
 
 void event_init();
 void event_stop();

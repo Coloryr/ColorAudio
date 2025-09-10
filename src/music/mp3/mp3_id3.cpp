@@ -224,7 +224,7 @@ bool Mp3Id3::get_info()
             uint32_t description = skip_data(st);
             uint32_t imageSize = size - (1 + mimeType + 1 + 1 + description + 1);
             image = new DataItem(size);
-            st->read(image->data, size);
+            st->read(image->get_data(), size);
             break;
         }
         default:

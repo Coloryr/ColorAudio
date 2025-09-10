@@ -13,6 +13,6 @@
 extern bool local_music_scan_now;
 
 void local_music_init();
-void local_music_run();
+void local_music_run(play_item *item);
 
 #endif

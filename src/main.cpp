@@ -78,19 +78,19 @@ static void *work_loop(void *arg)
                 if (Config::get_config_wifi_power())
                 {
                     view_top_info_display(now_lang->setting_text7);
-                    set_wireless_power_on();
+                    wifi_wait_ready();
                     view_top_info_close();
                 }
                 else
                 {
                     view_top_info_display(now_lang->setting_text8);
-                    set_wireless_power_off();
+                    wifi_wait_deactivate();
                     view_top_info_close();
                 }
             }
             else if (now_work->type == MAIN_WORK_WIFI_ENABLE)
             {
-                if (Config::get_config_wifi_power())
+                if (Config::get_config_wifi_enable())
                 {
                     if (!wifi_have_device())
                     {
@@ -192,7 +192,7 @@ static void *main_loop(void *arg)
         {
             view_top_info_display("正在启用蓝牙");
 #ifdef BUILD_ARM
-            set_wireless_power_on();
+            wifi_wait_ready();
 #endif
             view_top_info_close();
             ble_run_loop();

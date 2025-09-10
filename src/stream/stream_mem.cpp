@@ -26,8 +26,8 @@ MemoryStream::MemoryStream(DataItem *item) : BaseStream(STREAM_TYPE_MEM)
         throw "[stream] item is null";
     }
 
-    buffer_mem = item->data;
-    buffer_size = item->size;
+    buffer_mem = item->get_data();
+    buffer_size = item->get_size();
 }
 
 MemoryStream::~MemoryStream()

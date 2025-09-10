@@ -49,7 +49,7 @@ static boost::container::flat_map<uint32_t, view_play_item_t *> view_play_list;
 
 static bool is_search = false;
 
-static void search_done(bool iscancel, void* data);
+static void search_done(bool iscancel, void *data);
 static void clear_click_event_cb(lv_event_t *e);
 static void search_click_event_cb(lv_event_t *e);
 static void play_click_event_cb(lv_event_t *e);
@@ -178,7 +178,7 @@ static void timer_tick(lv_timer_t *timer)
     {
         if (play_image && play_image)
         {
-            lv_music_set_image(play_image->data, play_image->size);
+            lv_music_set_image(play_image->get_data(), play_image->get_size());
         }
         else
         {
@@ -221,9 +221,10 @@ static void timer_tick(lv_timer_t *timer)
     {
         view_muisc_list_clear();
 
-        for (const auto &it : play_list)
+        for (uint32_t i = 0; i < play_list_get_count(); i++)
         {
-            view_muisc_list_add(it);
+            play_item *item = play_list_get_item(i);
+            view_muisc_list_add(item);
         }
 
         view_music_list_check(play_now_index, true);
@@ -233,9 +234,10 @@ static void timer_tick(lv_timer_t *timer)
 
     if (update_list)
     {
-        for (const auto &it : play_list)
+        for (uint32_t i = 0; i < play_list_get_count(); i++)
         {
-            view_muisc_list_reload(it);
+            play_item *item = play_list_get_item(i);
+            view_muisc_list_reload(item);
         }
         update_list = false;
     }

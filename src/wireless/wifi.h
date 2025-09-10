@@ -44,6 +44,8 @@ typedef struct
     uint16_t frequency;
 } wifi_item_t;
 
+void wifi_wait_ready();
+void wifi_wait_deactivate();
 bool wifi_remove();
 bool wifi_have_device();
 bool wifi_is_wpa_supplicant_running();

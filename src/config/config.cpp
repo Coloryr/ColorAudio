@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <stdio.h>
 #include <string>
 #include <unistd.h>
@@ -7,8 +9,6 @@
 #include <json/json.hpp>
 
 #include "stream/stream_file.h"
-
-#include "config.h"
 
 using namespace coloraudio::config;
 using namespace coloraudio::stream;
@@ -37,7 +37,7 @@ static pthread_t save_tid;
 
 static bool need_save;
 
-static void *config_save(void *arg)
+static void *config_save_run(void *arg)
 {
     for (;;)
     {
@@ -157,7 +157,7 @@ void Config::load_config()
     void *retval;
     if (save_tid == 0 || pthread_tryjoin_np(save_tid, &retval) == 0)
     {
-        int res = pthread_create(&save_tid, NULL, config_save, NULL);
+        int res = pthread_create(&save_tid, NULL, config_save_run, NULL);
         if (res)
         {
             LV_LOG_ERROR("Music play list read thread run fail: %d", res);

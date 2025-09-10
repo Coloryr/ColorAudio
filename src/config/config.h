@@ -1,12 +1,12 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#include <stdint.h>
+#include <string>
+
 #include "music/music.h"
 #include "main.h"
 #include "ui/ui.h"
-
-#include <stdint.h>
-#include <string>
 
 #define MUSIC_CONFIG_NAME "config.json"
 
