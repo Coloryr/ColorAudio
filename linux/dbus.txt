@@ -6,8 +6,6 @@ dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D
 
 dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/sep1 org.freedesktop.DBus.Introspectable.Introspect
 
-dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0 org.freedesktop.DBus.Introspectable.Introspect
-
 dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0/Filesystem org.freedesktop.DBus.Introspectable.Introspect
 
 dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0/NowPlaying org.freedesktop.DBus.Introspectable.Introspect
@@ -15,6 +13,11 @@ dbus-send --system --dest=org.bluez --print-reply /org/bluez/hci0/dev_E4_BC_AA_D
 dbus-send --system --dest=org.bluez \
   --print-reply \
   /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76 \
+  org.freedesktop.DBus.Introspectable.Introspect
+
+dbus-send --system --dest=org.bluez \
+  --print-reply \
+  /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0 \
   org.freedesktop.DBus.Introspectable.Introspect
 
 dbus-send --system --dest=org.bluez \
@@ -51,3 +54,8 @@ dbus-send --system --dest=org.bluez \
   org.freedesktop.DBus.Properties.Get \
   string:"org.bluez.Device1" \
   string:"Alias"
+
+dbus-send --system --dest=org.bluez \
+  --print-reply \
+  /org/bluez/hci0/dev_E4_BC_AA_D4_9F_76/player0 \
+  org.bluez.MediaPlayer1.Play
