@@ -38,3 +38,14 @@ DataItem *DataItem::copy()
 {
     return new DataItem(data, size);
 }
+
+void DataItem::resize(uint32_t size)
+{
+    void *temp = realloc(data, size);
+    if (temp == NULL)
+    {
+        throw "resize is zero";
+    }
+    this->size = size;
+    data = static_cast<uint8_t *>(temp);
+}

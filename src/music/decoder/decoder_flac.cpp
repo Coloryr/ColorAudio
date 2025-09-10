@@ -175,14 +175,14 @@ void DecoderFlac::metadata_callback(const ::FLAC__StreamMetadata *metadata)
 
 void DecoderFlac::error_callback(::FLAC__StreamDecoderErrorStatus status)
 {
-    LV_LOG_ERROR("Error: %s\n", FLAC__StreamDecoderErrorStatusString[status]);
+    LV_LOG_ERROR("Error: %s", FLAC__StreamDecoderErrorStatusString[status]);
 }
 
 bool DecoderFlac::decode_start()
 {
     if (init() != FLAC__STREAM_DECODER_INIT_STATUS_OK || !process_until_end_of_metadata())
     {
-        LV_LOG_ERROR("Decoding interrupted\n");
+        LV_LOG_ERROR("Decoding interrupted");
         return false;
     }
 
@@ -211,7 +211,7 @@ bool DecoderFlac::decode_start()
 
         if (!process_single())
         {
-            LV_LOG_ERROR("Decoding interrupted\n");
+            LV_LOG_ERROR("Decoding interrupted");
             return false;
         }
 

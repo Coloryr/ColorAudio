@@ -16,9 +16,9 @@
 
 int32_t *sound_fft_buf;
 
-static uint16_t input_fft_index;
-static float input_fft_data[POINTS];
-static float input_fft_data_imag[POINTS];
+static uint16_t fft_index;
+static float fft_data[POINTS];
+static float fft_data_imag[POINTS];
 static float freqs[POINTS / 2];
 static int freq_bands[] = {50, 69, 94, 129, 176, 241, 331, 453, 620, 850, 1200, 1600, 2200, 3000, 4100, 5600, 7700, 11000, 14000, 20000};
 
@@ -46,22 +46,22 @@ static bool fft_fill_data(uint32_t down, uint32_t count, uint16_t *down_index)
 
         if (count >= POINTS * *down_index)
         {
-            input_fft_index = 0;
-            for (size_t i = 0; input_fft_index < POINTS; i += *down_index)
+            fft_index = 0;
+            for (size_t i = 0; fft_index < POINTS; i += *down_index)
             {
-                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
+                fft_data_imag[fft_index] = fft_data[fft_index] =
                     ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
-                input_fft_index++;
+                fft_index++;
             }
         }
         else
         {
             for (size_t i = 0; i < count; i += *down_index)
             {
-                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
+                fft_data_imag[fft_index] = fft_data[fft_index] =
                     ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
-                input_fft_index++;
-                if (input_fft_index >= POINTS)
+                fft_index++;
+                if (fft_index >= POINTS)
                 {
                     break;
                 }
@@ -72,29 +72,29 @@ static bool fft_fill_data(uint32_t down, uint32_t count, uint16_t *down_index)
     {
         if (count >= POINTS)
         {
-            input_fft_index = 0;
+            fft_index = 0;
             for (size_t i = 0; i < POINTS; i++)
             {
-                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
+                fft_data_imag[fft_index] = fft_data[fft_index] =
                     ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
-                input_fft_index++;
+                fft_index++;
             }
         }
         else
         {
             for (size_t i = 0; i < count; i++)
             {
-                input_fft_data_imag[input_fft_index] = input_fft_data[input_fft_index] =
+                fft_data_imag[fft_index] = fft_data[fft_index] =
                     ((float)sound_fft_buf[i]) / down * POINTS / (POINTS / 2) / SQRT2;
-                input_fft_index++;
-                if (input_fft_index >= POINTS)
+                fft_index++;
+                if (fft_index >= POINTS)
                 {
                     break;
                 }
             }
         }
     }
-    if (input_fft_index < POINTS)
+    if (fft_index < POINTS)
     {
         skip = true;
     }
@@ -108,9 +108,9 @@ void fft_fill_count(uint32_t down, uint32_t count)
     {
         return;
     }
-    input_fft_index = 0;
+    fft_index = 0;
 
-    fft_run(input_fft_data, input_fft_data_imag, POINTS);
+    fft_run(fft_data, fft_data_imag, POINTS);
 
     uint16_t len = POINTS / 2;
 
@@ -139,7 +139,7 @@ void fft_fill_count(uint32_t down, uint32_t count)
 
         for (int j = start_idx; j < end_idx; j++)
         {
-            bin_values[bin] += input_fft_data[j];
+            bin_values[bin] += fft_data[j];
         }
         bin_values[bin] /= (end_idx - start_idx);
         bin_values[bin] = log10f(bin_values[bin]);

@@ -1,47 +1,48 @@
+#include "event.h"
+
 #include <fcntl.h>
 #include <unistd.h>
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
+#include <pthread.h>
+#include <linux/input.h>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <string>
 
 #include "ui/header_view.h"
 
-#include "event.h"
-
 #ifdef BUILD_ARM
+
+using namespace coloraudio::io::event;
 
 bool headphone_1_in = false;
 bool headphone_2_in = false;
+KEY_EVENT key_data = KEY_UNKNOW;
 
 static std::vector<InputDeviceListener *> instances;
-static std::mutex instances_mutex;
+static pthread_t event_thread;
 static bool loop_running = false;
-static std::thread event_thread;
 
-InputDeviceListener::InputDeviceListener(const char *device_path)
-    : device_path(device_path), running(false)
+InputDeviceListener::InputDeviceListener(const char *device)
+    : device_path(device)
 {
-    fd = open(device_path, O_RDONLY | O_NONBLOCK);
+    fd = open(device, O_RDONLY | O_NONBLOCK);
     if (fd < 0)
     {
-        throw std::runtime_error("Failed to open input device");
+        throw "Failed to open input device";
     }
-
-    std::lock_guard<std::mutex> lock(instances_mutex);
-    instances.push_back(this);
-    running = true;
+    is_run = true;
 }
 
 InputDeviceListener::~InputDeviceListener()
 {
-    running = false;
     if (fd >= 0)
     {
         close(fd);
     }
-
-    std::lock_guard<std::mutex> lock(instances_mutex);
-    instances.erase(std::remove(instances.begin(), instances.end(), this));
 }
 
 void InputDeviceListener::read_event()
@@ -66,65 +67,58 @@ void InputDeviceListener::read_event()
             }
             view_header_update();
         }
-        else
-        {
-            std::cout << "Event from " << device_path
-                      << ": type=" << ev.type
-                      << ", code=" << ev.code
-                      << ", value=" << ev.value << std::endl;
-        }
+
+        LV_LOG_USER("Event from %s: type=%d, code=%d, value=%d", device_path, ev.type, ev.code, ev.value);
     }
     else if (bytes == -1 && errno != EAGAIN)
     {
-        running = false;
-        delete this;
+        LV_LOG_ERROR("Eevnt read: %s, with error: %d", device_path, bytes);
+        is_run = false;
     }
 }
 
-static void event_loop()
+static void *event_loop(void *arg)
 {
     while (loop_running)
     {
-        std::vector<InputDeviceListener *> current_instances;
+        for (auto listener : instances)
         {
-            std::lock_guard<std::mutex> lock(instances_mutex);
-            current_instances = instances;
-        }
-
-        for (auto listener : current_instances)
-        {
-            if (listener->running)
+            if (listener->can_run())
             {
                 listener->read_event();
             }
         }
         usleep(10000); // 10ms
     }
+
+    return nullptr;
 }
 
 void event_init()
 {
-    new InputDeviceListener("/dev/input/event0");
-    new InputDeviceListener("/dev/input/event3");
-    new InputDeviceListener("/dev/input/event4");
-    new InputDeviceListener("/dev/input/event5");
+    instances.push_back(new InputDeviceListener("/dev/input/event0"));
+    instances.push_back(new InputDeviceListener("/dev/input/event3"));
+    instances.push_back(new InputDeviceListener("/dev/input/event4"));
+    instances.push_back(new InputDeviceListener("/dev/input/event5"));
 
     if (!loop_running)
     {
         loop_running = true;
-        event_thread = std::thread(event_loop);
+        int res = pthread_create(&event_thread, NULL, event_loop, NULL);
+        if (!res)
+        {
+            LV_LOG_ERROR("Event read thread run fail: %d", res);
+        }
     }
 }
 
 void event_stop()
 {
-    if (loop_running)
+    loop_running = false;
+    if (event_thread)
     {
-        loop_running = false;
-        if (event_thread.joinable())
-        {
-            event_thread.join();
-        }
+        pthread_detach(event_thread);
+        event_thread = NULL;
     }
 }
 

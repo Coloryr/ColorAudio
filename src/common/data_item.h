@@ -11,7 +11,6 @@ namespace coloraudio::common
     class DataItem
     {
     private:
-    public:
         /**
          * 数据
          */
@@ -21,6 +20,7 @@ namespace coloraudio::common
          */
         uint32_t size;
 
+    public:
         /**
          * 创建一个数据存储
          * @param size 存储大小
@@ -35,6 +35,21 @@ namespace coloraudio::common
          * 创建一个副本
          */
         DataItem *copy();
+        /**
+         * 修改大小
+         * @param size 新的大小
+         */
+        void resize(uint32_t size);
+
+        uint8_t* get_data() const
+        {
+            return data;
+        }
+
+        uint32_t get_size() const
+        {
+            return size;
+        }
     };
 }
 

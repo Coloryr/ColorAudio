@@ -9,6 +9,9 @@
 typedef struct
 {
     uint32_t index;
+    // char* path;
+    // char* title;
+    // char* auther;
     std::string path;
     std::string title;
     std::string auther;

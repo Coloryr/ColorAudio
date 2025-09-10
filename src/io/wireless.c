@@ -8,21 +8,8 @@
 
 #if BUILD_ARM
 
-void set_wireless_power_on()
+void wireless_delete()
 {
-    if (!get_wireless_power())
-    {
-        set_wireless_power(true);
-        sleep(10);
-    }
-}
-
-void set_wireless_power_off()
-{
-    if (get_wireless_power())
-    {
-        set_wireless_power(false);
-    }
     if (access(WIFI_DEVICE_USB, F_OK) == 0)
     {
         int fd = open(WIFI_DEVICE_USB, O_WRONLY);

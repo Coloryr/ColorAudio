@@ -1,22 +1,23 @@
 #include "music.h"
 
+#include <stdint.h>
+#include <pthread.h>
+#include <deque>
+
 #include "lyric.h"
 #include "local_music.h"
 #include "music_player.h"
 
 #include "163/music163.h"
 
-#include "../ui/lang.h"
-#include "../ui/ui.h"
-#include "../ui/music_view.h"
-#include "../ui/info_view.h"
-#include "../config/config.h"
-#include "../common/utils.h"
-#include "../io/gpio.h"
-
-#include <stdint.h>
-#include <pthread.h>
-#include <deque>
+#include "ui/lang.h"
+#include "ui/ui.h"
+#include "ui/music_view.h"
+#include "ui/info_view.h"
+#include "config/config.h"
+#include "common/utils.h"
+#include "common/utilspp.h"
+#include "io/gpio.h"
 
 using namespace coloraudio::lyric;
 using namespace coloraudio::stream;
@@ -68,7 +69,7 @@ music_type music_test_type(BaseStream *st)
     else if (buffer[0] == 'C' && buffer[1] == 'T' && buffer[2] == 'E' && buffer[3] == 'N' &&
              buffer[4] == 'F' && buffer[5] == 'D' && buffer[6] == 'A' && buffer[7] == 'M')
     {
-        return MUSIC_TYPE_NCM;   
+        return MUSIC_TYPE_NCM;
     }
 
     return MUSIC_TYPE_UNKNOW;
@@ -262,22 +263,48 @@ music_run_type get_music_run()
 
 void music_run_loop()
 {
-    if (music_run == MUSIC_RUN_LOCAL)
+    if (local_music_scan_now)
     {
-        if (local_music_scan_now)
+        if (get_view_mode() == VIEW_MUSIC && !view_top_info_is_display())
         {
-            if (get_view_mode() == VIEW_MUSIC && !view_top_info_is_display())
-            {
-                view_top_info_display(now_lang->music_text9);
-            }
+            view_top_info_display(now_lang->music_text9);
+        }
+    }
+    else
+    {
+        if (get_view_mode() == VIEW_MUSIC && view_top_info_is_display())
+        {
+            view_top_info_close();
+        }
+
+        pthread_mutex_lock(&play_mutex);
+        play_item *item = play_list_get_now();
+
+        if (start_with(item->path, "http"))
+        {
         }
         else
         {
-            if (get_view_mode() == VIEW_MUSIC && view_top_info_is_display())
-            {
-                view_top_info_close();
-            }
-            local_music_run();
+            local_music_run(item);
+            std::string path = std::string(item->path);
+            std::string name = get_file_name(path);
+            Config::set_config_music_name(name);
+            Config::set_config_music_index(play_now_index);
+            Config::save_config();
         }
+
+        usleep(1000);
+
+        // 等待播放结束
+        pthread_mutex_lock(&play_mutex);
+
+        music_end();
+
+        pthread_mutex_unlock(&play_mutex);
     }
+
+    // if (music_run == MUSIC_RUN_LOCAL)
+    // {
+
+    // }
 }

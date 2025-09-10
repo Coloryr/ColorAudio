@@ -152,20 +152,26 @@ std::string HttpConnection::http_get_string(const std::string &url)
 DataItem *HttpConnection::http_get_data(const std::string &url)
 {
     http::response<http::dynamic_body> res;
+    DataItem *item = nullptr;
     try
     {
         auto parsed = parse_url(url);
         http_get_impl(parsed, res);
         auto data = res.body().data();
-        DataItem *item = new DataItem(data.buffer_bytes());
-        asio::buffer_copy(asio::buffer(item->data, item->size), data);
+        item = new DataItem(data.buffer_bytes());
+        asio::buffer_copy(asio::buffer(item->get_data(), item->get_size()), data);
         return item;
     }
     catch (const std::exception &e)
     {
     }
 
-    return NULL;
+    if(item)
+    {
+        delete item;
+    }
+
+    return nullptr;
 }
 
 HttpConnection::HttpConnection(std::string &url)

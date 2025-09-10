@@ -142,14 +142,13 @@ void FlacMetadata::metadata_callback(const ::FLAC__StreamMetadata *metadata)
     else if (metadata->type == FLAC__METADATA_TYPE_PICTURE)
     {
         uint32_t size = metadata->data.picture.data_length;
-        info.image = new DataItem(size);
-        memcpy(info.image->data, metadata->data.picture.data, size);
+        info.image = new DataItem(metadata->data.picture.data, size);
     }
 }
 
 void FlacMetadata::error_callback(::FLAC__StreamDecoderErrorStatus status)
 {
-    LV_LOG_ERROR("Error: %s\n", FLAC__StreamDecoderErrorStatusString[status]);
+    LV_LOG_ERROR("Error: %s", FLAC__StreamDecoderErrorStatusString[status]);
 }
 
 bool FlacMetadata::decode_get_info()

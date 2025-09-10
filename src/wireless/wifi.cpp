@@ -19,33 +19,78 @@
 #include "lvgl/src/misc/lv_log.h"
 
 #include "wifi.h"
+#include "io/wireless.h"
+#include "io/gpio.h"
 
 static char reply[2048];
 
+void wifi_wait_ready()
+{
+#ifdef BUILD_ARM
+    if (!get_wireless_power() || !wifi_have_device())
+    {
+        set_wireless_power(true);
+        do
+        {
+            usleep(100000); // 100ms
+        } while (!wifi_have_device());
+    }
+#endif
+}
+
+void wifi_wait_deactivate()
+{
+#ifdef BUILD_ARM
+    if (wifi_is_wpa_supplicant_running())
+    {
+        wifi_terminate_wpa_supplicant();
+    }
+    if (get_wireless_power())
+    {
+        set_wireless_power(false);
+    }
+    if (wifi_have_device())
+    {
+        wireless_delete();
+        do
+        {
+            usleep(100000); // 100ms
+        } while (wifi_have_device());
+    }
+#endif
+}
+
 bool wifi_have_device()
 {
-    struct sockaddr_in *sin = NULL;
-    struct ifaddrs *ifa = NULL, *ifList;
+    struct if_nameindex *if_list, *if_entry;
 
-    bool find = false;
-
-    if (getifaddrs(&ifList) < 0)
+    if_list = if_nameindex();
+    if (if_list == NULL)
     {
-        return false;
+        perror("if_nameindex");
+        return 1;
     }
 
-    for (ifa = ifList; ifa != NULL; ifa = ifa->ifa_next)
+    int exists = 0;
+    for (if_entry = if_list; if_entry->if_index != 0 || if_entry->if_name != NULL; if_entry++)
     {
-        if (strstr(ifa->ifa_name, WIFI_NAME))
+        if (strcmp(if_entry->if_name, WIFI_NAME) == 0)
         {
-            find = true;
+            exists = 1;
             break;
         }
     }
 
-    freeifaddrs(ifList);
+    if_freenameindex(if_list);
 
-    return find;
+    if (exists)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 bool wifi_is_wpa_supplicant_running()

@@ -10,18 +10,12 @@
 #include <json/json.hpp>
 
 #include "common/utils.h"
+#include "common/utilspp.h"
 
 #include "lyric.h"
 
 using namespace nlohmann;
 using namespace coloraudio::lyric;
-
-std::string trim(std::string &str)
-{
-    str.erase(0, str.find_first_not_of(" \t")); // 去掉头部空格
-    str.erase(str.find_last_not_of(" \t") + 1); // 去掉尾部空格
-    return str;
-}
 
 LyricParser::LyricParser(std::string &text)
 {

@@ -13,15 +13,15 @@
 
 using namespace coloraudio::stream;
 
-// uint32_t get_length(uint8_t *buffer)
-// {
-//     uint32_t count = 0;
-//     while (*buffer++ != 0)
-//     {
-//         count++;
-//     }
-//     return count;
-// }
+uint32_t get_length(uint8_t *buffer)
+{
+    uint32_t count = 0;
+    while (*buffer++ != 0)
+    {
+        count++;
+    }
+    return count;
+}
 
 typedef enum
 {

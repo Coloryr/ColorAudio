@@ -12,9 +12,6 @@ set(LV_CONF_PATH
         lv_conf.h
         CACHE STRING "" FORCE)
 
-include_directories(lvgl/src)
-include_directories(lvgl)
-
 if (DEFINED BUILD_ARM)
     set(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)
     set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)

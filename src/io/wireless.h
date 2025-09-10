@@ -13,10 +13,7 @@
 extern "C" {
 #endif
 
-bool get_wireless_power();
-void set_wireless_power(bool enable);
-void set_wireless_power_on();
-void set_wireless_power_off();
+void wireless_delete();
 
 #ifdef __cplusplus
 } /*extern "C"*/
