@@ -29,7 +29,7 @@ using namespace coloraudio::config;
 static pthread_t tid;
 static music_command play_now_command = MUSIC_COMMAND_UNKNOW;
 static float jump_time = 0;
-static boost::container::vector<play_item *> play_list;
+static boost::container::vector<play_item *> play_list = boost::container::vector<play_item *>();
 static DataItem str_map = DataItem(DEFAULT_STR_MAP);
 static uint32_t str_map_index = 0;
 
@@ -293,7 +293,14 @@ void play_list_add_item(std::string &path, std::string &title, std::string &auth
     str_map.get_data()[str_map_index] = 0;
     str_map_index += 1;
 
+    char *temp = item->path;
     LV_LOG_USER("add music: %s", item->path);
+    while (*temp)
+    {
+        printf("%d ", *temp);
+        temp++;
+    }
+    printf("\n");
 
     play_list.push_back(item);
 }
@@ -393,7 +400,7 @@ void play_list_sort_by_pinyin()
     }
 }
 
-play_item* play_list_get_item(uint32_t index)
+play_item *play_list_get_item(uint32_t index)
 {
     return play_list[index];
 }
