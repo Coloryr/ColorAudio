@@ -4448,6 +4448,16 @@
 	)
 	(wire
 		(pts
+			(xy 342.9 85.09) (xy 353.06 85.09)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c44db33-8689-413f-b289-0ed0e07fac2d")
+	)
+	(wire
+		(pts
 			(xy 284.48 204.47) (xy 284.48 205.74)
 		)
 		(stroke
@@ -5508,28 +5518,6 @@
 			)
 		)
 	)
-	(global_label "HP_DETECT_IO"
-		(shape input)
-		(at 353.06 77.47 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "1a0762db-4625-41b1-8f3e-806804cf3e27")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 369.2894 77.47 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "RESET"
 		(shape input)
 		(at 205.74 238.76 0)
@@ -5706,6 +5694,28 @@
 			)
 		)
 	)
+	(global_label "OUT_EN"
+		(shape input)
+		(at 353.06 85.09 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2a652d89-f75b-4b40-9f61-cf79930c2547")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 363.1209 85.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "SD_DET"
 		(shape input)
 		(at 68.58 176.53 180)
@@ -5724,28 +5734,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "OUT_EN"
-		(shape input)
-		(at 353.06 82.55 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "313f2b7c-fabb-43cf-ae58-c908ad2a3cc1")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 363.1209 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 				(hide yes)
 			)
 		)
@@ -5882,28 +5870,6 @@
 			)
 		)
 	)
-	(global_label "HP_INT"
-		(shape input)
-		(at 353.06 80.01 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4b262fd6-ddb3-47b3-ba5b-748919ad6efc")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 362.5162 80.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "DAC_RESET"
 		(shape input)
 		(at 353.06 105.41 0)
@@ -5961,6 +5927,28 @@
 		(uuid "5580f2f6-4afc-48f4-939a-fa2b0b63d254")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 359.6738 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "HP_INT"
+		(shape input)
+		(at 353.06 77.47 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5a72742f-de97-4f3d-a3c1-cf6ea318bc1d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 362.5162 77.47 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6542,6 +6530,28 @@
 			)
 		)
 	)
+	(global_label "HP_DETECT1"
+		(shape input)
+		(at 353.06 80.01 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c079d5f4-aedf-4aca-be8d-1e5b9a4d606e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 367.596 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "SD_CMD"
 		(shape input)
 		(at 68.58 163.83 180)
@@ -6692,6 +6702,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "HP_DETECT"
+		(shape input)
+		(at 353.06 82.55 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e4cea860-2169-4dab-8591-477f94b0cff4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 366.3865 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
