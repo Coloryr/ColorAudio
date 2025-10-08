@@ -3978,16 +3978,6 @@
 	)
 	(wire
 		(pts
-			(xy 342.9 59.69) (xy 353.06 59.69)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "04481c8e-701c-4557-8fa6-34bbd805362b")
-	)
-	(wire
-		(pts
 			(xy 350.52 212.09) (xy 344.17 212.09)
 		)
 		(stroke
@@ -4085,6 +4075,16 @@
 			(type default)
 		)
 		(uuid "0f8a35f4-80e6-4ac3-a1ac-81e38e089f07")
+	)
+	(wire
+		(pts
+			(xy 342.9 59.69) (xy 353.06 59.69)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "10a27205-3ea5-47a0-a877-cbe87ce2aa85")
 	)
 	(wire
 		(pts
@@ -4345,6 +4345,16 @@
 			(type default)
 		)
 		(uuid "38fe7e27-8a83-4e40-83eb-82715ab230ae")
+	)
+	(wire
+		(pts
+			(xy 342.9 57.15) (xy 353.06 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "39bd61db-c6a8-4914-a44c-9144ba2442c1")
 	)
 	(wire
 		(pts
@@ -4848,16 +4858,6 @@
 	)
 	(wire
 		(pts
-			(xy 342.9 57.15) (xy 353.06 57.15)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9b59d36b-886f-4581-baa8-9873a7f13d76")
-	)
-	(wire
-		(pts
 			(xy 68.58 171.45) (xy 83.82 171.45)
 		)
 		(stroke
@@ -5178,6 +5178,16 @@
 	)
 	(wire
 		(pts
+			(xy 342.9 54.61) (xy 353.06 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d9d7e286-9b8d-45f9-92fa-aba9cf394cc0")
+	)
+	(wire
+		(pts
 			(xy 256.54 204.47) (xy 256.54 205.74)
 		)
 		(stroke
@@ -5285,16 +5295,6 @@
 			(type default)
 		)
 		(uuid "ec6b90bb-7c11-4dfb-8ddf-982a64fecd2b")
-	)
-	(wire
-		(pts
-			(xy 342.9 54.61) (xy 353.06 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ed496baf-b1e2-40f0-97c4-b6c7016f358a")
 	)
 	(wire
 		(pts
@@ -5628,28 +5628,6 @@
 			)
 		)
 	)
-	(global_label "LCD_LED"
-		(shape input)
-		(at 353.06 54.61 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "27db52c1-6ffe-401e-9f4a-634d6ea9f9cf")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 364.028 54.61 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "UART0_TX"
 		(shape input)
 		(at 353.06 107.95 0)
@@ -5817,28 +5795,6 @@
 		(uuid "45c2a367-c288-41c4-bb23-7ebb3e2a4bf7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 363.8466 64.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "TP_SDA"
-		(shape input)
-		(at 353.06 57.15 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4a4a713a-439b-42af-b003-5b20da38943d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 362.8185 57.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6196,28 +6152,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "TP_SCL"
-		(shape input)
-		(at 353.06 59.69 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "7dfd1cbf-5165-4bad-a7b0-c91100cd0ef6")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 362.758 59.69 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 				(hide yes)
 			)
 		)
@@ -6640,6 +6574,28 @@
 			)
 		)
 	)
+	(global_label "LCD_LED"
+		(shape input)
+		(at 353.06 59.69 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d5dd84cb-f221-43ea-928e-3613ef354424")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 364.028 59.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "LCD_D1P"
 		(shape input)
 		(at 353.06 123.19 0)
@@ -6794,6 +6750,28 @@
 			)
 		)
 	)
+	(global_label "TP_SCL"
+		(shape input)
+		(at 353.06 57.15 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f3dc8f2a-38dc-4c67-b53d-7e7a81c48a0f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 362.758 57.15 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "DAC_INT_B"
 		(shape input)
 		(at 68.58 194.31 180)
@@ -6812,6 +6790,28 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "TP_SDA"
+		(shape input)
+		(at 353.06 54.61 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "fdb778d3-06f9-46e6-9a13-a8ce4823c806")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 362.8185 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)

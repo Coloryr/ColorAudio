@@ -4365,6 +4365,12 @@
 		(uuid "99af287b-2326-4e88-80ef-2d2905cbcf27")
 	)
 	(junction
+		(at 196.85 53.34)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9a73efb0-4f0a-4b08-978c-fd17bb71f80e")
+	)
+	(junction
 		(at 196.85 30.48)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -5527,6 +5533,16 @@
 			(type default)
 		)
 		(uuid "5c559152-a390-4013-9248-d228005f1d7f")
+	)
+	(wire
+		(pts
+			(xy 184.15 55.88) (xy 196.85 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5d1a57ea-b03b-4ae1-a1ab-7e8ca88698f2")
 	)
 	(wire
 		(pts
@@ -7000,6 +7016,16 @@
 	)
 	(wire
 		(pts
+			(xy 167.64 55.88) (xy 176.53 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cfe29beb-2aa9-4098-a390-e028c373b30a")
+	)
+	(wire
+		(pts
 			(xy 142.24 180.34) (xy 142.24 185.42)
 		)
 		(stroke
@@ -7347,6 +7373,16 @@
 			(type default)
 		)
 		(uuid "eeee6b8f-b1af-470a-9b0d-8a0e1e2672ad")
+	)
+	(wire
+		(pts
+			(xy 196.85 55.88) (xy 196.85 53.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ef33954d-a9be-43d6-8d31-05d0dad6b4f1")
 	)
 	(wire
 		(pts
@@ -8361,6 +8397,28 @@
 		(uuid "a5cbdd3c-6845-45a0-813e-383216178ac2")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 27.0111 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "HP_DETECT"
+		(shape input)
+		(at 167.64 55.88 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b5bfebc3-025e-4dd1-8039-b3534fd83af5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 154.3135 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9886,6 +9944,75 @@
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/d9c616e1-2298-455a-b24a-3007b8e9dd7b"
 					(reference "#PWR075")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 180.34 55.88 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "32f82b77-9f3f-45a8-896d-86863b2b428b")
+		(property "Reference" "R80"
+			(at 187.452 54.864 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "4.7K"
+			(at 193.04 54.864 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric_Pad0.74x0.62mm_HandSolder"
+			(at 180.34 54.102 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 180.34 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 180.34 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "f9d11a94-2440-4fe0-ae42-ce302039bb51")
+		)
+		(pin "1"
+			(uuid "098f0a0a-e12e-40c3-a66a-fc12da191ec2")
+		)
+		(instances
+			(project "coloryr"
+				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/d9c616e1-2298-455a-b24a-3007b8e9dd7b"
+					(reference "R80")
 					(unit 1)
 				)
 			)
