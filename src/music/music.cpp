@@ -243,6 +243,8 @@ void music_go_local()
 
 void music_init()
 {
+    lv_log("music init");
+
     play_last_stack.clear();
 
     play_music_mode = Config::get_config_music_mode();

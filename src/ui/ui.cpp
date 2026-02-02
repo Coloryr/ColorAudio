@@ -75,6 +75,8 @@ static void change_view(view_mode_type type)
 
 void view_init()
 {
+    lv_log("view init");
+
     lang_init();
 
     lv_obj_set_style_bg_color(lv_screen_active(), lv_color_hex(0x343247), 0);

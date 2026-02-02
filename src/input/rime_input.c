@@ -50,6 +50,8 @@ static void *rime_init_run(void *arg)
 
 void rime_init()
 {
+    lv_log("rime init");
+
     check_dir(RIME_DATA_DIR);
     check_dir(RIME_LOG_DIR);
     check_dir(RIME_BUILD_DIR);

@@ -16,6 +16,8 @@ static int g_disp_rotation = 0;
 
 void lv_port_init(void)
 {
+    lv_log("lv init");
+
     lv_init();
     load_font();
 

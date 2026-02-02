@@ -12,6 +12,8 @@ static lv_indev_t *lv_keyboard;
 
 void lv_port_indev_init()
 {
+    lv_log("display init");
+
     lv_disp_t *disp;
 
     disp = lv_display_get_default();

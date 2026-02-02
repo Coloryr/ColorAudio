@@ -173,6 +173,8 @@ void play_update_image(DataItem *data, music_info_type type)
 
 void play_init()
 {
+    lv_log("play init");
+
     pthread_mutex_init(&play_mutex, NULL);
     pthread_cond_init(&play_start, NULL);
 
