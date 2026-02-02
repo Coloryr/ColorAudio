@@ -4,7 +4,6 @@
 #include "wifibt/wireless.config"
 #include "multimedia/audio.config"
 #include "fs/ntfs.config"
-
 BR2_GCC_VERSION_13_X=y
 BR2_PACKAGE_BLUEZ_TOOLS=y
 BR2_PACKAGE_BOOST=y
