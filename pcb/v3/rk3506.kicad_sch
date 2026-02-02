@@ -4108,16 +4108,6 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 194.31) (xy 83.82 194.31)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "186a01bd-be42-4cd2-9ce5-d6fcbb700361")
-	)
-	(wire
-		(pts
 			(xy 184.15 243.84) (xy 190.5 243.84)
 		)
 		(stroke
@@ -4968,16 +4958,6 @@
 	)
 	(wire
 		(pts
-			(xy 68.58 191.77) (xy 83.82 191.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a9f5195c-7d1e-4a26-ac19-ca701caae6bd")
-	)
-	(wire
-		(pts
 			(xy 261.62 204.47) (xy 261.62 205.74)
 		)
 		(stroke
@@ -5443,28 +5423,6 @@
 		(uuid "0df9b9db-0549-4787-94c7-87ccba623634")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 165.9248 224.79 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "DAC_INT_A"
-		(shape input)
-		(at 68.58 191.77 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "0ff7cd0a-7c33-4979-8d3d-15490feefdd7")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 56.0395 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6768,28 +6726,6 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "DAC_INT_B"
-		(shape input)
-		(at 68.58 194.31 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "faccf2da-0849-4bbc-9cf3-634ab102ad28")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 55.8581 194.31 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
 				(hide yes)
 			)
 		)
