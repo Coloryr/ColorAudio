@@ -460,7 +460,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&touch_gpio &touch_reset_gpio>;
 		irq-gpios = <&gpio3 RK_PA7 IRQ_TYPE_LEVEL_LOW>;
-		reset-gpios = <&gpio1 RK_PA2 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio3 RK_PB1 GPIO_ACTIVE_LOW>;
 		status = "okay";
 	};
 };
