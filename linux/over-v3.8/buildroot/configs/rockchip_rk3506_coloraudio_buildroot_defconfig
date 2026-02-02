@@ -4,7 +4,6 @@
 #include "wifibt/wireless.config"
 #include "multimedia/audio.config"
 #include "fs/ntfs.config"
-
 BR2_GCC_VERSION_13_X=y
 BR2_PACKAGE_BLUEZ_TOOLS=y
 BR2_PACKAGE_BOOST=y
@@ -31,6 +30,7 @@ BR2_PACKAGE_BOOST_URL=y
 BR2_PACKAGE_BOOST_WAVE=y
 # BR2_PACKAGE_CHRONY is reset to default
 BR2_PACKAGE_CRDA=y
+BR2_PACKAGE_VIM=y
 BR2_PACKAGE_CRYPTOPP=y
 BR2_PACKAGE_DHRYSTONE=y
 # BR2_PACKAGE_DNSMASQ is reset to default

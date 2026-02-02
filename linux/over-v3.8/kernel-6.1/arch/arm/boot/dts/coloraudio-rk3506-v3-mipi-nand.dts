@@ -392,12 +392,6 @@
 	};
 
 	dac {
-		dac_1_gpio: dac-1-gpio {
-			rockchip,pins = <3 RK_PB4 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
-		dac_2_gpio: dac-2-gpio {
-			rockchip,pins = <3 RK_PB5 RK_FUNC_GPIO &pcfg_pull_none>;
-		};
 		dac_reset_gpio: dac-reset-gpio {
 			rockchip,pins = <0 RK_PC4 RK_FUNC_GPIO &pcfg_pull_up>;
 		};
@@ -466,7 +460,7 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&touch_gpio &touch_reset_gpio>;
 		irq-gpios = <&gpio3 RK_PA7 IRQ_TYPE_LEVEL_LOW>;
-		reset-gpios = <&gpio1 RK_PA2 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio3 RK_PB1 GPIO_ACTIVE_LOW>;
 		status = "okay";
 	};
 };
@@ -505,10 +499,6 @@
 		reg = <0x33>;
 		clocks = <&mclkout_sai3>;
 		clock-names = "mclk";
-		pinctrl-names = "default";
-		pinctrl-0 = <&dac_1_gpio>;
-		interrupt-parent = <&gpio3>;
-   		interrupts = <RK_PB4 IRQ_TYPE_EDGE_FALLING>;
 	};
 
 	cs43198_2: audio-codec@30 {
@@ -518,10 +508,6 @@
 		reg = <0x30>;
 		clocks = <&mclkout_sai2>;
 		clock-names = "mclk";
-		pinctrl-names = "default";
-		pinctrl-0 = <&dac_2_gpio>;
-		interrupt-parent = <&gpio3>;
-   		interrupts = <RK_PB5 IRQ_TYPE_EDGE_FALLING>;
 	};
 
 	/* headphone detect */
