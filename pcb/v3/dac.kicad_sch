@@ -4887,6 +4887,16 @@
 	)
 	(wire
 		(pts
+			(xy 77.47 92.71) (xy 87.63 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b9fe11f3-90c4-4973-8eed-e5a154a21139")
+	)
+	(wire
+		(pts
 			(xy 134.62 148.59) (xy 151.13 148.59)
 		)
 		(stroke
@@ -5104,6 +5114,16 @@
 			(type default)
 		)
 		(uuid "cc3f1e80-d4a3-4663-b14d-6a569ff8c8d9")
+	)
+	(wire
+		(pts
+			(xy 76.2 180.34) (xy 86.36 180.34)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cc4c2957-d527-427e-9576-9f39b20b636d")
 	)
 	(wire
 		(pts
@@ -5869,7 +5889,7 @@
 			)
 		)
 	)
-	(global_label "DAC_LRCK"
+	(global_label "DAC_LRCK_1"
 		(shape input)
 		(at 77.47 66.04 180)
 		(fields_autoplaced yes)
@@ -5881,7 +5901,7 @@
 		)
 		(uuid "37261ce1-f5d4-4f78-8b1b-b4a17ba39fd1")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 65.0505 66.04 0)
+			(at 62.8734 66.04 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5979,6 +5999,28 @@
 			)
 		)
 	)
+	(global_label "DAC_SDIN_1"
+		(shape input)
+		(at 76.2 151.13 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "4d69f034-ef33-4429-9f2b-b7b604df9220")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 62.0267 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "-INA"
 		(shape input)
 		(at 209.55 43.18 180)
@@ -6045,6 +6087,28 @@
 			)
 		)
 	)
+	(global_label "DAC_LRCK_1"
+		(shape input)
+		(at 76.2 153.67 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "5ad3d4d9-debc-4815-b284-a303cb6872dc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 61.6034 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "DAC_SCL_1"
 		(shape input)
 		(at 76.2 173.99 180)
@@ -6058,28 +6122,6 @@
 		(uuid "5e26ebd2-9da3-4520-bec5-462897b9c145")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 62.9339 173.99 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "DAC_LRCK"
-		(shape input)
-		(at 76.2 153.67 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "5f6e7d3e-41fa-41ea-acf9-b54f290e3e5c")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 63.7805 153.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6129,6 +6171,28 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "DAC_INT_B"
+		(shape input)
+		(at 76.2 180.34 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "7270f75a-da1b-48c0-8043-1191664688c3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 63.4781 180.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -6221,28 +6285,6 @@
 			)
 		)
 	)
-	(global_label "DAC_SDIN"
-		(shape input)
-		(at 76.2 151.13 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "8891a760-8247-472d-8e8f-936b25deb0bc")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 64.2038 151.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
 	(global_label "REF_A"
 		(shape input)
 		(at 146.05 90.17 0)
@@ -6261,6 +6303,28 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "DAC_INT_A"
+		(shape input)
+		(at 77.47 92.71 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "9910556e-27a2-48bc-945c-b4bc4467b7e1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 64.9295 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
 				(hide yes)
 			)
 		)
@@ -6463,7 +6527,7 @@
 			)
 		)
 	)
-	(global_label "DAC_SDIN"
+	(global_label "DAC_SDIN_1"
 		(shape input)
 		(at 77.47 63.5 180)
 		(fields_autoplaced yes)
@@ -6475,7 +6539,7 @@
 		)
 		(uuid "bbb3ecff-fe18-41e0-8df3-dae9508682ca")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 65.4738 63.5 0)
+			(at 63.2967 63.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6498,28 +6562,6 @@
 		(uuid "c34fa2b6-9860-41f0-b224-c56b2e9e7b4f")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 201.9685 123.19 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-				(hide yes)
-			)
-		)
-	)
-	(global_label "DAC_SCLK"
-		(shape input)
-		(at 76.2 156.21 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ca580b1f-6704-417a-949e-1778d28b6bdc")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 63.841 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6617,6 +6659,28 @@
 			)
 		)
 	)
+	(global_label "DAC_SCLK_1"
+		(shape input)
+		(at 76.2 156.21 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e0695c04-63ef-4621-a56d-27c6504fde57")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 61.6639 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
 	(global_label "OUT_B"
 		(shape input)
 		(at 209.55 40.64 180)
@@ -6639,7 +6703,7 @@
 			)
 		)
 	)
-	(global_label "DAC_SCLK"
+	(global_label "DAC_SCLK_1"
 		(shape input)
 		(at 77.47 68.58 180)
 		(fields_autoplaced yes)
@@ -6651,7 +6715,7 @@
 		)
 		(uuid "e93c6740-2fc9-4acd-a350-7d1c8499b4d9")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 65.111 68.58 0)
+			(at 62.9339 68.58 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6857,7 +6921,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1.0uF"
+		(property "Value" "1uF"
 			(at 208.788 142.24 0)
 			(effects
 				(font
@@ -8756,7 +8820,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "1.0uF"
+		(property "Value" "1uF"
 			(at 243.078 142.24 0)
 			(effects
 				(font

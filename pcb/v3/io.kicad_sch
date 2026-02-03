@@ -12397,7 +12397,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_SO:VSSOP-8_2.3x2mm_P0.5mm"
+		(property "Footprint" "Package_SON:X2SON-8_1.4x1mm_P0.35mm"
 			(at 171.45 140.97 0)
 			(effects
 				(font

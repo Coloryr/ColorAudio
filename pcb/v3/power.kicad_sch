@@ -11147,15 +11147,15 @@
 		(dnp no)
 		(uuid "4a07bb02-fa5c-479b-b860-7631e3894b7e")
 		(property "Reference" "U3"
-			(at 236.22 25.146 0)
+			(at 238.506 25.146 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "~"
-			(at 238.76 25.4 0)
+		(property "Value" "RT9013"
+			(at 238.506 27.686 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11186,6 +11186,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(hide yes)
 			)
 		)
 		(pin "1"
@@ -11567,7 +11568,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "100nF"
+		(property "Value" "0.1uF"
 			(at 257.048 133.35 0)
 			(effects
 				(font
