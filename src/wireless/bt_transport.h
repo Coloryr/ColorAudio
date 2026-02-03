@@ -10,8 +10,8 @@ extern "C"
 
 void bluez_alsa_start(GDBusConnection *conn);
 void bluez_alsa_close();
-void ble_send_volume();
-void ble_send_battery();
+void bt_send_volume();
+void bt_send_battery();
 
 #ifdef __cplusplus
 } /*extern "C"*/

@@ -1,11 +1,7 @@
 /*
  * BlueALSA - ba-transport.h
- * Copyright (c) 2016-2023 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
@@ -30,6 +26,7 @@
 #include "ba-transport-pcm.h"
 #include "bluez.h"
 #include "shared/a2dp-codecs.h"
+#include "shared/rc.h"
 
 enum ba_transport_thread_manager_command {
 	BA_TRANSPORT_THREAD_MANAGER_TERMINATE = 0,
@@ -41,26 +38,37 @@ enum ba_transport_profile {
 	BA_TRANSPORT_PROFILE_NONE        = 0,
 	BA_TRANSPORT_PROFILE_A2DP_SOURCE = (1 << 0),
 	BA_TRANSPORT_PROFILE_A2DP_SINK   = (2 << 0),
-	BA_TRANSPORT_PROFILE_HFP_HF      = (1 << 2),
-	BA_TRANSPORT_PROFILE_HFP_AG      = (2 << 2),
-	BA_TRANSPORT_PROFILE_HSP_HS      = (1 << 4),
-	BA_TRANSPORT_PROFILE_HSP_AG      = (2 << 4),
+	BA_TRANSPORT_PROFILE_HFP_HF      = (1 << 4),
+	BA_TRANSPORT_PROFILE_HFP_AG      = (2 << 4),
+	BA_TRANSPORT_PROFILE_HSP_HS      = (1 << 6),
+	BA_TRANSPORT_PROFILE_HSP_AG      = (2 << 6),
 };
 
-#define BA_TRANSPORT_PROFILE_MASK_A2DP \
-	(BA_TRANSPORT_PROFILE_A2DP_SOURCE | BA_TRANSPORT_PROFILE_A2DP_SINK)
 #define BA_TRANSPORT_PROFILE_MASK_HFP \
 	(BA_TRANSPORT_PROFILE_HFP_HF | BA_TRANSPORT_PROFILE_HFP_AG)
 #define BA_TRANSPORT_PROFILE_MASK_HSP \
 	(BA_TRANSPORT_PROFILE_HSP_HS | BA_TRANSPORT_PROFILE_HSP_AG)
-#define BA_TRANSPORT_PROFILE_MASK_SCO \
-	(BA_TRANSPORT_PROFILE_MASK_HFP | BA_TRANSPORT_PROFILE_MASK_HSP)
 #define BA_TRANSPORT_PROFILE_MASK_AG \
 	(BA_TRANSPORT_PROFILE_HSP_AG | BA_TRANSPORT_PROFILE_HFP_AG)
 #define BA_TRANSPORT_PROFILE_MASK_HF \
 	(BA_TRANSPORT_PROFILE_HSP_HS | BA_TRANSPORT_PROFILE_HFP_HF)
 
+#define BA_TRANSPORT_PROFILE_IS_MEDIA_A2DP(t) \
+	((t)->profile & ( \
+		BA_TRANSPORT_PROFILE_A2DP_SOURCE | BA_TRANSPORT_PROFILE_A2DP_SINK))
+
+#define BA_TRANSPORT_PROFILE_IS_MEDIA_ASHA(t) false
+
+#define BA_TRANSPORT_PROFILE_IS_MEDIA(t) \
+	(BA_TRANSPORT_PROFILE_IS_MEDIA_A2DP(t) || \
+	 BA_TRANSPORT_PROFILE_IS_MEDIA_ASHA(t))
+
+#define BA_TRANSPORT_PROFILE_IS_SCO(t) \
+	((t)->profile & ( \
+		BA_TRANSPORT_PROFILE_MASK_HFP | BA_TRANSPORT_PROFILE_MASK_HSP))
+
 struct ba_transport {
+	rc_t _rc;
 
 	/* backward reference to device */
 	struct ba_device *d;
@@ -116,12 +124,7 @@ struct ba_transport {
 
 			/* current state of the transport */
 			pthread_cond_t state_changed_cond;
-			enum bluez_a2dp_transport_state state;
-
-			/* SEP configuration */
-			const struct a2dp_sep *sep;
-			/* selected audio codec configuration */
-			a2dp_t configuration;
+			enum bluez_media_transport_state state;
 
 			/* delay reporting support */
 			bool delay_reporting;
@@ -141,7 +144,37 @@ struct ba_transport {
 			 * subsequent ioctl() calls. */
 			int bt_fd_coutq_init;
 
-		} a2dp;
+			union {
+				struct {
+					/* selected stream endpoint */
+					const struct a2dp_sep * sep;
+					/* selected codec configuration */
+					a2dp_t configuration;
+				} a2dp;
+			};
+
+		} media;
+
+		struct {
+
+			/* Associated RFCOMM thread for SCO transport handled by local
+			 * HSP/HFP implementation. Otherwise, this field is set to NULL. */
+			struct ba_rfcomm *rfcomm;
+
+			/* Speaker and microphone signals should to be exposed as
+			 * a separate PCM devices. Hence, there is a requirement
+			 * for separate configurations.
+			 *
+			 * NOTE: The speaker/microphone notation always refers to the whole
+			 *       AG/HS setup. For AG the speaker is an outgoing audio stream,
+			 *       while for HS the speaker is an incoming audio stream. */
+			struct ba_transport_pcm pcm_spk;
+			struct ba_transport_pcm pcm_mic;
+
+			/* time-stamp when the SCO link has been closed */
+			struct timespec closed_at;
+
+		} sco;
 
 	};
 
@@ -149,45 +182,36 @@ struct ba_transport {
 	int (*acquire)(struct ba_transport *);
 	int (*release)(struct ba_transport *);
 
-	/* memory self-management */
-	int ref_count;
-
 };
 
-struct ba_transport *ba_transport_new_a2dp(
-		struct ba_device *device,
+struct ba_transport * ba_transport_new_a2dp(
+		struct ba_device * device,
 		enum ba_transport_profile profile,
-		const char *dbus_owner,
-		const char *dbus_path,
-		const struct a2dp_sep *sep,
-		const void *configuration);
-struct ba_transport *ba_transport_new_sco(
-		struct ba_device *device,
+		const char * dbus_owner,
+		const char * dbus_path,
+		const struct a2dp_sep * sep,
+		const void * configuration);
+struct ba_transport * ba_transport_new_sco(
+		struct ba_device * device,
 		enum ba_transport_profile profile,
-		const char *dbus_owner,
-		const char *dbus_path,
+		const char * dbus_owner,
+		const char * dbus_path,
 		int rfcomm_fd);
-#if ENABLE_MIDI
-struct ba_transport *ba_transport_new_midi(
-		struct ba_device *device,
-		enum ba_transport_profile profile,
-		const char *dbus_owner,
-		const char *dbus_path);
-#endif
-
 #if DEBUG
-const char *ba_transport_debug_name(
-		const struct ba_transport *t);
+const char * ba_transport_debug_name(
+		const struct ba_transport * t);
 #endif
 
-struct ba_transport *ba_transport_lookup(
-		const struct ba_device *device,
-		const char *dbus_path);
-struct ba_transport *ba_transport_ref(
-		struct ba_transport *t);
+struct ba_transport * ba_transport_lookup(
+		const struct ba_device * device,
+		const char * dbus_path);
+static inline struct ba_transport * ba_transport_ref(
+		struct ba_transport * t) {
+	return rc_ref(t);
+}
 
-void ba_transport_destroy(struct ba_transport *t);
-void ba_transport_unref(struct ba_transport *t);
+void ba_transport_destroy(struct ba_transport * t);
+void ba_transport_unref(struct ba_transport * t);
 
 int ba_transport_select_codec_a2dp(
 		struct ba_transport *t,
@@ -211,8 +235,8 @@ int ba_transport_stop_if_no_clients(struct ba_transport *t);
 int ba_transport_acquire(struct ba_transport *t);
 int ba_transport_release(struct ba_transport *t);
 
-int ba_transport_set_a2dp_state(
+int ba_transport_set_media_state(
 		struct ba_transport *t,
-		enum bluez_a2dp_transport_state state);
+		enum bluez_media_transport_state state);
 
 #endif

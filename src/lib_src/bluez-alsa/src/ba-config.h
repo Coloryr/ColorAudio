@@ -1,11 +1,7 @@
 /*
  * BlueALSA - ba-config.h
- * Copyright (c) 2016-2024 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
@@ -31,8 +27,8 @@ struct ba_config {
 
 	/* set of enabled profiles */
 	struct {
-		bool a2dp_source;
 		bool a2dp_sink;
+		bool hfp_hf;
 	} profile;
 
 	/* established D-Bus connection */
@@ -71,6 +67,28 @@ struct ba_config {
 
 	struct {
 
+		/* available HFP codecs */
+		struct {
+			bool cvsd;
+		} codecs;
+
+		/* information exposed via Apple AT extension */
+		unsigned int xapl_vendor_id;
+		unsigned int xapl_product_id;
+		unsigned int xapl_sw_version;
+		const char *xapl_product_name;
+		unsigned int xapl_features;
+
+	} hfp;
+
+	struct {
+		bool available;
+		/* host battery level (percentage) */
+		unsigned int level;
+	} battery;
+
+	struct {
+
 		/* NULL-terminated list of available A2DP codecs */
 		const struct bluez_a2dp_codec **codecs;
 
@@ -102,6 +120,15 @@ struct ba_config {
 	bool aac_true_bps;
 	unsigned int aac_bitrate;
 	unsigned int aac_latm_version;
+#endif
+
+#if ENABLE_LC3PLUS
+	unsigned int lc3plus_bitrate;
+#endif
+
+#if ENABLE_LDAC
+	bool ldac_abr;
+	uint8_t ldac_eqmid;
 #endif
 
 };

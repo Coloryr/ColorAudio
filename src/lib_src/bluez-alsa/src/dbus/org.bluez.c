@@ -10,7 +10,7 @@
 #  include "config.h"
 #endif
 
-#include "bluez-iface.h"
+#include "org.bluez.h"
 
 #include <string.h>
 
@@ -351,7 +351,7 @@ NULL,  /* no properties */
  * it was derived from.
  */
 
-#include "bluez-iface.h"
+#include "org.bluez.h"
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <glib.h>

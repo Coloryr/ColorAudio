@@ -4,10 +4,10 @@
 #include <gio/gio.h>
 #include "lvgl/src/misc/lv_log.h"
 
-#include "ble.h"
+#include "bt.h"
 #include "ui/ble_view.h"
 
-#include "ble_info.h"
+#include "bt_info.h"
 
 static gint property_id;
 static gint music_id;
@@ -16,12 +16,12 @@ static gint iface_added_id;
 static char *device_path;
 static char *device_player_path;
 
-std::string ble_device;
-std::string ble_title;
-std::string ble_artist;
-std::string ble_album;
-uint32_t ble_duration;
-uint32_t ble_position;
+std::string bt_device;
+std::string bt_title;
+std::string bt_artist;
+std::string bt_album;
+uint32_t bt_duration;
+uint32_t bt_position;
 
 static void set_device_path(const char *path)
 {
@@ -99,19 +99,19 @@ static void on_music_properties_changed(
 
             if (g_variant_lookup(value, "Title", "&s", &title))
             {
-                ble_title = title;
+                bt_title = title;
             }
             if (g_variant_lookup(value, "Artist", "&s", &artist))
             {
-                ble_artist = artist;
+                bt_artist = artist;
             }
             if (g_variant_lookup(value, "Album", "&s", &album))
             {
-                ble_album = album;
+                bt_album = album;
             }
             if (g_variant_lookup(value, "Duration", "u", &duration))
             {
-                ble_duration = duration;
+                bt_duration = duration;
                 view_ble_update_time();
             }
 
@@ -119,7 +119,7 @@ static void on_music_properties_changed(
         }
         else if (g_str_equal(key, "Position"))
         {
-            ble_position = g_variant_get_uint32(value);
+            bt_position = g_variant_get_uint32(value);
 
             view_ble_update_time();
         }
@@ -132,12 +132,12 @@ static void on_music_properties_changed(
     }
 }
 
-static void ble_get_name(const char *path)
+static void bt_get_name(const char *path)
 {
     GError *error = NULL;
     GVariant *result;
     GDBusProxy *proxy = g_dbus_proxy_new_sync(
-        ble_g_conn,
+        bt_g_conn,
         G_DBUS_PROXY_FLAGS_NONE,
         NULL,
         "org.bluez",
@@ -173,7 +173,7 @@ static void ble_get_name(const char *path)
         const gchar *name = g_variant_get_string(value, NULL);
         if (name)
         {
-            ble_device = name;
+            bt_device = name;
             LV_LOG_USER("Got device name: %s", name);
             view_ble_update_info();
         }
@@ -218,13 +218,13 @@ static void on_property_changed(
 
                 if (connected)
                 {
-                    ble_now_state = BLE_STATE_CONNECTED;
-                    ble_log_state_change();
+                    bt_now_state = BT_STATE_CONNECTED;
+                    bt_log_state_change();
                     set_device_path(object_path);
-                    ble_set_discoverable(false);
-                    ble_set_pairable(false);
+                    bt_set_discoverable(false);
+                    bt_set_pairable(false);
                     music_id = g_dbus_connection_signal_subscribe(
-                        ble_g_conn,
+                        bt_g_conn,
                         "org.bluez",
                         "org.freedesktop.DBus.Properties",
                         "PropertiesChanged",
@@ -235,25 +235,25 @@ static void on_property_changed(
                         NULL,
                         NULL);
                     LV_LOG_USER("register on_music_properties_changed: %d", music_id);
-                    ble_get_name(object_path);
+                    bt_get_name(object_path);
                 }
                 else
                 {
                     is_playing = false;
-                    ble_now_state = BLE_STATE_DISCONNECTED;
-                    ble_log_state_change();
+                    bt_now_state = BT_STATE_DISCONNECTED;
+                    bt_log_state_change();
                     clear_device_path();
                     if (music_id != 0)
                     {
-                        g_dbus_connection_signal_unsubscribe(ble_g_conn, music_id);
+                        g_dbus_connection_signal_unsubscribe(bt_g_conn, music_id);
                         music_id = 0;
                     }
-                    ble_device.clear();
-                    ble_title.clear();
-                    ble_artist.clear();
-                    ble_album.clear();
-                    ble_duration = 0;
-                    ble_position = 0;
+                    bt_device.clear();
+                    bt_title.clear();
+                    bt_artist.clear();
+                    bt_album.clear();
+                    bt_duration = 0;
+                    bt_position = 0;
                     view_ble_update_info();
                     view_ble_update_time();
                 }
@@ -269,12 +269,12 @@ static void on_property_changed(
     }
 }
 
-void ble_set_adapter_property(const char *property, GVariant *value)
+void bt_set_adapter_property(const char *property, GVariant *value)
 {
     GError *error = NULL;
     GVariant *result;
     GDBusProxy *proxy = g_dbus_proxy_new_sync(
-        ble_g_conn,
+        bt_g_conn,
         G_DBUS_PROXY_FLAGS_NONE,
         NULL,
         "org.bluez",
@@ -314,12 +314,12 @@ fail:
     }
 }
 
-static void set_device_property(const char *device_path, const char *property, GVariant *value)
+static void bt_device_property(const char *device_path, const char *property, GVariant *value)
 {
     GError *error = NULL;
     GVariant *result;
     GDBusProxy *proxy = g_dbus_proxy_new_sync(
-        ble_g_conn,
+        bt_g_conn,
         G_DBUS_PROXY_FLAGS_NONE,
         NULL,
         "org.bluez",
@@ -357,7 +357,7 @@ fail:
     }
 }
 
-void ble_send_media_command(ble_music_command command)
+void bt_send_media_command(bt_music_command command)
 {
     if (!device_player_path)
     {
@@ -366,19 +366,19 @@ void ble_send_media_command(ble_music_command command)
 
     const char *method = NULL;
 
-    if (command == BLE_MUSIC_COMMAND_NEXT)
+    if (command == BT_MUSIC_COMMAND_NEXT)
     {
         method = "Next";
     }
-    else if (command == BLE_MUSIC_COMMAND_LAST)
+    else if (command == BT_MUSIC_COMMAND_LAST)
     {
         method = "Previous";
     }
-    else if (command == BLE_MUSIC_COMMAND_PLAY)
+    else if (command == BT_MUSIC_COMMAND_PLAY)
     {
         method = "Play";
     }
-    else if (command == BLE_MUSIC_COMMAND_PAUSE)
+    else if (command == BT_MUSIC_COMMAND_PAUSE)
     {
         method = "Pause";
     }
@@ -391,7 +391,7 @@ void ble_send_media_command(ble_music_command command)
     GError *error = NULL;
 
     GVariant *result = g_dbus_connection_call_sync(
-        ble_g_conn,
+        bt_g_conn,
         "org.bluez",
         device_player_path,
         "org.bluez.MediaPlayer1",
@@ -416,31 +416,31 @@ void ble_send_media_command(ble_music_command command)
     }
 }
 
-void ble_info_init()
+void bt_info_init()
 {
     property_id = g_dbus_connection_signal_subscribe(
-        ble_g_conn,
+        bt_g_conn,
         "org.bluez", "org.freedesktop.DBus.Properties", "PropertiesChanged", NULL, NULL,
         G_DBUS_SIGNAL_FLAGS_NONE, on_property_changed, NULL, NULL);
 }
 
-void ble_info_close()
+void bt_info_close()
 {
     if (property_id)
     {
-        g_dbus_connection_signal_unsubscribe(ble_g_conn, property_id);
+        g_dbus_connection_signal_unsubscribe(bt_g_conn, property_id);
         property_id = 0;
     }
 
     if (music_id)
     {
-        g_dbus_connection_signal_unsubscribe(ble_g_conn, music_id);
+        g_dbus_connection_signal_unsubscribe(bt_g_conn, music_id);
         music_id = 0;
     }
 
     if (iface_added_id)
     {
-        g_dbus_connection_signal_unsubscribe(ble_g_conn, iface_added_id);
+        g_dbus_connection_signal_unsubscribe(bt_g_conn, iface_added_id);
         iface_added_id = 0;
     }
 }

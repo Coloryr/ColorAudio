@@ -1,11 +1,7 @@
 /*
  * BlueALSA - ba-device.h
- * Copyright (c) 2016-2024 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
@@ -23,8 +19,10 @@
 #include <glib.h>
 
 #include "ba-adapter.h"
+#include "shared/rc.h"
 
 struct ba_device {
+	rc_t _rc;
 
 	/* backward reference to adapter */
 	struct ba_adapter *a;
@@ -36,10 +34,17 @@ struct ba_device {
 	unsigned int seq;
 
 	/* data for D-Bus management */
+	char *ba_dbus_path;
 	char *ba_battery_dbus_path;
 	char *bluez_dbus_path;
 	/* string representation of BT address */
 	char addr_dbus_str[sizeof("dev_XX_XX_XX_XX_XX_XX")];
+
+	struct {
+		/* battery parameters in range [0, 100] or -1 */
+		int8_t charge;
+		int8_t health;
+	} battery;
 
 	/* Apple's extension used with HFP profile */
 	struct {
@@ -61,24 +66,21 @@ struct ba_device {
 	pthread_mutex_t transports_mutex;
 	GHashTable *transports;
 
-	/* memory self-management */
-	int ref_count;
-
-	int16_t charge;
 };
 
-struct ba_device *ba_device_new(
-		struct ba_adapter *adapter,
-		const bdaddr_t *addr);
+struct ba_device * ba_device_new(
+		struct ba_adapter * adapter,
+		const bdaddr_t * addr);
+struct ba_device * ba_device_lookup(
+		const struct ba_adapter * adapter,
+		const bdaddr_t * addr);
+static inline struct ba_device * ba_device_ref(
+		struct ba_device * d) {
+	return rc_ref(d);
+}
 
-struct ba_device *ba_device_lookup(
-		const struct ba_adapter *adapter,
-		const bdaddr_t *addr);
-struct ba_device *ba_device_ref(
-		struct ba_device *d);
-
-void ba_device_destroy(struct ba_device *d);
-void ba_device_unref(struct ba_device *d);
+void ba_device_destroy(struct ba_device * d);
+void ba_device_unref(struct ba_device * d);
 
 /**
  * Return the device SEP configuration as the given index. */

@@ -1,11 +1,7 @@
 /*
  * BlueALSA - bluez.h
- * Copyright (c) 2016-2024 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
@@ -19,14 +15,21 @@
 #include "a2dp.h"
 #include "ba-device.h"
 
-#define BLUEZ_A2DP_VOLUME_MIN 0
-#define BLUEZ_A2DP_VOLUME_MAX 127
+#define BLUEZ_MEDIA_TRANSPORT_A2DP_VOLUME_MIN 0
+#define BLUEZ_MEDIA_TRANSPORT_A2DP_VOLUME_MAX 127
+#define BLUEZ_MEDIA_TRANSPORT_BAP_VOLUME_MIN 0
+#define BLUEZ_MEDIA_TRANSPORT_BAP_VOLUME_MAX 255
 
-enum bluez_a2dp_transport_state {
-	BLUEZ_A2DP_TRANSPORT_STATE_IDLE,
-	BLUEZ_A2DP_TRANSPORT_STATE_PENDING,
-	BLUEZ_A2DP_TRANSPORT_STATE_ACTIVE,
+enum bluez_media_transport_state {
+	BLUEZ_MEDIA_TRANSPORT_STATE_IDLE,
+	BLUEZ_MEDIA_TRANSPORT_STATE_PENDING,
+	BLUEZ_MEDIA_TRANSPORT_STATE_BROADCASTING,
+	BLUEZ_MEDIA_TRANSPORT_STATE_ACTIVE,
 };
+
+/**
+ * BlueZ service D-Bus unique name. */
+extern char bluez_dbus_unique_name[32];
 
 int bluez_init(void);
 void bluez_destroy(void);

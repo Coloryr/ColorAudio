@@ -1,11 +1,7 @@
 /*
  * BlueALSA - codec-sbc.h
- * Copyright (c) 2016-2023 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2026 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
@@ -37,10 +33,6 @@ int sbc_init_a2dp_faststream(sbc_t *sbc, unsigned long flags,
 		const void *conf, size_t size, bool voice);
 int sbc_reinit_a2dp_faststream(sbc_t *sbc, unsigned long flags,
 		const void *conf, size_t size, bool voice);
-#endif
-
-#if ENABLE_MSBC
-int sbc_reinit_msbc(sbc_t *sbc, unsigned long flags);
 #endif
 
 const char *sbc_strerror(int err);

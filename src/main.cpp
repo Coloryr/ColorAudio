@@ -23,8 +23,7 @@
 #include "music/local_music.h"
 #include "config/config.h"
 #include "wireless/wifi.h"
-#include "wireless/ble.h"
-#include "wireless/le_audio.h"
+#include "wireless/bt.h"
 #include "io/event.h"
 #include "io/gpio.h"
 #include "io/wireless.h"
@@ -195,7 +194,7 @@ static void *main_loop(void *arg)
             wifi_wait_ready();
 #endif
             view_top_info_close();
-            ble_run_loop();
+            bt_run_loop();
         }
         else if (now_mode == MAIN_MODE_USB)
         {
@@ -235,7 +234,7 @@ void change_mode(main_mode_type mode)
     }
     else if (now_mode == MAIN_MODE_BLE)
     {
-        ble_stop();
+        bt_stop();
     }
     else if (now_mode == MAIN_MODE_USB)
     {
@@ -249,7 +248,7 @@ void change_mode(main_mode_type mode)
     }
     else if (mode == MAIN_MODE_BLE)
     {
-        ble_init();
+        bt_init();
     }
     else if (mode == MAIN_MODE_USB)
     {

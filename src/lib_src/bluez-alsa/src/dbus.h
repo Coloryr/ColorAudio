@@ -1,11 +1,7 @@
 /*
  * BlueALSA - dbus.h
- * Copyright (c) 2016-2024 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
@@ -21,6 +17,7 @@
 #define DBUS_SERVICE "org.freedesktop.DBus"
 
 #define DBUS_IFACE_DBUS             DBUS_SERVICE
+#define DBUS_IFACE_INTROSPECTABLE   DBUS_SERVICE ".Introspectable"
 #define DBUS_IFACE_OBJECT_MANAGER   DBUS_SERVICE ".ObjectManager"
 #define DBUS_IFACE_PROPERTIES       DBUS_SERVICE ".Properties"
 
@@ -69,18 +66,38 @@ void *g_dbus_interface_skeleton_ex_new(GType interface_skeleton_type,
 		GDBusInterfaceInfo *interface_info, const GDBusInterfaceSkeletonVTable *vtable,
 		void *userdata, GDestroyNotify userdata_free_func);
 
+/**
+ * Create a new message bus GDBusConnection for the given address. */
+static inline GDBusConnection * g_dbus_connection_new_for_address_simple_sync(
+		const char * address, GError ** error) {
+	return g_dbus_connection_new_for_address_sync(address,
+			G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT |
+			G_DBUS_CONNECTION_FLAGS_MESSAGE_BUS_CONNECTION,
+			NULL, NULL, error);
+}
+
 bool g_dbus_connection_emit_properties_changed(GDBusConnection *conn,
 		const char *path, const char *interface, GVariant *changed,
 		GVariant *invalidated, GError **error);
 
-GVariantIter *g_dbus_get_managed_objects(GDBusConnection *conn,
-		const char *name, const char *path, GError **error);
+char * g_dbus_get_unique_name_sync(GDBusConnection * conn,
+		const char * service);
 
-GVariant *g_dbus_get_property(GDBusConnection *conn, const char *service,
-		const char *path, const char *interface, const char *property,
-		GError **error);
-bool g_dbus_set_property(GDBusConnection *conn, const char *service,
-		const char *path, const char *interface, const char *property,
-		const GVariant *value, GError **error);
+GVariantIter * g_dbus_get_managed_objects_sync(GDBusConnection * conn,
+		const char * service, const char * path, GError ** error);
+
+GVariantIter * g_dbus_get_properties_sync(GDBusConnection * conn,
+		const char * service, const char * path, const char * interface,
+		GError ** error);
+
+void g_dbus_get_property(GDBusConnection * conn, const char * service,
+		const char * path, const char * interface, const char * property,
+		GAsyncReadyCallback callback, void * userdata);
+GVariant * g_dbus_get_property_finish(GDBusConnection * conn,
+		GAsyncResult * result, GError ** error);
+
+bool g_dbus_set_property_sync(GDBusConnection * conn, const char * service,
+		const char * path, const char * interface, const char * property,
+		const GVariant * value, GError ** error);
 
 #endif

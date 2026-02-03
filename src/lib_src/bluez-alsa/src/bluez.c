@@ -1,11 +1,7 @@
 /*
  * BlueALSA - bluez.c
- * Copyright (c) 2016-2024 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #include "bluez.h"
@@ -42,14 +38,14 @@
 #include "ba-transport-pcm.h"
 #include "bluez-iface.h"
 #include "dbus.h"
+#include "error.h"
 #include "hci.h"
+#include "sco.h"
 #include "utils.h"
 #include "shared/a2dp-codecs.h"
 #include "shared/bluetooth.h"
 #include "shared/defs.h"
 #include "shared/log.h"
-
-#include "alsa-transport.h"
 
 /* Compatibility patch for glib < 2.68. */
 #if !GLIB_CHECK_VERSION(2, 68, 0)
@@ -96,73 +92,25 @@ struct bluez_adapter
 static pthread_mutex_t bluez_mutex = PTHREAD_MUTEX_INITIALIZER;
 static GHashTable *dbus_object_data_map = NULL;
 static struct bluez_adapter bluez_adapters[HCI_MAX_DEV] = {0};
-static char bluez_dbus_unique_name[64] = "";
+char bluez_dbus_unique_name[32] = "";
 
-static void bluez_register_a2dp_all(struct ba_adapter *);
-
-static void bluez_register_media_application_finish(GObject *source,
-													GAsyncResult *result, void *userdata)
+static struct bluez_adapter *bluez_adapter_new(struct ba_adapter *a)
 {
-	(void)userdata;
-
-	GDBusMessage *rep;
-	GError *err = NULL;
-
-	if ((rep = g_dbus_connection_send_message_with_reply_finish(
-			 G_DBUS_CONNECTION(source), result, &err)) == NULL ||
-		g_dbus_message_to_gerror(rep, &err))
-		goto fail;
-
-	/* Save sender (BlueZ) unique name for calls filtering. */
-	const char *sender = g_dbus_message_get_sender(rep);
-	strncpy(bluez_dbus_unique_name, sender, sizeof(bluez_dbus_unique_name) - 1);
-
-fail:
-	if (rep != NULL)
-		g_object_unref(rep);
-	if (err != NULL)
-	{
-		error("Couldn't register media application: %s", err->message);
-		g_error_free(err);
-	}
+	struct bluez_adapter *b_adapter = &bluez_adapters[a->hci.dev_id];
+	b_adapter->device_sep_configs_map = g_hash_table_new_full(
+		g_bdaddr_hash, g_bdaddr_equal, g_free, (GDestroyNotify)g_array_unref);
+	b_adapter->adapter = a;
+	return b_adapter;
 }
 
-/**
- * Register media application in BlueZ. */
-static void bluez_register_media_application(struct bluez_adapter *b_adapter)
+static void register_battery_provider_finish(
+	GObject *source,
+	GAsyncResult *result,
+	G_GNUC_UNUSED void *userdata)
 {
 
-	char path[64];
-	struct ba_adapter *a = b_adapter->adapter;
-	snprintf(path, sizeof(path), "/org/bluez/%s", a->hci.name);
-
-	GDBusObjectManagerServer *manager = g_dbus_object_manager_server_new(path);
-	g_dbus_object_manager_server_set_connection(manager, config.dbus);
-	b_adapter->manager_media_application = manager;
-
-	GDBusMessage *msg;
-	msg = g_dbus_message_new_method_call(BLUEZ_SERVICE, a->bluez_dbus_path,
-										 BLUEZ_IFACE_MEDIA, "RegisterApplication");
-
-	GVariant *body = g_variant_new("(oa{sv})", path, NULL);
-	g_dbus_message_set_body(msg, body);
-
-	debug("Registering media application: %s", path);
-	g_dbus_connection_send_message_with_reply(config.dbus, msg,
-											  G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, NULL,
-											  bluez_register_media_application_finish, NULL);
-
-	g_object_unref(msg);
-}
-
-static void bluez_register_battery_provider_finish(GObject *source,
-												   GAsyncResult *result, void *userdata)
-{
-	(void)userdata;
-
-	GDBusMessage *rep;
-	GError *err = NULL;
-
+	g_autoptr(GDBusMessage) rep;
+	g_autoptr(GError) err = NULL;
 	if ((rep = g_dbus_connection_send_message_with_reply_finish(
 			 G_DBUS_CONNECTION(source), result, &err)) == NULL ||
 		g_dbus_message_to_gerror(rep, &err))
@@ -172,83 +120,118 @@ static void bluez_register_battery_provider_finish(GObject *source,
 			/* Suppress warning message in case when BlueZ has no battery provider
 			 * support enabled, because it's not a mandatory feature. */
 			debug("BlueZ battery provider support not available");
-			g_error_free(err);
-			err = NULL;
+			g_error_free(g_steal_pointer(&err));
 		}
 	}
 
-	if (rep != NULL)
-		g_object_unref(rep);
 	if (err != NULL)
 	{
 		error("Couldn't register battery provider: %s", err->message);
-		g_error_free(err);
 	}
 }
 
 /**
- * Register battery provider in BlueZ. */
-static void bluez_register_battery_provider(struct bluez_adapter *b_adapter)
+ * Register battery provider in BlueZ.
+ *
+ * This function requires Battery Provider Manager interface to be available
+ * on the given adapter. */
+static void bluez_adapter_register_battery_provider(
+	struct bluez_adapter *b_adapter)
 {
-	char path[64];
-	struct ba_adapter *a = b_adapter->adapter;
-	snprintf(path, sizeof(path), "/org/bluez/%s/battery", a->hci.name);
-
-	GDBusObjectManagerServer *manager = g_dbus_object_manager_server_new(path);
-	g_dbus_object_manager_server_set_connection(manager, config.dbus);
-	b_adapter->manager_battery_provider = manager;
-
-	GDBusMessage *msg;
-	msg = g_dbus_message_new_method_call(BLUEZ_SERVICE, a->bluez_dbus_path,
-										 BLUEZ_IFACE_BATTERY_PROVIDER_MANAGER, "RegisterBatteryProvider");
-
-	g_dbus_message_set_body(msg, g_variant_new("(o)", path));
-
-	debug("Registering battery provider: %s", path);
-	g_dbus_connection_send_message_with_reply(config.dbus, msg,
-											  G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, NULL,
-											  bluez_register_battery_provider_finish, NULL);
-
-	g_object_unref(msg);
-}
-
-static struct bluez_adapter *bluez_adapter_new(struct ba_adapter *a)
-{
-	struct bluez_adapter *ba = &bluez_adapters[a->hci.dev_id];
-
-	ba->adapter = a;
-	ba->device_sep_configs_map = g_hash_table_new_full(
-		g_bdaddr_hash, g_bdaddr_equal, g_free, (GDestroyNotify)g_array_unref);
-
-	bluez_register_battery_provider(ba);
-
-	if (config.profile.a2dp_source || config.profile.a2dp_sink)
+	if (config.profile.hfp_hf)
 	{
-		bluez_register_media_application(ba);
-		bluez_register_a2dp_all(a);
-	}
 
-	return ba;
+		char path[64];
+		struct ba_adapter *a = b_adapter->adapter;
+		snprintf(path, sizeof(path), "/org/bluez/%s/battery", a->hci.name);
+
+		GDBusObjectManagerServer *manager = g_dbus_object_manager_server_new(path);
+		g_dbus_object_manager_server_set_connection(manager, config.dbus);
+		b_adapter->manager_battery_provider = manager;
+
+		g_autoptr(GDBusMessage) msg = g_dbus_message_new_method_call(BLUEZ_SERVICE,
+																	 a->bluez_dbus_path, BLUEZ_IFACE_BATTERY_PROVIDER_MANAGER, "RegisterBatteryProvider");
+		g_dbus_message_set_body(msg, g_variant_new("(o)", path));
+
+		debug("Registering battery provider: %s", path);
+		g_dbus_connection_send_message_with_reply(config.dbus, msg,
+												  G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, NULL,
+												  register_battery_provider_finish, NULL);
+	}
 }
 
-static void bluez_adapter_free(struct bluez_adapter *b_adapter)
+static void register_media_application_finish(
+	GObject *source,
+	GAsyncResult *result,
+	G_GNUC_UNUSED void *userdata)
+{
+
+	g_autoptr(GDBusMessage) rep;
+	g_autoptr(GError) err = NULL;
+	if ((rep = g_dbus_connection_send_message_with_reply_finish(
+			 G_DBUS_CONNECTION(source), result, &err)) != NULL)
+		g_dbus_message_to_gerror(rep, &err);
+
+	if (err != NULL)
+	{
+		error("Couldn't register media application: %s", err->message);
+	}
+}
+
+static void bluez_adapter_export_a2dp_all(struct bluez_adapter *b_adapter);
+
+/**
+ * Register media application and A2DP endpoints in BlueZ.
+ *
+ * This function requires Media Manager interface to be available
+ * on the given adapter. */
+static void bluez_adapter_register_media_application(
+	struct bluez_adapter *b_adapter)
+{
+	if (config.profile.a2dp_sink)
+	{
+
+		char path[64];
+		struct ba_adapter *a = b_adapter->adapter;
+		snprintf(path, sizeof(path), "/org/bluez/%s", a->hci.name);
+
+		GDBusObjectManagerServer *manager = g_dbus_object_manager_server_new(path);
+		g_dbus_object_manager_server_set_connection(manager, config.dbus);
+		b_adapter->manager_media_application = manager;
+
+		/* Export A2DP endpoints before registering media application. */
+		bluez_adapter_export_a2dp_all(b_adapter);
+
+		g_autoptr(GDBusMessage) msg = g_dbus_message_new_method_call(BLUEZ_SERVICE,
+																	 a->bluez_dbus_path, BLUEZ_IFACE_MEDIA, "RegisterApplication");
+		g_dbus_message_set_body(msg, g_variant_new("(oa{sv})", path, NULL));
+
+		debug("Registering media application: %s", path);
+		g_dbus_connection_send_message_with_reply(config.dbus, msg,
+												  G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, NULL,
+												  register_media_application_finish, a);
+	}
+}
+
+/**
+ * Register GATT applications in BlueZ.
+ *
+ * This function requires GATT Manager and LE Advertising Manager interfaces
+ * to be available on the given adapter. */
+static void bluez_adapter_register_gatt_applications(
+	G_GNUC_UNUSED struct bluez_adapter *b_adapter)
+{
+}
+
+static void bluez_adapter_free(
+	struct bluez_adapter *b_adapter)
 {
 	if (b_adapter->adapter == NULL)
 		return;
-	ba_adapter_destroy(b_adapter->adapter);
-	b_adapter->adapter = NULL;
-	if (b_adapter->manager_media_application != NULL)
-	{
-		g_object_unref(b_adapter->manager_media_application);
-		b_adapter->manager_media_application = NULL;
-	}
-	if (b_adapter->manager_battery_provider != NULL)
-	{
-		g_object_unref(b_adapter->manager_battery_provider);
-		b_adapter->manager_battery_provider = NULL;
-	}
-	g_hash_table_unref(b_adapter->device_sep_configs_map);
-	b_adapter->device_sep_configs_map = NULL;
+	ba_adapter_destroy(g_steal_pointer(&b_adapter->adapter));
+	g_clear_object(&b_adapter->manager_media_application);
+	g_clear_object(&b_adapter->manager_battery_provider);
+	g_hash_table_unref(g_steal_pointer(&b_adapter->device_sep_configs_map));
 }
 
 /**
@@ -280,7 +263,7 @@ static void bluez_dbus_object_data_device_set(
 	if (d != NULL)
 	{
 		GVariantBuilder props;
-		g_variant_builder_init(&props, G_VARIANT_TYPE("a{sv}"));
+		g_variant_builder_init(&props, G_VARIANT_TYPE_VARDICT);
 		g_variant_builder_add(&props, "{sv}", "Device",
 							  g_variant_new_object_path(d->bluez_dbus_path));
 		changed = g_variant_builder_end(&props);
@@ -364,23 +347,74 @@ static uint8_t bluez_get_media_endpoint_codec(
 	return A2DP_CODEC_VENDOR;
 }
 
+static const char *bluez_get_profile_object_path(
+	enum ba_transport_profile profile)
+{
+	switch (profile)
+	{
+	case BA_TRANSPORT_PROFILE_HFP_HF:
+		return "/org/bluez/HFP/HandsFree";
+	case BA_TRANSPORT_PROFILE_HFP_AG:
+		return "/org/bluez/HFP/AudioGateway";
+	case BA_TRANSPORT_PROFILE_HSP_HS:
+		return "/org/bluez/HSP/Headset";
+	case BA_TRANSPORT_PROFILE_HSP_AG:
+		return "/org/bluez/HSP/AudioGateway";
+	default:
+		g_assert_not_reached();
+		return "/";
+	}
+}
+
 /**
- * Get transport state from BlueZ state string. */
-static enum bluez_a2dp_transport_state bluez_a2dp_transport_state_from_string(
+ * Get media transport state from BlueZ state string. */
+static enum bluez_media_transport_state media_transport_state_from_string(
 	const char *state)
 {
-	if (strcmp(state, BLUEZ_TRANSPORT_STATE_IDLE) == 0)
-		return BLUEZ_A2DP_TRANSPORT_STATE_IDLE;
-	if (strcmp(state, BLUEZ_TRANSPORT_STATE_PENDING) == 0)
-		return BLUEZ_A2DP_TRANSPORT_STATE_PENDING;
-	if (strcmp(state, BLUEZ_TRANSPORT_STATE_ACTIVE) == 0)
-		return BLUEZ_A2DP_TRANSPORT_STATE_ACTIVE;
-	warn("Invalid A2DP transport state: %s", state);
-	return BLUEZ_A2DP_TRANSPORT_STATE_IDLE;
+	if (strcmp(state, "idle") == 0)
+		return BLUEZ_MEDIA_TRANSPORT_STATE_IDLE;
+	if (strcmp(state, "pending") == 0)
+		return BLUEZ_MEDIA_TRANSPORT_STATE_PENDING;
+	if (strcmp(state, "broadcasting") == 0)
+		return BLUEZ_MEDIA_TRANSPORT_STATE_BROADCASTING;
+	if (strcmp(state, "active") == 0)
+		return BLUEZ_MEDIA_TRANSPORT_STATE_ACTIVE;
+	warn("Invalid media transport state: %s", state);
+	return BLUEZ_MEDIA_TRANSPORT_STATE_IDLE;
+}
+
+static const char *media_endpoint_error_from_error_code(error_code_t err)
+{
+	switch (err)
+	{
+	case ERROR_CODE_A2DP_INVALID_CHANNELS:
+		return BLUEZ_ERROR_A2DP_INVALID_CHANNELS;
+	case ERROR_CODE_A2DP_INVALID_CHANNEL_MODE:
+		return BLUEZ_ERROR_A2DP_INVALID_CHANNEL_MODE;
+	case ERROR_CODE_A2DP_INVALID_SAMPLE_RATE:
+		return BLUEZ_ERROR_A2DP_INVALID_SAMPLING_FREQ;
+	case ERROR_CODE_A2DP_INVALID_BLOCK_LENGTH:
+		return BLUEZ_ERROR_A2DP_INVALID_BLOCK_LENGTH;
+	case ERROR_CODE_A2DP_INVALID_SUB_BANDS:
+		return BLUEZ_ERROR_A2DP_INVALID_SUB_BANDS;
+	case ERROR_CODE_A2DP_INVALID_ALLOCATION_METHOD:
+		return BLUEZ_ERROR_A2DP_INVALID_ALLOC_METHOD;
+	case ERROR_CODE_A2DP_INVALID_MIN_BIT_POOL_VALUE:
+		return BLUEZ_ERROR_A2DP_INVALID_MIN_BIT_POOL;
+	case ERROR_CODE_A2DP_INVALID_MAX_BIT_POOL_VALUE:
+		return BLUEZ_ERROR_A2DP_INVALID_MAX_BIT_POOL;
+	case ERROR_CODE_A2DP_INVALID_LAYER:
+		return BLUEZ_ERROR_A2DP_INVALID_LAYER;
+	case ERROR_CODE_A2DP_INVALID_OBJECT_TYPE:
+		return BLUEZ_ERROR_A2DP_INVALID_OBJECT_TYPE;
+	default:
+		return BLUEZ_ERROR_A2DP_INVALID_CODEC_PARAM;
+	}
 }
 
 static void bluez_endpoint_select_configuration(GDBusMethodInvocation *inv, void *userdata)
 {
+
 	GVariant *params = g_dbus_method_invocation_get_parameters(inv);
 	struct bluez_dbus_object_data *dbus_obj = userdata;
 	const struct a2dp_sep *sep = dbus_obj->sep;
@@ -395,18 +429,17 @@ static void bluez_endpoint_select_configuration(GDBusMethodInvocation *inv, void
 	g_variant_unref(params);
 
 	hexdump("A2DP peer capabilities blob", &capabilities, size);
-	if (a2dp_select_configuration(sep, &capabilities, size) == -1)
+	if (a2dp_select_configuration(sep, &capabilities, size) != ERROR_CODE_OK)
 		goto fail;
 
-	GVariant *rv[] = {
-		g_variant_new_fixed_array(G_VARIANT_TYPE_BYTE, &capabilities, size, sizeof(uint8_t))};
-	g_dbus_method_invocation_return_value(inv, g_variant_new_tuple(rv, 1));
+	GVariant *rv = g_variant_new_fixed_byte_array(&capabilities, size);
+	g_dbus_method_invocation_return_value(inv, g_variant_new_tuple(&rv, 1));
 
 	return;
 
 fail:
-	g_dbus_method_invocation_return_error(inv, G_DBUS_ERROR,
-										  G_DBUS_ERROR_INVALID_ARGS, "Invalid capabilities");
+	g_dbus_method_invocation_return_dbus_error(inv,
+											   BLUEZ_ERROR_FAILED, "Invalid capabilities");
 }
 
 static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *userdata)
@@ -415,13 +448,14 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 	const char *sender = g_dbus_method_invocation_get_sender(inv);
 	GVariant *params = g_dbus_method_invocation_get_parameters(inv);
 	struct bluez_dbus_object_data *dbus_obj = userdata;
+	const char *dbus_error = BLUEZ_ERROR_FAILED;
 	const struct a2dp_sep *sep = dbus_obj->sep;
 
 	struct ba_adapter *a = NULL;
 	struct ba_transport *t = NULL;
 	struct ba_device *d = NULL;
 
-	enum bluez_a2dp_transport_state state = 0xFFFF;
+	enum bluez_media_transport_state state = 0xFFFF;
 	char *device_path = NULL;
 	a2dp_t configuration = {0};
 	bool delay_reporting = false;
@@ -457,6 +491,7 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 			{
 				error("Invalid configuration: %s: %u != %u",
 					  "Codec mismatch", codec_value, codec_value_ok);
+				dbus_error = BLUEZ_ERROR_A2DP_INVALID_CODEC_TYPE;
 				goto fail;
 			}
 		}
@@ -468,18 +503,19 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 			const void *data = g_variant_get_fixed_array(value, &size, sizeof(char));
 			memcpy(&configuration, data, MIN(size, sizeof(configuration)));
 
-			enum a2dp_check_err rv;
-			if ((rv = a2dp_check_configuration(sep, data, size)) != A2DP_CHECK_OK)
+			error_code_t err;
+			if ((err = a2dp_check_configuration(sep, data, size)) != ERROR_CODE_OK)
 			{
 				error("Invalid configuration: %s: %s",
-					  "Invalid configuration blob", a2dp_check_strerror(rv));
+					  "Invalid configuration blob", error_code_strerror(err));
+				dbus_error = media_endpoint_error_from_error_code(err);
 				goto fail;
 			}
 		}
 		else if (strcmp(property, "State") == 0 &&
 				 g_variant_validate_value(value, G_VARIANT_TYPE_STRING, property))
 		{
-			state = bluez_a2dp_transport_state_from_string(g_variant_get_string(value, NULL));
+			state = media_transport_state_from_string(g_variant_get_string(value, NULL));
 		}
 		else if (strcmp(property, "Delay") == 0 &&
 				 g_variant_validate_value(value, G_VARIANT_TYPE_UINT16, property))
@@ -501,6 +537,7 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 	if (state == 0xFFFF)
 	{
 		error("Invalid configuration: %s", "Missing state");
+		dbus_error = BLUEZ_ERROR_INVALID_ARGUMENTS;
 		goto fail;
 	}
 
@@ -520,9 +557,13 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 	}
 
 	if (d->sep_configs == NULL)
-		d->sep_configs = bluez_adapter_get_device_sep_configs(&bluez_adapters[a->hci.dev_id], &addr);
+	{
+		struct bluez_adapter *b_adapter = &bluez_adapters[a->hci.dev_id];
+		d->sep_configs = bluez_adapter_get_device_sep_configs(b_adapter, &addr);
+	}
 
-	if ((t = ba_transport_lookup(d, transport_path)) != NULL)
+	if ((t = ba_transport_lookup(d, transport_path)) != NULL &&
+		dbus_obj->connected)
 	{
 		error("Transport already configured: %s", transport_path);
 		goto fail;
@@ -535,23 +576,27 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 		goto fail;
 	}
 
-	/* Skip volume level initialization in case of A2DP Source
+	/* Skip volume level initialization in case of A2DP/ASHA Source
 	 * profile and software volume control. */
-	if (!(t->profile & BA_TRANSPORT_PROFILE_A2DP_SOURCE &&
-		  t->a2dp.pcm.soft_volume))
+	if (!(t->profile & (BA_TRANSPORT_PROFILE_A2DP_SOURCE |
+						0) &&
+		  t->media.pcm.soft_volume))
 	{
-		int level = ba_transport_pcm_volume_range_to_level(volume, BLUEZ_A2DP_VOLUME_MAX);
 
-		pthread_mutex_lock(&t->a2dp.pcm.mutex);
-		for (size_t i = 0; i < t->a2dp.pcm.channels; i++)
-			ba_transport_pcm_volume_set(&t->a2dp.pcm.volume[i], &level, NULL, NULL);
-		pthread_mutex_unlock(&t->a2dp.pcm.mutex);
+		/* Volume rage for A2DP and ASHA is the same. */
+		int level = ba_transport_pcm_volume_range_to_level(volume,
+														   BLUEZ_MEDIA_TRANSPORT_A2DP_VOLUME_MAX);
+
+		pthread_mutex_lock(&t->media.pcm.mutex);
+		for (size_t i = 0; i < t->media.pcm.channels; i++)
+			ba_transport_pcm_volume_set(&t->media.pcm.volume[i], &level, NULL, NULL);
+		pthread_mutex_unlock(&t->media.pcm.mutex);
 	}
 
-	t->a2dp.bluez_dbus_sep_path = dbus_obj->path;
-	t->a2dp.delay_reporting = delay_reporting;
-	t->a2dp.delay = delay;
-	t->a2dp.volume = volume;
+	t->media.bluez_dbus_sep_path = dbus_obj->path;
+	t->media.delay_reporting = delay_reporting;
+	t->media.delay = delay;
+	t->media.volume = volume;
 
 	debug("%s configured for device %s",
 		  ba_transport_debug_name(t),
@@ -559,27 +604,26 @@ static void bluez_endpoint_set_configuration(GDBusMethodInvocation *inv, void *u
 	hexdump("A2DP selected configuration blob",
 			&configuration, sep->config.caps_size);
 	debug("PCM configuration: channels=%u rate=%u",
-		  t->a2dp.pcm.channels, t->a2dp.pcm.rate);
+		  t->media.pcm.channels, t->media.pcm.rate);
 	debug("Delay reporting: %s",
 		  delay_reporting ? "supported" : "unsupported");
 
-	ba_transport_set_a2dp_state(t, state);
+	ba_transport_set_media_state(t, state);
 
 	bluez_dbus_object_data_device_set(dbus_obj, d);
 	dbus_obj->connected = true;
 
 	g_dbus_method_invocation_return_value(inv, NULL);
-	bluez_register_a2dp_all(a);
+	bluez_adapter_export_a2dp_all(&bluez_adapters[a->hci.dev_id]);
 
-	ble_set_ba_transport(d, dbus_obj->profile,
+	bt_set_ba_transport(d, dbus_obj->profile,
 						 sender, transport_path, sep, &configuration);
-	ble_set_format(t->a2dp.pcm.channels, t->a2dp.pcm.rate);
-
+	bt_set_format(t->media.pcm.channels, t->media.pcm.rate);
 	goto final;
 
 fail:
-	g_dbus_method_invocation_return_error(inv, G_DBUS_ERROR,
-										  G_DBUS_ERROR_INVALID_ARGS, "Unable to set configuration");
+	g_dbus_method_invocation_return_dbus_error(inv,
+											   dbus_error, "Unable to set configuration");
 
 final:
 	if (a != NULL)
@@ -665,8 +709,7 @@ static GVariant *bluez_media_endpoint_iface_get_property(
 		return g_variant_new_uint32(sep->config.codec_id);
 	}
 	if (strcmp(property, "Capabilities") == 0)
-		return g_variant_new_fixed_array(G_VARIANT_TYPE_BYTE,
-										 &sep->config.capabilities, sep->config.caps_size, sizeof(uint8_t));
+		return g_variant_new_fixed_byte_array(&sep->config.capabilities, sep->config.caps_size);
 	if (strcmp(property, "Device") == 0)
 	{
 		if (!dbus_obj->connected)
@@ -688,8 +731,8 @@ unavailable:
 
 /**
  * Export A2DP endpoint. */
-static void bluez_export_a2dp(
-	const struct ba_adapter *adapter,
+static void bluez_adapter_export_a2dp(
+	const struct bluez_adapter *b_adapter,
 	const struct a2dp_sep *sep)
 {
 
@@ -716,7 +759,8 @@ static void bluez_export_a2dp(
 
 	pthread_mutex_lock(&bluez_mutex);
 
-	GDBusObjectManagerServer *manager = bluez_adapters[adapter->hci.dev_id].manager_media_application;
+	struct ba_adapter *adapter = b_adapter->adapter;
+	GDBusObjectManagerServer *manager = b_adapter->manager_media_application;
 	enum ba_transport_profile profile = sep->config.type == A2DP_SOURCE ? BA_TRANSPORT_PROFILE_A2DP_SOURCE : BA_TRANSPORT_PROFILE_A2DP_SINK;
 
 	unsigned int connected = 0;
@@ -795,16 +839,24 @@ static void bluez_export_a2dp(
 }
 
 /**
- * Register A2DP endpoints. */
-static void bluez_register_a2dp_all(struct ba_adapter *adapter)
+ * Export all A2DP endpoints. */
+static void bluez_adapter_export_a2dp_all(struct bluez_adapter *b_adapter)
 {
 	struct a2dp_sep *const *seps = a2dp_seps;
 	for (const struct a2dp_sep *sep = *seps; sep != NULL; sep = *++seps)
 	{
 		if (!sep->enabled)
 			continue;
-		bluez_export_a2dp(adapter, sep);
+		bluez_adapter_export_a2dp(b_adapter, sep);
 	}
+}
+
+GVariant *ba_variant_new_device_path(const struct ba_device *d) {
+	return g_variant_new_object_path(d->bluez_dbus_path);
+}
+
+GVariant *ba_variant_new_device_battery(const struct ba_device *d) {
+	return g_variant_new_byte(d->battery.charge);
 }
 
 static GVariant *bluez_battery_provider_iface_skeleton_get_property(
@@ -815,9 +867,9 @@ static GVariant *bluez_battery_provider_iface_skeleton_get_property(
 	const struct ba_device *d = userdata;
 
 	if (strcmp(property, "Device") == 0)
-		return g_variant_new_object_path(d->bluez_dbus_path);
+		return ba_variant_new_device_path(d);
 	if (strcmp(property, "Percentage") == 0)
-		return g_variant_new_byte(d->charge);
+		return ba_variant_new_device_battery(d);
 	if (strcmp(property, "Source") == 0)
 		return g_variant_new_string("BlueALSA");
 
@@ -945,6 +997,13 @@ static void bluez_profile_new_connection(GDBusMethodInvocation *inv, void *userd
 		goto fail;
 	}
 
+	error_code_t ec;
+	if (((ec = sco_setup_connection_dispatcher(a))) != ERROR_CODE_OK)
+	{
+		error("Couldn't setup SCO connection dispatcher: %s", error_code_strerror(ec));
+		goto fail;
+	}
+
 	debug("%s configured for device %s",
 		  ba_transport_debug_name(t),
 		  batostr_(&d->addr));
@@ -955,8 +1014,8 @@ static void bluez_profile_new_connection(GDBusMethodInvocation *inv, void *userd
 	goto final;
 
 fail:
-	g_dbus_method_invocation_return_error(inv, G_DBUS_ERROR,
-										  G_DBUS_ERROR_INVALID_ARGS, "Unable to connect profile");
+	g_dbus_method_invocation_return_dbus_error(inv,
+											   BLUEZ_ERROR_FAILED, "Unable to connect profile");
 	if (fd != -1)
 		close(fd);
 
@@ -1021,58 +1080,197 @@ static void bluez_profile_release(GDBusMethodInvocation *inv, void *userdata)
 }
 
 /**
- * Register hands-free profile in BlueZ. */
-static int bluez_register_profile(
-	const struct bluez_dbus_object_data *dbus_obj,
-	const char *uuid,
-	uint16_t version,
-	uint16_t features,
-	GError **error)
+ * Export HFP/HSP profile. */
+static struct bluez_dbus_object_data *export_profile(
+	enum ba_transport_profile profile)
 {
 
-	GDBusMessage *msg = NULL, *rep = NULL;
-	int ret = -1;
+	static const GDBusMethodCallDispatcher dispatchers[] = {
+		{.method = "NewConnection",
+		 .sender = bluez_dbus_unique_name,
+		 .handler = bluez_profile_new_connection},
+		{.method = "RequestDisconnection",
+		 .sender = bluez_dbus_unique_name,
+		 .handler = bluez_profile_request_disconnection},
+		{.method = "Release",
+		 .sender = bluez_dbus_unique_name,
+		 .handler = bluez_profile_release},
+		{0},
+	};
 
-	debug("Registering hands-free profile: %s", dbus_obj->path);
+	static const GDBusInterfaceSkeletonVTable vtable = {
+		.dispatchers = dispatchers,
+	};
 
-	msg = g_dbus_message_new_method_call(BLUEZ_SERVICE, "/org/bluez",
-										 BLUEZ_IFACE_PROFILE_MANAGER, "RegisterProfile");
+	pthread_mutex_lock(&bluez_mutex);
 
-	GVariantBuilder options;
-	g_variant_builder_init(&options, G_VARIANT_TYPE("a{sv}"));
+	struct bluez_dbus_object_data *obj;
+	const char *path = bluez_get_profile_object_path(profile);
+	if ((obj = g_hash_table_lookup(dbus_object_data_map, path)) == NULL)
+	{
 
-	if (version)
-		g_variant_builder_add(&options, "{sv}", "Version", g_variant_new_uint16(version));
-	if (features)
-		g_variant_builder_add(&options, "{sv}", "Features", g_variant_new_uint16(features));
+		debug("Exporting hands-free profile object: %s", path);
 
-	g_dbus_message_set_body(msg, g_variant_new("(osa{sv})", dbus_obj->path, uuid, &options));
-	g_variant_builder_clear(&options);
+		if ((obj = calloc(1, sizeof(*obj))) == NULL)
+		{
+			warn("Couldn't export hands-free profile: %s", strerror(errno));
+			goto fail;
+		}
 
-	if ((rep = g_dbus_connection_send_message_with_reply_sync(config.dbus, msg,
-															  G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, NULL, error)) == NULL ||
-		g_dbus_message_to_gerror(rep, error))
-		goto fail;
+		strncpy(obj->path, path, sizeof(obj->path));
+		obj->hci_dev_id = -1;
+		obj->profile = profile;
 
-	/* Save sender (BlueZ) unique name for calls filtering. */
-	const char *sender = g_dbus_message_get_sender(rep);
-	strncpy(bluez_dbus_unique_name, sender, sizeof(bluez_dbus_unique_name) - 1);
+		g_autoptr(OrgBluezProfile1Skeleton) ifs;
+		ifs = org_bluez_profile1_skeleton_new(&vtable, obj, NULL);
 
-	ret = 0;
+		g_autoptr(GError) err = NULL;
+		obj->ifs = G_DBUS_INTERFACE_SKELETON(ifs);
+		if (!g_dbus_interface_skeleton_export(obj->ifs, config.dbus, path, &err))
+		{
+			warn("Couldn't export hands-free profile: %s", err->message);
+			free(g_steal_pointer(&obj));
+			goto fail;
+		}
+
+		g_hash_table_insert(dbus_object_data_map, obj->path, obj);
+		ifs = NULL;
+	}
 
 fail:
-	if (msg != NULL)
-		g_object_unref(msg);
-	if (rep != NULL)
-		g_object_unref(rep);
+	pthread_mutex_unlock(&bluez_mutex);
 
-	return ret;
+	return obj;
+}
+
+static void register_profile_finish(
+	GObject *source,
+	GAsyncResult *result,
+	void *userdata)
+{
+	struct bluez_dbus_object_data *obj = userdata;
+
+	g_autoptr(GDBusMessage) rep;
+	g_autoptr(GError) err = NULL;
+	if ((rep = g_dbus_connection_send_message_with_reply_finish(
+			 G_DBUS_CONNECTION(source), result, &err)) != NULL)
+		g_dbus_message_to_gerror(rep, &err);
+
+	if (err != NULL)
+		error("Couldn't register hands-free profile: %s", err->message);
+	else
+	{
+		obj->registered = true;
+	}
+}
+
+/**
+ * Register Bluetooth Hands-Free Audio Profile. */
+static void bluez_register_hfp(
+	const char *uuid,
+	enum ba_transport_profile profile,
+	uint16_t version,
+	uint16_t features)
+{
+	struct bluez_dbus_object_data *obj;
+	if ((obj = export_profile(profile)) != NULL &&
+		!obj->registered)
+	{
+
+		g_autoptr(GDBusMessage) msg = g_dbus_message_new_method_call(BLUEZ_SERVICE,
+																	 "/org/bluez", BLUEZ_IFACE_PROFILE_MANAGER, "RegisterProfile");
+
+		GVariantBuilder options;
+		g_variant_builder_init(&options, G_VARIANT_TYPE_VARDICT);
+
+		if (version)
+			g_variant_builder_add(&options, "{sv}", "Version", g_variant_new_uint16(version));
+		if (features)
+			g_variant_builder_add(&options, "{sv}", "Features", g_variant_new_uint16(features));
+
+		g_dbus_message_set_body(msg, g_variant_new("(osa{sv})", obj->path, uuid, &options));
+		g_variant_builder_clear(&options);
+
+		debug("Registering hands-free profile: %s", obj->path);
+		g_dbus_connection_send_message_with_reply(config.dbus, msg,
+												  G_DBUS_SEND_MESSAGE_FLAGS_NONE, -1, NULL, NULL,
+												  register_profile_finish, obj);
+	}
+}
+
+/**
+ * Register Bluetooth Hands-Free Audio Profiles.
+ *
+ * This function also registers deprecated HSP profile. Profiles registration
+ * is controlled by the global configuration structure - if none is enabled,
+ * this function will do nothing. */
+static void bluez_register_hfp_all(void)
+{
+	if (config.profile.hfp_hf)
+		bluez_register_hfp(BT_UUID_HFP_HF, BA_TRANSPORT_PROFILE_HFP_HF,
+						   0x0109 /* HFP 1.9 */, ba_config_get_hfp_sdp_features_hf());
+}
+
+static void bluez_media_endpoint_process_a2dp(
+	struct bluez_adapter *b_adapter,
+	const char *media_endpoint_path,
+	GVariantIter *properties,
+	enum a2dp_type type)
+{
+
+	struct a2dp_sep_config sep_cfg = {.type = type};
+	const char *property;
+	GVariant *value;
+
+	while (g_variant_iter_next(properties, "{&sv}", &property, &value))
+	{
+		if (strcmp(property, "Codec") == 0 &&
+			g_variant_validate_value(value, G_VARIANT_TYPE_BYTE, property))
+			sep_cfg.codec_id = g_variant_get_byte(value);
+		else if (strcmp(property, "Capabilities") == 0 &&
+				 g_variant_validate_value(value, G_VARIANT_TYPE_BYTESTRING, property))
+		{
+
+			const void *data = g_variant_get_fixed_array(value,
+														 &sep_cfg.caps_size, sizeof(char));
+
+			if (sep_cfg.caps_size > sizeof(sep_cfg.capabilities))
+			{
+				warn("Capabilities blob size exceeded: %zu > %zu",
+					 sep_cfg.caps_size, sizeof(sep_cfg.capabilities));
+				sep_cfg.caps_size = sizeof(sep_cfg.capabilities);
+			}
+
+			memcpy(&sep_cfg.capabilities, data, sep_cfg.caps_size);
+		}
+		g_variant_unref(value);
+	}
+
+	bdaddr_t addr;
+	g_dbus_bluez_object_path_to_bdaddr(media_endpoint_path, &addr);
+
+	strncpy(sep_cfg.bluez_dbus_path, media_endpoint_path, sizeof(sep_cfg.bluez_dbus_path) - 1);
+	if (sep_cfg.codec_id == A2DP_CODEC_VENDOR)
+		sep_cfg.codec_id = a2dp_get_vendor_codec_id(&sep_cfg.capabilities, sep_cfg.caps_size);
+
+	debug("Adding new Stream End-Point: %s: %s: %s",
+		  batostr_(&addr), sep_cfg.type == A2DP_SOURCE ? "SRC" : "SNK",
+		  a2dp_codecs_codec_id_to_string(sep_cfg.codec_id));
+	hexdump("SEP capabilities blob", &sep_cfg.capabilities, sep_cfg.caps_size);
+
+	GArray *sep_cfgs = bluez_adapter_get_device_sep_configs(b_adapter, &addr);
+	g_array_append_val(sep_cfgs, sep_cfg);
+
+	/* Collected SEPs are exposed via BlueALSA D-Bus API. We will sort them
+	 * here, so the D-Bus API will return codecs in the defined order. */
+	g_array_sort(sep_cfgs, (GCompareFunc)a2dp_sep_config_cmp);
 }
 
 /**
  * Register to the BlueZ service. */
 static void bluez_register(void)
 {
+
 	const struct
 	{
 		const char *uuid;
@@ -1080,25 +1278,22 @@ static void bluez_register(void)
 		bool enabled;
 		bool global;
 	} uuids[] = {
-		{BT_UUID_A2DP_SOURCE, BA_TRANSPORT_PROFILE_A2DP_SOURCE,
-		 config.profile.a2dp_source, false},
 		{BT_UUID_A2DP_SINK, BA_TRANSPORT_PROFILE_A2DP_SINK,
 		 config.profile.a2dp_sink, false},
+		{BT_UUID_HFP_HF, BA_TRANSPORT_PROFILE_HFP_HF,
+		 config.profile.hfp_hf, true},
 	};
 
 	GError *err = NULL;
 	GVariantIter *objects = NULL;
-	if ((objects = g_dbus_get_managed_objects(config.dbus, BLUEZ_SERVICE, "/", &err)) == NULL)
+	if ((objects = g_dbus_get_managed_objects_sync(config.dbus, BLUEZ_SERVICE, "/", &err)) == NULL)
 	{
 		warn("Couldn't get managed objects: %s", err->message);
 		g_error_free(err);
 		return;
 	}
 
-	bool adapters[HCI_MAX_DEV] = {0};
-	unsigned int adapters_profiles[HCI_MAX_DEV] = {0};
 	unsigned int profiles = 0;
-
 	GVariantIter *interfaces;
 	GVariantIter *properties;
 	GVariant *value;
@@ -1108,35 +1303,61 @@ static void bluez_register(void)
 
 	while (g_variant_iter_next(objects, "{&oa{sa{sv}}}", &object_path, &interfaces))
 	{
-		while (g_variant_iter_next(interfaces, "{&sa{sv}}", &interface, &properties))
+		const int hci_dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
+		while (hci_dev_id != -1 &&
+			   g_variant_iter_next(interfaces, "{&sa{sv}}", &interface, &properties))
 		{
 			if (strcmp(interface, BLUEZ_IFACE_ADAPTER) == 0)
 			{
-				int hci_dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
-				unsigned int adapter_profiles = 0;
+
+				unsigned int a_profiles = 0;
 				bool valid = false;
 
 				while (g_variant_iter_next(properties, "{&sv}", &property, &value))
 				{
-					if (strcmp(property, "Address") == 0)
-						/* check if adapter as valid for registration */
+					if (strcmp(property, "Address") == 0 &&
+						g_variant_validate_value(value, G_VARIANT_TYPE_STRING, property))
+						/* Check if adapter as valid for registration. */
 						valid = bluez_match_dbus_adapter(object_path, g_variant_get_string(value, NULL));
-					else if (strcmp(property, "UUIDs") == 0)
+					else if (strcmp(property, "UUIDs") == 0 &&
+							 g_variant_validate_value(value, G_VARIANT_TYPE_STRING_ARRAY, property))
 					{
 						const char **value_uuids = g_variant_get_strv(value, NULL);
-						/* map UUIDs to BlueALSA transport profile mask */
+						/* Map UUIDs to BlueALSA transport profile mask. */
 						for (size_t i = 0; value_uuids[i] != NULL; i++)
 							for (size_t ii = 0; ii < ARRAYSIZE(uuids); ii++)
 								if (strcasecmp(value_uuids[i], uuids[ii].uuid) == 0)
-									adapter_profiles |= uuids[ii].profile;
+									a_profiles |= uuids[ii].profile;
 						g_free(value_uuids);
 					}
 					g_variant_unref(value);
 				}
 
-				adapters[hci_dev_id] = valid;
-				adapters_profiles[hci_dev_id] = adapter_profiles;
-				profiles |= adapter_profiles;
+				profiles |= a_profiles;
+
+				struct ba_adapter *a;
+				if (valid && ((a = ba_adapter_lookup(hci_dev_id)) != NULL ||
+							  (a = ba_adapter_new(hci_dev_id)) != NULL))
+				{
+
+					for (size_t i = 0; i < ARRAYSIZE(uuids); i++)
+						if (uuids[i].enabled && !uuids[i].global && a_profiles & uuids[i].profile)
+							warn("UUID already registered in BlueZ [%s]: %s", a->hci.name, uuids[i].uuid);
+
+					struct bluez_adapter *b_adapter = bluez_adapter_new(a);
+					bluez_adapter_register_battery_provider(b_adapter);
+					bluez_adapter_register_media_application(b_adapter);
+					bluez_adapter_register_gatt_applications(b_adapter);
+				}
+			}
+			else
+			{
+
+				/* Validate that this new interface belongs to the HCI
+				 * which matches our HCI filter. */
+				struct bluez_adapter *b_adapter = &bluez_adapters[hci_dev_id];
+				if (b_adapter->adapter == NULL)
+					continue;
 			}
 			g_variant_iter_free(properties);
 		}
@@ -1144,28 +1365,17 @@ static void bluez_register(void)
 	}
 	g_variant_iter_free(objects);
 
-	struct ba_adapter *a;
-	for (size_t i = 0; i < ARRAYSIZE(adapters); i++)
-		if (adapters[i] && ((a = ba_adapter_lookup(i)) != NULL ||
-							(a = ba_adapter_new(i)) != NULL))
-		{
+	for (size_t i = 0; i < ARRAYSIZE(uuids); i++)
+		if (uuids[i].enabled && uuids[i].global && profiles & uuids[i].profile)
+			warn("UUID already registered in BlueZ: %s", uuids[i].uuid);
 
-			for (size_t ii = 0; ii < ARRAYSIZE(uuids); ii++)
-				if (uuids[ii].enabled && !uuids[ii].global && adapters_profiles[i] & uuids[ii].profile)
-					warn("UUID already registered in BlueZ [%s]: %s", a->hci.name, uuids[ii].uuid);
-
-			bluez_adapter_new(a);
-		}
-
-	for (size_t ii = 0; ii < ARRAYSIZE(uuids); ii++)
-		if (uuids[ii].enabled && uuids[ii].global && profiles & uuids[ii].profile)
-			warn("UUID already registered in BlueZ: %s", uuids[ii].uuid);
+	/* HFP has to be registered globally. */
+	bluez_register_hfp_all();
 }
 
-static void bluez_signal_interfaces_added(
-	GDBusConnection *conn, const char *sender,
-	const char *path, const char *interface_, const char *signal, GVariant *params,
-	void *userdata)
+static void bluez_signal_interfaces_added(GDBusConnection *conn, const char *sender,
+										  const char *path, const char *interface_, const char *signal, GVariant *params,
+										  void *userdata)
 {
 	(void)conn;
 	(void)sender;
@@ -1181,15 +1391,10 @@ static void bluez_signal_interfaces_added(
 	const char *interface;
 	const char *property;
 
-	int hci_dev_id = -1;
-	struct a2dp_sep_config sep_cfg = {
-		.type = A2DP_SOURCE,
-		.codec_id = 0xFFFFFFFF,
-	};
-
 	g_variant_get(params, "(&oa{sa{sv}})", &object_path, &interfaces);
 	debug("Signal: %s.%s(%s, ...)", interface_, signal, object_path);
 
+	const int hci_dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
 	while (g_variant_iter_next(interfaces, "{&sa{sv}}", &interface, &properties))
 	{
 		if (strcmp(interface, BLUEZ_IFACE_ADAPTER) == 0)
@@ -1197,81 +1402,73 @@ static void bluez_signal_interfaces_added(
 			while (g_variant_iter_next(properties, "{&sv}", &property, &value))
 			{
 				if (strcmp(property, "Address") == 0 &&
-					/* make sure that this new BT adapter matches our HCI filter */
+					g_variant_validate_value(value, G_VARIANT_TYPE_STRING, property) &&
+					/* Make sure that this new BT adapter matches our HCI filter. */
 					bluez_match_dbus_adapter(object_path, g_variant_get_string(value, NULL)))
-					hci_dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
+				{
+
+					/* In case of D-Bus service restart, the unique name changes. Since
+					 * BlueALSA uses BlueZ unique name to validate D-Bus method callers,
+					 * we have to update it in such case. After BlueZ restart, adapters
+					 * are added again, so we can update the unique name here. */
+					strncpy(bluez_dbus_unique_name, sender, sizeof(bluez_dbus_unique_name) - 1);
+
+					struct ba_adapter *a;
+					if ((a = ba_adapter_lookup(hci_dev_id)) != NULL ||
+						(a = ba_adapter_new(hci_dev_id)) != NULL)
+					{
+						bluez_adapter_new(a);
+					}
+				}
 				g_variant_unref(value);
 			}
 		}
-		else if (strcmp(interface, BLUEZ_IFACE_MEDIA_ENDPOINT) == 0)
+		else
 		{
-			/* Check whether this new media endpoint interface was added in the HCI
-			 * which exists in our local BlueZ adapter cache - HCI that matches our
-			 * HCI filter. */
-			int dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
-			if (dev_id == -1 || bluez_adapters[dev_id].adapter == NULL)
+
+			/* Check whether this new interface was added on the HCI which exists
+			 * in our local BlueZ adapter cache - HCI that matches our HCI filter. */
+			struct bluez_adapter *b_adapter = &bluez_adapters[hci_dev_id];
+			if (b_adapter->adapter == NULL)
 				continue;
 
-			while (g_variant_iter_next(properties, "{&sv}", &property, &value))
+			if (strcmp(interface, BLUEZ_IFACE_BATTERY_PROVIDER_MANAGER) == 0)
+				bluez_adapter_register_battery_provider(b_adapter);
+			else if (strcmp(interface, BLUEZ_IFACE_MEDIA) == 0)
+				bluez_adapter_register_media_application(b_adapter);
+			/* GATT applications require GATT Manager and LE Advertising Manager
+			 * interfaces to be present. But it seems that BlueZ does not export
+			 * them at the same time. The LE Advertising Manager appears a bit
+			 * later. Hence, we are waiting for the latter one. */
+			else if (strcmp(interface, BLUEZ_IFACE_LE_ADVERTISING_MANAGER) == 0)
+				bluez_adapter_register_gatt_applications(b_adapter);
+			else if (strcmp(interface, BLUEZ_IFACE_MEDIA_ENDPOINT) == 0)
 			{
-				if (strcmp(property, "UUID") == 0)
+				bool processed = false;
+				while (!processed && g_variant_iter_next(properties, "{&sv}", &property, &value))
 				{
-					const char *uuid = g_variant_get_string(value, NULL);
-					if (strcasecmp(uuid, BT_UUID_A2DP_SINK) == 0)
-						sep_cfg.type = A2DP_SINK;
-				}
-				else if (strcmp(property, "Codec") == 0)
-					sep_cfg.codec_id = g_variant_get_byte(value);
-				else if (strcmp(property, "Capabilities") == 0)
-				{
-
-					const void *data = g_variant_get_fixed_array(value,
-																 &sep_cfg.caps_size, sizeof(char));
-
-					if (sep_cfg.caps_size > sizeof(sep_cfg.capabilities))
+					if (strcmp(property, "UUID") == 0 &&
+						g_variant_validate_value(value, G_VARIANT_TYPE_STRING, property))
 					{
-						warn("Capabilities blob size exceeded: %zu > %zu",
-							 sep_cfg.caps_size, sizeof(sep_cfg.capabilities));
-						sep_cfg.caps_size = sizeof(sep_cfg.capabilities);
+						const char *uuid = g_variant_get_string(value, NULL);
+						if (strcasecmp(uuid, BT_UUID_A2DP_SOURCE) == 0)
+							bluez_media_endpoint_process_a2dp(b_adapter, object_path, properties, A2DP_SOURCE);
+						else if (strcasecmp(uuid, BT_UUID_A2DP_SINK) == 0)
+							bluez_media_endpoint_process_a2dp(b_adapter, object_path, properties, A2DP_SINK);
+						processed = true;
 					}
-
-					memcpy(&sep_cfg.capabilities, data, sep_cfg.caps_size);
+					g_variant_unref(value);
 				}
-				g_variant_unref(value);
 			}
 		}
 		g_variant_iter_free(properties);
 	}
 	g_variant_iter_free(interfaces);
 
-	struct ba_adapter *a;
-	if (hci_dev_id != -1 && ((a = ba_adapter_lookup(hci_dev_id)) != NULL ||
-							 (a = ba_adapter_new(hci_dev_id)) != NULL))
+	/* HFP has to be registered globally. */
+	if (strcmp(object_path, "/org/bluez") == 0)
 	{
-		bluez_adapter_new(a);
-	}
-
-	if (sep_cfg.codec_id != 0xFFFFFFFF)
-	{
-		bdaddr_t addr;
-		g_dbus_bluez_object_path_to_bdaddr(object_path, &addr);
-		int dev_id = g_dbus_bluez_object_path_to_hci_dev_id(object_path);
-
-		strncpy(sep_cfg.bluez_dbus_path, object_path, sizeof(sep_cfg.bluez_dbus_path) - 1);
-		if (sep_cfg.codec_id == A2DP_CODEC_VENDOR)
-			sep_cfg.codec_id = a2dp_get_vendor_codec_id(&sep_cfg.capabilities, sep_cfg.caps_size);
-
-		debug("Adding new Stream End-Point: %s: %s: %s",
-			  batostr_(&addr), sep_cfg.type == A2DP_SOURCE ? "SRC" : "SNK",
-			  a2dp_codecs_codec_id_to_string(sep_cfg.codec_id));
-		hexdump("SEP capabilities blob", &sep_cfg.capabilities, sep_cfg.caps_size);
-
-		GArray *sep_cfgs = bluez_adapter_get_device_sep_configs(&bluez_adapters[dev_id], &addr);
-		g_array_append_val(sep_cfgs, sep_cfg);
-
-		/* Collected SEPs are exposed via BlueALSA D-Bus API. We will sort them
-		 * here, so the D-Bus API will return codecs in the defined order. */
-		g_array_sort(sep_cfgs, (GCompareFunc)a2dp_sep_config_cmp);
+		bluez_register_hfp_all();
 	}
 }
 
@@ -1324,7 +1521,8 @@ static void bluez_signal_interfaces_removed(GDBusConnection *conn, const char *s
 
 			bdaddr_t addr;
 			g_dbus_bluez_object_path_to_bdaddr(object_path, &addr);
-			GArray *sep_cfgs = bluez_adapter_get_device_sep_configs(&bluez_adapters[hci_dev_id], &addr);
+			struct bluez_adapter *b_adapter = &bluez_adapters[hci_dev_id];
+			GArray *sep_cfgs = bluez_adapter_get_device_sep_configs(b_adapter, &addr);
 
 			for (size_t i = 0; i < sep_cfgs->len; i++)
 			{
@@ -1336,6 +1534,23 @@ static void bluez_signal_interfaces_removed(GDBusConnection *conn, const char *s
 						  a2dp_codecs_codec_id_to_string(sep_cfg->codec_id));
 					g_array_remove_index_fast(sep_cfgs, i);
 				}
+			}
+		}
+		else if (strcmp(interface, BLUEZ_IFACE_MEDIA_TRANSPORT) == 0)
+		{
+
+			bdaddr_t addr;
+			g_dbus_bluez_object_path_to_bdaddr(object_path, &addr);
+			struct bluez_adapter *b_adapter = &bluez_adapters[hci_dev_id];
+
+			struct ba_device *d;
+			if ((d = ba_device_lookup(b_adapter->adapter, &addr)) != NULL)
+			{
+				struct ba_transport *t;
+				/* BlueALSA transport can not operate without BlueZ media transport. */
+				if ((t = ba_transport_lookup(d, object_path)) != NULL)
+					ba_transport_destroy(t);
+				ba_device_unref(d);
 			}
 		}
 
@@ -1354,45 +1569,92 @@ static void bluez_signal_transport_changed(GDBusConnection *conn, const char *se
 	(void)signal;
 	(void)userdata;
 
-	struct ba_transport *t = ble_get_ba_transport();
+	struct ba_adapter *a = NULL;
+	struct ba_device *d = NULL;
+	struct ba_transport *t = NULL;
+
+	int hci_dev_id = g_dbus_bluez_object_path_to_hci_dev_id(transport_path);
+	if ((a = ba_adapter_lookup(hci_dev_id)) == NULL)
+	{
+		error("Adapter not available: %s", transport_path);
+		goto fail;
+	}
+
+	bdaddr_t addr;
+	g_dbus_bluez_object_path_to_bdaddr(transport_path, &addr);
+	if ((d = ba_device_lookup(a, &addr)) == NULL)
+	{
+		error("Device not available: %s", transport_path);
+		goto fail;
+	}
+
+	if ((t = ba_transport_lookup(d, transport_path)) == NULL)
+	{
+		error("Transport not available: %s", transport_path);
+		goto fail;
+	}
 
 	GVariantIter *properties;
 	const char *interface;
 	const char *property;
 	GVariant *value;
 
-	if (t != NULL)
+	g_variant_get(params, "(&sa{sv}as)", &interface, &properties, NULL);
+	while (g_variant_iter_next(properties, "{&sv}", &property, &value))
 	{
-		g_variant_get(params, "(&sa{sv}as)", &interface, &properties, NULL);
-		while (g_variant_iter_next(properties, "{&sv}", &property, &value))
+		debug("Signal: %s.%s(): %s: %s", interface_, signal, interface, property);
+
+		if (strcmp(property, "State") == 0 &&
+			g_variant_validate_value(value, G_VARIANT_TYPE_STRING, property))
 		{
-			debug("Signal: %s.%s(): %s: %s", interface_, signal, interface, property);
-
-			if (strcmp(property, "State") == 0 &&
-				g_variant_validate_value(value, G_VARIANT_TYPE_STRING, property))
-			{
-				const char *state = g_variant_get_string(value, NULL);
-				ba_transport_set_a2dp_state(t, bluez_a2dp_transport_state_from_string(state));
-				ble_set_a2dp_state(bluez_a2dp_transport_state_from_string(state));
-			}
-			else if (strcmp(property, "Delay") == 0 &&
-					 g_variant_validate_value(value, G_VARIANT_TYPE_UINT16, property))
-			{
-				// t->a2dp.delay = g_variant_get_uint16(value);
-				// bluealsa_dbus_pcm_update(&t->a2dp.pcm, BA_DBUS_PCM_UPDATE_DELAY);
-			}
-			else if (strcmp(property, "Volume") == 0 &&
-					 g_variant_validate_value(value, G_VARIANT_TYPE_UINT16, property))
-			{
-				/* received volume is in range [0, 127] */
-				uint16_t volume = g_variant_get_uint16(value);
-				ble_set_volume(((float)volume / BLUEZ_A2DP_VOLUME_MAX) * 100);
-			}
-
-			g_variant_unref(value);
+			const char *state = g_variant_get_string(value, NULL);
+			ba_transport_set_media_state(t, media_transport_state_from_string(state));
 		}
-		g_variant_iter_free(properties);
+		else if (strcmp(property, "Delay") == 0 &&
+				 g_variant_validate_value(value, G_VARIANT_TYPE_UINT16, property))
+		{
+			t->media.delay = g_variant_get_uint16(value);
+			// bluealsa_dbus_pcm_update(&t->media.pcm, BA_DBUS_PCM_UPDATE_DELAY);
+		}
+		else if (strcmp(property, "Volume") == 0 &&
+				 g_variant_validate_value(value, G_VARIANT_TYPE_UINT16, property))
+		{
+			/* received volume is in range [0, 127] */
+			uint16_t volume = t->media.volume = g_variant_get_uint16(value);
+			if (t->profile & BA_TRANSPORT_PROFILE_A2DP_SOURCE &&
+				t->media.pcm.soft_volume)
+				debug("Skipping A2DP volume update: %u", volume);
+			else
+			{
+
+				int level = ba_transport_pcm_volume_range_to_level(volume,
+																   BLUEZ_MEDIA_TRANSPORT_A2DP_VOLUME_MAX);
+				debug("Updating A2DP volume: %u [%.2f dB]", volume, 0.01 * level);
+
+				pthread_mutex_lock(&t->media.pcm.mutex);
+				for (size_t i = 0; i < t->media.pcm.channels; i++)
+					ba_transport_pcm_volume_set(&t->media.pcm.volume[i], &level, NULL, NULL);
+				pthread_mutex_unlock(&t->media.pcm.mutex);
+
+
+
+				// bluealsa_dbus_pcm_update(&t->media.pcm, BA_DBUS_PCM_UPDATE_VOLUME);
+
+				bt_set_volume(((float)volume / BLUEZ_MEDIA_TRANSPORT_A2DP_VOLUME_MAX) * 100);
+			}
+		}
+
+		g_variant_unref(value);
 	}
+	g_variant_iter_free(properties);
+
+fail:
+	if (a != NULL)
+		ba_adapter_unref(a);
+	if (d != NULL)
+		ba_device_unref(d);
+	if (t != NULL)
+		ba_transport_unref(t);
 }
 
 /**
@@ -1427,19 +1689,17 @@ static unsigned int bluez_bus_watch_id = 0;
  * Subscribe to BlueZ signals. */
 static void bluez_signals_subscribe(void)
 {
-	bluez_sig_sub_id_iface_added = g_dbus_connection_signal_subscribe(
-		config.dbus,
-		BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesAdded", NULL, NULL,
-		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_added, NULL, NULL);
-	bluez_sig_sub_id_iface_removed = g_dbus_connection_signal_subscribe(
-		config.dbus,
-		BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesRemoved", NULL, NULL,
-		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_removed, NULL, NULL);
 
-	bluez_sig_sub_id_prop_changed = g_dbus_connection_signal_subscribe(
-		config.dbus,
-		BLUEZ_SERVICE, DBUS_IFACE_PROPERTIES, "PropertiesChanged", NULL, BLUEZ_IFACE_MEDIA_TRANSPORT,
-		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_transport_changed, NULL, NULL);
+	bluez_sig_sub_id_iface_added = g_dbus_connection_signal_subscribe(config.dbus,
+																	  BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesAdded", NULL, NULL,
+																	  G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_added, NULL, NULL);
+	bluez_sig_sub_id_iface_removed = g_dbus_connection_signal_subscribe(config.dbus,
+																		BLUEZ_SERVICE, DBUS_IFACE_OBJECT_MANAGER, "InterfacesRemoved", NULL, NULL,
+																		G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_interfaces_removed, NULL, NULL);
+
+	bluez_sig_sub_id_prop_changed = g_dbus_connection_signal_subscribe(config.dbus,
+																	   BLUEZ_SERVICE, DBUS_IFACE_PROPERTIES, "PropertiesChanged", NULL, BLUEZ_IFACE_MEDIA_TRANSPORT,
+																	   G_DBUS_SIGNAL_FLAGS_NONE, bluez_signal_transport_changed, NULL, NULL);
 
 	bluez_bus_watch_id = g_bus_watch_name_on_connection(config.dbus,
 														BLUEZ_SERVICE, G_BUS_NAME_WATCHER_FLAGS_NONE, NULL, bluez_disappeared,
@@ -1460,8 +1720,17 @@ static void bluez_signals_unsubscribe(void)
  * @return On success this function returns 0. Otherwise -1 is returned. */
 int bluez_init(void)
 {
+
 	dbus_object_data_map = g_hash_table_new_full(g_str_hash, g_str_equal,
 												 NULL, (GDestroyNotify)bluez_dbus_object_data_free);
+
+	char *name;
+	/* Get BlueZ service D-Bus unique name for calls filtering. */
+	if ((name = g_dbus_get_unique_name_sync(config.dbus, BLUEZ_SERVICE)) != NULL)
+	{
+		strncpy(bluez_dbus_unique_name, name, sizeof(bluez_dbus_unique_name) - 1);
+		g_free(name);
+	}
 
 	bluez_signals_subscribe();
 	bluez_register();
@@ -1478,6 +1747,7 @@ int bluez_init(void)
  * release resources before exiting the application. */
 void bluez_destroy(void)
 {
+
 	if (dbus_object_data_map == NULL)
 		return;
 
@@ -1559,8 +1829,9 @@ bool bluez_a2dp_set_configuration(
 	}
 
 	GVariantBuilder props;
-	g_variant_builder_init(&props, G_VARIANT_TYPE("a{sv}"));
-	g_variant_builder_add(&props, "{sv}", "Capabilities", g_variant_new_fixed_array(G_VARIANT_TYPE_BYTE, configuration, remote_sep_cfg->caps_size, sizeof(uint8_t)));
+	g_variant_builder_init(&props, G_VARIANT_TYPE_VARDICT);
+	g_variant_builder_add(&props, "{sv}", "Capabilities",
+						  g_variant_new_fixed_byte_array(configuration, remote_sep_cfg->caps_size));
 
 	msg = g_dbus_message_new_method_call(BLUEZ_SERVICE,
 										 remote_sep_cfg->bluez_dbus_path, BLUEZ_IFACE_MEDIA_ENDPOINT, "SetConfiguration");
@@ -1595,7 +1866,7 @@ fail:
 void bluez_battery_provider_update(
 	struct ba_device *device)
 {
-	if (device->charge == -1)
+	if (device->battery.charge == -1)
 	{
 		bluez_manager_battery_remove(device);
 		return;
@@ -1605,9 +1876,10 @@ void bluez_battery_provider_update(
 		return;
 
 	GVariantBuilder props;
-	g_variant_builder_init(&props, G_VARIANT_TYPE("a{sv}"));
+	g_variant_builder_init(&props, G_VARIANT_TYPE_VARDICT);
 
-	g_variant_builder_add(&props, "{sv}", "Percentage", g_variant_new_byte(device->charge));
+	g_variant_builder_add(&props, "{sv}", "Percentage",
+						  ba_variant_new_device_battery(device));
 
 	g_dbus_connection_emit_properties_changed(config.dbus, device->ba_battery_dbus_path,
 											  BLUEZ_IFACE_BATTERY_PROVIDER, g_variant_builder_end(&props), NULL, NULL);

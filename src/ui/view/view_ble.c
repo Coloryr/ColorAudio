@@ -211,7 +211,7 @@ lv_obj_t *lv_ble_create(lv_obj_t *parent, lv_event_cb_t prev,
     lv_obj_align(button_par_obj, LV_ALIGN_TOP_MID, 0, 660);
     lv_obj_add_event_cb(button_par_obj, par, LV_EVENT_CLICKED, NULL);
     lv_obj_t *label = lv_label_create(button_par_obj);
-    lv_label_set_text(label, now_lang->ble_text1);
+    lv_label_set_text(label, now_lang->bt_text1);
     lv_obj_set_align(label, LV_ALIGN_CENTER);
 
     return obj;
@@ -275,12 +275,12 @@ void lv_ble_set_pause()
 
 void lv_ble_connect(const char *text)
 {
-    lv_label_set_text_fmt(state_obj, now_lang->ble_text2, text);
+    lv_label_set_text_fmt(state_obj, now_lang->bt_text2, text);
 }
 
 void lv_ble_disconnect()
 {
-    lv_label_set_text(state_obj, now_lang->ble_text3);
+    lv_label_set_text(state_obj, now_lang->bt_text3);
 }
 
 void lv_ble_fft_load()

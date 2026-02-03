@@ -8,8 +8,8 @@
 #include "header_view.h"
 #include "lang.h"
 #include "view/view_ble.h"
-#include "wireless/ble.h"
-#include "wireless/ble_info.h"
+#include "wireless/bt.h"
+#include "wireless/bt_info.h"
 
 #include "ble_view.h"
 
@@ -25,8 +25,8 @@ static void run_tick(lv_timer_t *timer)
 {
     if (is_playing)
     {
-        ble_position += 1000;
-        lv_ble_set_now_time(ble_position / 1000);
+        bt_position += 1000;
+        lv_ble_set_now_time(bt_position / 1000);
     }
 }
 
@@ -34,13 +34,13 @@ static void timer_tick(lv_timer_t *timer)
 {
     if (update)
     {
-        lv_ble_set_title(ble_title.c_str());
-        lv_ble_set_artlist(ble_artist.c_str());
-        lv_ble_set_album(ble_album.c_str());
+        lv_ble_set_title(bt_title.c_str());
+        lv_ble_set_artlist(bt_artist.c_str());
+        lv_ble_set_album(bt_album.c_str());
 
-        if (ble_now_state == BLE_STATE_CONNECTED)
+        if (bt_now_state == BT_STATE_CONNECTED)
         {
-            lv_ble_connect(ble_device.c_str());
+            lv_ble_connect(bt_device.c_str());
         }
         else
         {
@@ -69,52 +69,52 @@ static void timer_tick(lv_timer_t *timer)
 
     if (update_time)
     {
-        lv_ble_set_all_time(ble_duration / 1000);
-        lv_ble_set_now_time(ble_position / 1000);
+        lv_ble_set_all_time(bt_duration / 1000);
+        lv_ble_set_now_time(bt_position / 1000);
         update_time = false;
     }
 }
 
 static void prev_click(lv_event_t *e)
 {
-    if (ble_now_state != BLE_STATE_CONNECTED)
+    if (bt_now_state != BT_STATE_CONNECTED)
     {
         return;
     }
 
-    ble_send_media_command(BLE_MUSIC_COMMAND_LAST);
+    bt_send_media_command(BT_MUSIC_COMMAND_LAST);
 }
 
 static void next_click(lv_event_t *e)
 {
-    if (ble_now_state != BLE_STATE_CONNECTED)
+    if (bt_now_state != BT_STATE_CONNECTED)
     {
         return;
     }
 
-    ble_send_media_command(BLE_MUSIC_COMMAND_NEXT);
+    bt_send_media_command(BT_MUSIC_COMMAND_NEXT);
 }
 
 static void par_click(lv_event_t *e)
 {
-    ble_set_discoverable(true);
-    ble_set_pairable(true);
+    bt_set_discoverable(true);
+    bt_set_pairable(true);
 }
 
 static void play_click(lv_event_t *e)
 {
-    if (ble_now_state != BLE_STATE_CONNECTED)
+    if (bt_now_state != BT_STATE_CONNECTED)
     {
         return;
     }
     LV_LOG_USER("state: %d", is_playing);
     if (is_playing)
     {
-        ble_send_media_command(BLE_MUSIC_COMMAND_PAUSE);
+        bt_send_media_command(BT_MUSIC_COMMAND_PAUSE);
     }
     else
     {
-        ble_send_media_command(BLE_MUSIC_COMMAND_PLAY);
+        bt_send_media_command(BT_MUSIC_COMMAND_PLAY);
     }
 }
 
@@ -138,7 +138,7 @@ void view_ble_set_par(uint32_t key)
 {
     is_par = true;
     char temp[256] = {0};
-    sprintf(temp, now_lang->ble_text4, key);
+    sprintf(temp, now_lang->bt_text4, key);
     view_top_info_display(temp);
 }
 
@@ -188,7 +188,7 @@ void view_ble_set_fft_data(uint16_t index, uint16_t value)
 
 void view_ble_tick()
 {
-    if (ble_now_state == BLE_STATE_CONNECTED && is_playing)
+    if (bt_now_state == BT_STATE_CONNECTED && is_playing)
     {
         lv_ble_fft_load();
     }

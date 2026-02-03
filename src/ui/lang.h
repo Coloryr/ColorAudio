@@ -30,10 +30,10 @@ typedef struct
     const char* dialog_text1;
     const char* dialog_text2;
     const char* dialog_text3;
-    const char* ble_text1;
-    const char* ble_text2;
-    const char* ble_text3;
-    const char* ble_text4;
+    const char* bt_text1;
+    const char* bt_text2;
+    const char* bt_text3;
+    const char* bt_text4;
     const char* usb_text1;
     const char* usb_text2;
     const char* usb_text3;

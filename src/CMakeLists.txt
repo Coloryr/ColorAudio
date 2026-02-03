@@ -15,13 +15,15 @@ set(LV_CONF_PATH
 if (DEFINED BUILD_ARM)
     set(CMAKE_C_COMPILER arm-linux-gnueabihf-gcc)
     set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
-    add_definitions(-DBUILD_ARM -DLV_DRM_USE_RGA)
+    add_definitions(-DBUILD_ARM -DLV_DRM_USE_RGA -DENABLE_HR_MODE)
     include_directories(./include)
     include_directories(./include/drm)
     include_directories(./include/freetype2)
     include_directories(./include/glib-2.0)
     include_directories(./include/dbus-1.0)
     include_directories(./include/opus)
+    include_directories(./include/ldac)
+    include_directories(./include/lc3)
 else()
     find_package(SDL2 REQUIRED)
     include_directories(/usr/include/drm)
@@ -104,6 +106,8 @@ if (DEFINED BUILD_ARM)
     "${CMAKE_SOURCE_DIR}/libs/libgio-2.0.so"
     # "${CMAKE_SOURCE_DIR}/libs/libusb-1.0.so"
     "${CMAKE_SOURCE_DIR}/libs/libudev.so"
+    "${CMAKE_SOURCE_DIR}/libs/libldacBT_dec.so"
+    "${CMAKE_SOURCE_DIR}/libs/libLC3plus.so"
 
     #rime
     "${CMAKE_SOURCE_DIR}/libs/librime.a"

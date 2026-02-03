@@ -1,11 +1,7 @@
 /*
  * BlueALSA - ba-device.c
- * Copyright (c) 2016-2023 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #include "ba-device.h"
@@ -17,28 +13,39 @@
 #include "ba-config.h"
 #include "ba-transport.h"
 #include "hci.h"
+#include "storage.h"
 #include "shared/defs.h"
 #include "shared/log.h"
+#include "shared/rc.h"
 
-struct ba_device *ba_device_new(
-		struct ba_adapter *adapter,
-		const bdaddr_t *addr) {
+static void device_detach(void * ptr) {
+	struct ba_device * d = ptr;
+	/* Detach device from the adapter. */
+	g_hash_table_steal(d->a->devices, &d->addr);
+}
+
+struct ba_device * ba_device_new(
+		struct ba_adapter * adapter,
+		const bdaddr_t * addr) {
 
 	struct ba_device *d;
-
 	if ((d = calloc(1, sizeof(*d))) == NULL)
 		return NULL;
 
+	rc_init(&d->_rc, device_detach);
 	d->a = ba_adapter_ref(adapter);
 	bacpy(&d->addr, addr);
-	d->ref_count = 1;
 
 	d->seq = atomic_fetch_add_explicit(&config.device_seq, 1, memory_order_relaxed);
 
 	sprintf(d->addr_dbus_str, "dev_%.2X_%.2X_%.2X_%.2X_%.2X_%.2X",
 			addr->b[5], addr->b[4], addr->b[3], addr->b[2], addr->b[1], addr->b[0]);
+	d->ba_dbus_path = g_strdup_printf("%s/%s", adapter->ba_dbus_path, d->addr_dbus_str);
 	d->bluez_dbus_path = g_strdup_printf("%s/%s", adapter->bluez_dbus_path, d->addr_dbus_str);
-	
+
+	d->battery.charge = -1;
+	d->battery.health = -1;
+
 	pthread_mutex_init(&d->transports_mutex, NULL);
 	d->transports = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
@@ -46,36 +53,27 @@ struct ba_device *ba_device_new(
 	g_hash_table_insert(adapter->devices, &d->addr, d);
 	pthread_mutex_unlock(&adapter->devices_mutex);
 
+	/* Load data from persistent storage. */
+	storage_device_load(d);
+
 	return d;
 }
 
-struct ba_device *ba_device_lookup(
-		const struct ba_adapter *adapter,
-		const bdaddr_t *addr) {
+struct ba_device * ba_device_lookup(
+		const struct ba_adapter * adapter,
+		const bdaddr_t * addr) {
 
-	struct ba_device *d;
+	struct ba_device * d;
 
 	pthread_mutex_lock(MUTABLE(&adapter->devices_mutex));
 	if ((d = g_hash_table_lookup(adapter->devices, addr)) != NULL)
-		d->ref_count++;
+		rc_ref(d);
 	pthread_mutex_unlock(MUTABLE(&adapter->devices_mutex));
 
 	return d;
 }
 
-struct ba_device *ba_device_ref(
-		struct ba_device *d) {
-
-	struct ba_adapter *a = d->a;
-
-	pthread_mutex_lock(&a->devices_mutex);
-	d->ref_count++;
-	pthread_mutex_unlock(&a->devices_mutex);
-
-	return d;
-}
-
-void ba_device_destroy(struct ba_device *d) {
+void ba_device_destroy(struct ba_device * d) {
 
 	/* XXX: Modification-safe remove-all loop.
 	 *
@@ -104,7 +102,7 @@ void ba_device_destroy(struct ba_device *d) {
 			break;
 		}
 
-		t->ref_count++;
+		ba_transport_ref(t);
 		g_hash_table_iter_steal(&iter);
 
 		pthread_mutex_unlock(&d->transports_mutex);
@@ -115,19 +113,20 @@ void ba_device_destroy(struct ba_device *d) {
 	ba_device_unref(d);
 }
 
-void ba_device_unref(struct ba_device *d) {
+void ba_device_unref(struct ba_device * d) {
 
+	struct ba_adapter * a = d->a;
 	int ref_count;
-	struct ba_adapter *a = d->a;
 
 	pthread_mutex_lock(&a->devices_mutex);
-	if ((ref_count = --d->ref_count) == 0)
-		/* detach device from the adapter */
-		g_hash_table_steal(a->devices, &d->addr);
+	ref_count = rc_unref_with_count(d);
 	pthread_mutex_unlock(&a->devices_mutex);
 
 	if (ref_count > 0)
 		return;
+
+	/* Save persistent storage. */
+	storage_device_save(d);
 
 	debug("Freeing device: %s", batostr_(&d->addr));
 	g_assert_cmpint(ref_count, ==, 0);
@@ -137,5 +136,6 @@ void ba_device_unref(struct ba_device *d) {
 	pthread_mutex_destroy(&d->transports_mutex);
 	g_free(d->bluez_dbus_path);
 	g_free(d->ba_battery_dbus_path);
+	g_free(d->ba_dbus_path);
 	free(d);
 }

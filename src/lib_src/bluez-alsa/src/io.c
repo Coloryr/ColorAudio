@@ -1,11 +1,7 @@
 /*
  * BlueALSA - io.c
- * Copyright (c) 2016-2025 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #include "io.h"
@@ -27,7 +23,7 @@
 #include "shared/ffb.h"
 #include "shared/log.h"
 
-#include "alsa-transport.h"
+#include "../../../wireless/alsa-transport.h"
 
 /**
  * Read data from the BT transport (SCO or SEQPACKET) socket. */
@@ -222,7 +218,7 @@ ssize_t io_pcm_write(
 
 	pthread_mutex_lock(&pcm->mutex);
 
-	ble_write(buffer, samples / 2);
+	bt_write(buffer, samples / 2);
 
 	pthread_mutex_unlock(&pcm->mutex);
 	return 0;

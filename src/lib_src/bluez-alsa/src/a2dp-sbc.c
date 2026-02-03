@@ -1,11 +1,7 @@
 /*
  * BlueALSA - a2dp-sbc.c
- * Copyright (c) 2016-2025 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #include "a2dp-sbc.h"
@@ -30,6 +26,7 @@
 #include "ba-transport-pcm.h"
 #include "ba-config.h"
 #include "codec-sbc.h"
+#include "error.h"
 #include "io.h"
 #include "rtp.h"
 #include "shared/a2dp-codecs.h"
@@ -70,7 +67,7 @@ static void a2dp_sbc_caps_intersect(
 
 }
 
-static int a2dp_sbc_caps_foreach_channel_mode(
+static error_code_t a2dp_sbc_caps_foreach_channel_mode(
 		const void *capabilities,
 		enum a2dp_stream stream,
 		a2dp_bit_mapping_foreach_func func,
@@ -78,10 +75,10 @@ static int a2dp_sbc_caps_foreach_channel_mode(
 	const a2dp_sbc_t *caps = capabilities;
 	if (stream == A2DP_MAIN)
 		return a2dp_bit_mapping_foreach(a2dp_sbc_channels, caps->channel_mode, func, userdata);
-	return -1;
+	return ERROR_CODE_INVALID_STREAM;
 }
 
-static int a2dp_sbc_caps_foreach_sample_rate(
+static error_code_t a2dp_sbc_caps_foreach_sample_rate(
 		const void *capabilities,
 		enum a2dp_stream stream,
 		a2dp_bit_mapping_foreach_func func,
@@ -89,7 +86,7 @@ static int a2dp_sbc_caps_foreach_sample_rate(
 	const a2dp_sbc_t *caps = capabilities;
 	if (stream == A2DP_MAIN)
 		return a2dp_bit_mapping_foreach(a2dp_sbc_rates, caps->sampling_freq, func, userdata);
-	return -1;
+	return ERROR_CODE_INVALID_STREAM;
 }
 
 static void a2dp_sbc_caps_select_channel_mode(
@@ -130,7 +127,7 @@ void *a2dp_sbc_enc_thread(struct ba_transport_pcm *t_pcm) {
 	struct io_poll io = { .timeout = -1 };
 
 	sbc_t sbc;
-	const a2dp_sbc_t *configuration = &t->a2dp.configuration.sbc;
+	const a2dp_sbc_t * configuration = &t->media.a2dp.configuration.sbc;
 	if ((errno = -sbc_init_a2dp(&sbc, 0, configuration, sizeof(*configuration))) != 0) {
 		error("Couldn't initialize SBC codec: %s", strerror(errno));
 		goto fail_init;
@@ -142,7 +139,7 @@ void *a2dp_sbc_enc_thread(struct ba_transport_pcm *t_pcm) {
 	pthread_cleanup_push(PTHREAD_CLEANUP(ffb_free), &pcm);
 	pthread_cleanup_push(PTHREAD_CLEANUP(sbc_finish), &sbc);
 
-	const size_t sbc_frame_samples = sbc_get_codesize(&sbc) / sizeof(int16_t);
+	const size_t sbc_frame_pcm_samples = sbc_get_codesize(&sbc) / sizeof(int16_t);
 	const unsigned int channels = t_pcm->channels;
 	const unsigned int rate = t_pcm->rate;
 
@@ -162,7 +159,7 @@ void *a2dp_sbc_enc_thread(struct ba_transport_pcm *t_pcm) {
 	const size_t mtu_write_payload_len = t->mtu_write - rtp_headers_len;
 	const size_t sbc_frame_len = sbc_get_frame_length(&sbc);
 
-	size_t ffb_pcm_len = sbc_frame_samples;
+	size_t ffb_pcm_len = sbc_frame_pcm_samples;
 	if (mtu_write_payload_len / sbc_frame_len > 1)
 		/* account for possible SBC frames packing */
 		ffb_pcm_len *= mtu_write_payload_len / sbc_frame_len;
@@ -177,9 +174,9 @@ void *a2dp_sbc_enc_thread(struct ba_transport_pcm *t_pcm) {
 		goto fail_ffb;
 	}
 
-	const unsigned int sbc_delay_frames = 73;
+	const unsigned int sbc_delay_pcm_frames = 73;
 	/* Get the total delay introduced by the codec. */
-	t_pcm->codec_delay_dms = sbc_delay_frames * 10000 / rate;
+	t_pcm->codec_delay_dms = sbc_delay_pcm_frames * 10000 / rate;
 	// ba_transport_pcm_delay_sync(t_pcm, BA_DBUS_PCM_UPDATE_DELAY);
 
 	rtp_header_t *rtp_header;
@@ -223,7 +220,7 @@ void *a2dp_sbc_enc_thread(struct ba_transport_pcm *t_pcm) {
 		/* Generate as many SBC frames as possible, but less than a 4-bit media
 		 * header frame counter can contain. The size of the output buffer is
 		 * based on the socket MTU, so such transfer should be most efficient. */
-		while (input_samples >= sbc_frame_samples &&
+		while (input_samples >= sbc_frame_pcm_samples &&
 				output_len >= sbc_frame_len &&
 				/* do not overflow RTP frame counter */
 				sbc_frames < ((1 << 4) - 1)) {
@@ -309,8 +306,8 @@ void *a2dp_sbc_dec_thread(struct ba_transport_pcm *t_pcm) {
 	struct io_poll io = { .timeout = -1 };
 
 	sbc_t sbc;
-	if ((errno = -sbc_init_a2dp(&sbc, 0, &t->a2dp.configuration.sbc,
-					sizeof(t->a2dp.configuration.sbc))) != 0) {
+	if ((errno = -sbc_init_a2dp(&sbc, 0, &t->media.a2dp.configuration.sbc,
+					sizeof(t->media.a2dp.configuration.sbc))) != 0) {
 		error("Couldn't initialize SBC codec: %s", strerror(errno));
 		goto fail_init;
 	}
@@ -412,7 +409,7 @@ fail_init:
 	return NULL;
 }
 
-static int a2dp_sbc_configuration_select(
+static error_code_t a2dp_sbc_configuration_select(
 		const struct a2dp_sep *sep,
 		void *capabilities) {
 
@@ -424,16 +421,16 @@ static int a2dp_sbc_configuration_select(
 
 	unsigned int sampling_freq = 0;
 	if (a2dp_sbc_caps_foreach_sample_rate(caps, A2DP_MAIN,
-				a2dp_bit_mapping_foreach_get_best_sample_rate, &sampling_freq) == -1) {
+				a2dp_bit_mapping_foreach_get_best_sample_rate, &sampling_freq) != ERROR_CODE_OK) {
 		error("SBC: No supported sample rates: %#x", saved.sampling_freq);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_SAMPLE_RATE;
 	}
 
 	unsigned int channel_mode = 0;
 	if (a2dp_sbc_caps_foreach_channel_mode(caps, A2DP_MAIN,
-				a2dp_bit_mapping_foreach_get_best_channel_mode, &channel_mode) == -1) {
+				a2dp_bit_mapping_foreach_get_best_channel_mode, &channel_mode) != ERROR_CODE_OK) {
 		error("SBC: No supported channel modes: %#x", saved.channel_mode);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_CHANNEL_MODE;
 	}
 
 	if (config.sbc_quality == SBC_QUALITY_XQ ||
@@ -461,7 +458,7 @@ static int a2dp_sbc_configuration_select(
 		caps->block_length = SBC_BLOCK_LENGTH_4;
 	else {
 		error("SBC: No supported block lengths: %#x", saved.block_length);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_BLOCK_LENGTH;
 	}
 
 	if (caps->subbands & SBC_SUBBANDS_8)
@@ -470,7 +467,7 @@ static int a2dp_sbc_configuration_select(
 		caps->subbands = SBC_SUBBANDS_4;
 	else {
 		error("SBC: No supported sub-bands: %#x", saved.subbands);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_SUB_BANDS;
 	}
 
 	if (caps->allocation_method & SBC_ALLOCATION_LOUDNESS)
@@ -479,19 +476,19 @@ static int a2dp_sbc_configuration_select(
 		caps->allocation_method = SBC_ALLOCATION_SNR;
 	else {
 		error("SBC: No supported allocation methods: %#x", saved.allocation_method);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_ALLOCATION_METHOD;
 	}
 
 	if (caps->min_bitpool > caps->max_bitpool) {
 		error("SBC: No supported bit-pool range: [%u, %u]",
 				saved.min_bitpool, saved.max_bitpool);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_MIN_BIT_POOL_VALUE;
 	}
 
-	return 0;
+	return ERROR_CODE_OK;
 }
 
-static int a2dp_sbc_configuration_check(
+static error_code_t a2dp_sbc_configuration_check(
 		const struct a2dp_sep *sep,
 		const void *configuration) {
 
@@ -503,12 +500,12 @@ static int a2dp_sbc_configuration_check(
 
 	if (a2dp_bit_mapping_lookup(a2dp_sbc_rates, conf_v.sampling_freq) == -1) {
 		debug("SBC: Invalid sample rate: %#x", conf->sampling_freq);
-		return A2DP_CHECK_ERR_RATE;
+		return ERROR_CODE_A2DP_INVALID_SAMPLE_RATE;
 	}
 
 	if (a2dp_bit_mapping_lookup(a2dp_sbc_channels, conf_v.channel_mode) == -1) {
 		debug("SBC: Invalid channel mode: %#x", conf->channel_mode);
-		return A2DP_CHECK_ERR_CHANNEL_MODE;
+		return ERROR_CODE_A2DP_INVALID_CHANNEL_MODE;
 	}
 
 	switch (conf_v.block_length) {
@@ -519,7 +516,7 @@ static int a2dp_sbc_configuration_check(
 		break;
 	default:
 		debug("SBC: Invalid block length: %#x", conf->block_length);
-		return A2DP_CHECK_ERR_BLOCK_LENGTH;
+		return ERROR_CODE_A2DP_INVALID_BLOCK_LENGTH;
 	}
 
 	switch (conf_v.subbands) {
@@ -528,7 +525,7 @@ static int a2dp_sbc_configuration_check(
 		break;
 	default:
 		debug("SBC: Invalid sub-bands: %#x", conf->subbands);
-		return A2DP_CHECK_ERR_SUB_BANDS;
+		return ERROR_CODE_A2DP_INVALID_SUB_BANDS;
 	}
 
 	switch (conf_v.allocation_method) {
@@ -537,44 +534,44 @@ static int a2dp_sbc_configuration_check(
 		break;
 	default:
 		debug("SBC: Invalid allocation method: %#x", conf->allocation_method);
-		return A2DP_CHECK_ERR_ALLOCATION_METHOD;
+		return ERROR_CODE_A2DP_INVALID_ALLOCATION_METHOD;
 	}
 
 	if (conf_v.min_bitpool > conf_v.max_bitpool) {
 		error("SBC: Invalid bit-pool range: [%u, %u]",
 				conf->min_bitpool, conf->max_bitpool);
-		return A2DP_CHECK_ERR_BIT_POOL_RANGE;
+		return ERROR_CODE_A2DP_INVALID_MIN_BIT_POOL_VALUE;
 	}
 
 	debug("SBC: Selected bit-pool range: [%u, %u]",
 			conf->min_bitpool, conf->max_bitpool);
 
-	return A2DP_CHECK_OK;
+	return ERROR_CODE_OK;
 }
 
 static int a2dp_sbc_transport_init(struct ba_transport *t) {
 
 	ssize_t channels_i;
 	if ((channels_i = a2dp_bit_mapping_lookup(a2dp_sbc_channels,
-					t->a2dp.configuration.sbc.channel_mode)) == -1)
+					t->media.a2dp.configuration.sbc.channel_mode)) == -1)
 		return -1;
 
 	ssize_t rate_i;
 	if ((rate_i = a2dp_bit_mapping_lookup(a2dp_sbc_rates,
-					t->a2dp.configuration.sbc.sampling_freq)) == -1)
+					t->media.a2dp.configuration.sbc.sampling_freq)) == -1)
 		return -1;
 
-	t->a2dp.pcm.format = BA_TRANSPORT_PCM_FORMAT_S16_2LE;
-	t->a2dp.pcm.channels = a2dp_sbc_channels[channels_i].value;
-	t->a2dp.pcm.rate = a2dp_sbc_rates[rate_i].value;
+	t->media.pcm.format = BA_TRANSPORT_PCM_FORMAT_S16_2LE;
+	t->media.pcm.channels = a2dp_sbc_channels[channels_i].value;
+	t->media.pcm.rate = a2dp_sbc_rates[rate_i].value;
 
-	memcpy(t->a2dp.pcm.channel_map, a2dp_sbc_channels[channels_i].ch.map,
-			t->a2dp.pcm.channels * sizeof(*t->a2dp.pcm.channel_map));
+	memcpy(t->media.pcm.channel_map, a2dp_sbc_channels[channels_i].ch.map,
+			t->media.pcm.channels * sizeof(*t->media.pcm.channel_map));
 
 	return 0;
 }
 
-static int a2dp_sbc_source_init(struct a2dp_sep *sep) {
+static error_code_t a2dp_sbc_source_init(struct a2dp_sep *sep) {
 
 	if (config.sbc_quality == SBC_QUALITY_XQ ||
 			config.sbc_quality == SBC_QUALITY_XQPLUS) {
@@ -594,11 +591,11 @@ static int a2dp_sbc_source_init(struct a2dp_sep *sep) {
 	if (config.a2dp.force_44100)
 		sep->config.capabilities.sbc.sampling_freq = SBC_SAMPLING_FREQ_44100;
 
-	return 0;
+	return ERROR_CODE_OK;
 }
 
 static int a2dp_sbc_source_transport_start(struct ba_transport *t) {
-	return ba_transport_pcm_start(&t->a2dp.pcm, a2dp_sbc_enc_thread, "ba-a2dp-sbc");
+	return ba_transport_pcm_start(&t->media.pcm, a2dp_sbc_enc_thread, "ba-a2dp-sbc");
 }
 
 struct a2dp_sep a2dp_sbc_source = {
@@ -643,7 +640,7 @@ struct a2dp_sep a2dp_sbc_source = {
 };
 
 static int a2dp_sbc_sink_transport_start(struct ba_transport *t) {
-	return ba_transport_pcm_start(&t->a2dp.pcm, a2dp_sbc_dec_thread, "ba-a2dp-sbc");
+	return ba_transport_pcm_start(&t->media.pcm, a2dp_sbc_dec_thread, "ba-a2dp-sbc");
 }
 
 struct a2dp_sep a2dp_sbc_sink = {

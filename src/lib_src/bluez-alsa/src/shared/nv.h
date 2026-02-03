@@ -1,11 +1,7 @@
 /*
  * BlueALSA - nv.h
- * Copyright (c) 2016-2022 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2022-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
@@ -20,15 +16,17 @@
  * A single entry of name:value array. */
 typedef struct nv_entry {
 	/* the name of the entry */
-	const char *name;
+	const char * name;
 	/* associated value */
 	union {
 		int i;
-		unsigned int ui;
+		unsigned int u;
 	} v;
 } nv_entry_t;
 
-nv_entry_t *nv_find(const nv_entry_t *entries, const char *name);
-char *nv_join_names(const nv_entry_t *entries);
+nv_entry_t * nv_lookup_entry(const nv_entry_t * entries, const char * name);
+const char * nv_name_from_int(const nv_entry_t * entries, int value);
+const char * nv_name_from_uint(const nv_entry_t * entries, unsigned int value);
+char * nv_join_names(const nv_entry_t * entries);
 
 #endif

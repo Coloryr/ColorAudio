@@ -5,7 +5,7 @@
 #define BLUEALSA_STORAGE_DIR "/var/lib/bluealsa"
 
 /* Define to 1 if the debugging is enabled. */
-#define DEBUG 1
+/* #undef DEBUG */
 
 /* Define to 1 if the debug timing is enabled. */
 /* #undef DEBUG_TIME */
@@ -19,6 +19,9 @@
 /* Define to 1 if apt-X HD is enabled. */
 /* #undef ENABLE_APTX_HD */
 
+/* Define to 1 if ASHA G.722 is enabled. */
+/* #undef ENABLE_ASHA */
+
 /* Define to 1 if FastStream is enabled. */
 /* #undef ENABLE_FASTSTREAM */
 
@@ -26,13 +29,13 @@
 /* #undef ENABLE_HFP_CODEC_SELECTION */
 
 /* Define to 1 if LC3plus is enabled. */
-/* #undef ENABLE_LC3PLUS */
+#define ENABLE_LC3PLUS 1
 
 /* Define to 1 if LC3-SWB is enabled. */
 /* #undef ENABLE_LC3_SWB */
 
 /* Define to 1 if LDAC is enabled. */
-/* #undef ENABLE_LDAC */
+#define ENABLE_LDAC 1
 
 /* Define to 1 if LHDC is enabled. */
 /* #undef ENABLE_LHDC */
@@ -65,7 +68,7 @@
 /* #undef ENABLE_SYSTEMD */
 
 /* Define to 1 if UPower is enabled. */
-#define ENABLE_UPOWER 1
+/* #undef ENABLE_UPOWER */
 
 /* Define to 1 if you have apt-X decode library. */
 #define HAVE_APTX_DECODE 1
@@ -92,7 +95,7 @@
 /* #undef HAVE_LC3PLUS_H */
 
 /* Define to 1 if you have LDAC decode module. */
-/* #undef HAVE_LDAC_DECODE */
+#define HAVE_LDAC_DECODE 1
 
 /* Define to 1 if you have the libbsd library. */
 /* #undef HAVE_LIBBSD */
@@ -155,7 +158,7 @@
 #define PACKAGE_NAME "BlueALSA"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "BlueALSA v4.3.1-70-g8f99300"
+#define PACKAGE_STRING "BlueALSA v4.3.1-102-ge6c97c9"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "bluez-alsa"
@@ -164,7 +167,7 @@
 #define PACKAGE_URL "https://github.com/arkq/bluez-alsa"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "v4.3.1-70-g8f99300"
+#define PACKAGE_VERSION "v4.3.1-102-ge6c97c9"
 
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
@@ -260,13 +263,13 @@
 
 
 /* Version number of package */
-#define VERSION "v4.3.1-70-g8f99300"
+#define VERSION "v4.3.1-102-ge6c97c9"
 
 /* Define to 1 if libfreeaptx shall be used. */
-/* #undef WITH_LIBFREEAPTX */
+#define WITH_LIBFREEAPTX 1
 
 /* Define to 1 if libopenaptx shall be used. */
-#define WITH_LIBOPENAPTX 1
+/* #undef WITH_LIBOPENAPTX */
 
 /* Define to 1 if libsamplerate shall be used. */
 /* #undef WITH_LIBSAMPLERATE */

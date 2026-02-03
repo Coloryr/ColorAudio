@@ -3,10 +3,10 @@
 
 #include "lvgl/src/misc/lv_log.h"
 
-#include "ble.h"
+#include "bt.h"
 #include "ui/ble_view.h"
 
-#include "ble_agent.h"
+#include "bt_agent.h"
 
 static guint registration_id;
 
@@ -64,7 +64,7 @@ static void handle_authorize_service(
 
     LV_LOG_USER("  Device: %s  Service UUID: %s", device_path, uuid);
 
-    ble_set_pairable(false);
+    bt_set_pairable(false);
     view_ble_set_par_close();
 
     g_dbus_method_invocation_return_value(invocation, NULL);
@@ -90,8 +90,8 @@ static void handle_request_confirmation(
 
     view_ble_set_par(passkey);
 
-    ble_now_state = BLE_STATE_PAIR;
-    ble_log_state_change();
+    bt_now_state = BT_STATE_PAIR;
+    bt_log_state_change();
 
     g_dbus_method_invocation_return_value(invocation, NULL);
 }
@@ -107,7 +107,7 @@ static void handle_cancel(
     gpointer user_data)
 {
     LV_LOG_USER("Pairing cancelled");
-    ble_now_state = BLE_STATE_DISCONNECTED;
+    bt_now_state = BT_STATE_DISCONNECTED;
     g_dbus_method_invocation_return_value(invocation, NULL);
     view_ble_set_par_close();
 }
@@ -176,7 +176,7 @@ static void register_agent(GDBusConnection *connection)
     g_object_unref(agent_manager);
 }
 
-void ble_agent_call(GDBusConnection *conn,
+void bt_agent_call(GDBusConnection *conn,
                     const gchar *sender,
                     const gchar *obj_path,
                     const gchar *iface_name,
@@ -210,15 +210,15 @@ void ble_agent_call(GDBusConnection *conn,
     }
 }
 
-void ble_agent_close()
+void bt_agent_close()
 {
     if (registration_id)
     {
-        g_dbus_connection_unregister_object(ble_g_conn, registration_id);
+        g_dbus_connection_unregister_object(bt_g_conn, registration_id);
     }
 }
 
-void ble_agent_init()
+void bt_agent_init()
 {
     GError *error = NULL;
 
@@ -233,10 +233,10 @@ void ble_agent_init()
     }
 
     GDBusInterfaceVTable table = {
-        .method_call = ble_agent_call};
+        .method_call = bt_agent_call};
 
     registration_id = g_dbus_connection_register_object(
-        ble_g_conn,
+        bt_g_conn,
         agent_path,
         agent_interface->interfaces[0],
         &table,
@@ -253,5 +253,5 @@ void ble_agent_init()
 
     LV_LOG_USER("Agent object registered at %s", agent_path);
 
-    register_agent(ble_g_conn);
+    register_agent(bt_g_conn);
 }

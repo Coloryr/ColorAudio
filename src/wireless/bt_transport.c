@@ -9,12 +9,12 @@
 #include "dbus.h"
 #include "sound/sound.h"
 
-#include "ble_transport.h"
+#include "bt_transport.h"
 
 static struct ba_transport *t;
 static pthread_t tid;
 
-extern GDBusConnection *ble_g_conn;
+extern GDBusConnection *bt_g_conn;
 
 static void *later_send(void *arg)
 {
@@ -23,10 +23,10 @@ static void *later_send(void *arg)
 
     usleep(500000);
 
-    g_dbus_set_property(ble_g_conn, t->bluez_dbus_owner, t->bluez_dbus_path,
+    g_dbus_set_property_sync(bt_g_conn, t->bluez_dbus_owner, t->bluez_dbus_path,
                         "org.bluez.MediaTransport1", "Volume", g_variant_new_uint16(avrcp_vol), NULL);
 
-    ble_send_battery();
+    bt_send_battery();
     return NULL;
 }
 
@@ -39,7 +39,7 @@ static void later_send_volume()
     }
 }
 
-void ble_send_volume()
+void bt_send_volume()
 {
     if (t == NULL)
     {
@@ -48,21 +48,21 @@ void ble_send_volume()
     float vol = alsa_get_volume();
     guint8 avrcp_vol = (guint8)(vol / 100 * 127);
 
-    g_dbus_set_property(ble_g_conn, t->bluez_dbus_owner, t->bluez_dbus_path,
+    g_dbus_set_property_sync(bt_g_conn, t->bluez_dbus_owner, t->bluez_dbus_path,
                         "org.bluez.MediaTransport1", "Volume", g_variant_new_uint16(avrcp_vol), NULL);
 }
 
-void ble_send_battery()
+void bt_send_battery()
 {
     if (t == NULL)
     {
         return;
     }
-    t->d->charge = 50;
+    t->d->battery.charge = 50;
     bluez_battery_provider_update(t->d);
 }
 
-void ble_set_ba_transport(struct ba_device *device,
+void bt_set_ba_transport(struct ba_device *device,
                           enum ba_transport_profile profile,
                           const char *dbus_owner,
                           const char *dbus_path,
@@ -77,7 +77,7 @@ void ble_set_ba_transport(struct ba_device *device,
         t = NULL;
     }
     t = ba_transport_new_a2dp(device, profile, dbus_owner, dbus_path, sep, configuration);
-    t->a2dp.pcm.fd = 0;
+    t->media.pcm.fd = 0;
     later_send_volume();
 }
 
@@ -86,14 +86,14 @@ struct ba_transport *ble_get_ba_transport()
     return t;
 }
 
-void ble_set_a2dp_state(enum bluez_a2dp_transport_state state)
+void bt_set_a2dp_state(enum bluez_media_transport_state state)
 {
     switch (state)
     {
-    case BLUEZ_A2DP_TRANSPORT_STATE_IDLE:
+    case BLUEZ_MEDIA_TRANSPORT_STATE_IDLE:
         alsa_clear();
         break;
-    case BLUEZ_A2DP_TRANSPORT_STATE_ACTIVE:
+    case BLUEZ_MEDIA_TRANSPORT_STATE_ACTIVE:
         alsa_ready();
         break;
     default:
@@ -101,17 +101,17 @@ void ble_set_a2dp_state(enum bluez_a2dp_transport_state state)
     }
 }
 
-uint16_t ble_get_volume()
+uint16_t bt_get_volume()
 {
     return alsa_get_volume();
 }
 
-void ble_set_volume(float value)
+void bt_set_volume(float value)
 {
     alsa_set_volume(value);
 }
 
-void ble_set_format(uint16_t channels, uint32_t rate)
+void bt_set_format(uint16_t channels, uint32_t rate)
 {
     alsa_clear();
     alsa_reset();
@@ -122,7 +122,7 @@ void fft_check_buffer(uint16_t len);
 void fft_fill_count(uint32_t down, uint32_t count);
 extern int32_t *sound_fft_buf;
 
-void ble_write(const void *buffer, size_t samples)
+void bt_write(const void *buffer, size_t samples)
 {
     fft_check_buffer(samples);
 

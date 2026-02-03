@@ -1,11 +1,7 @@
 /*
  * BlueALSA - a2dp-opus.c
- * Copyright (c) 2016-2025 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2020-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #include "a2dp-opus.h"
@@ -28,6 +24,7 @@
 #include "ba-config.h"
 #include "ba-transport.h"
 #include "ba-transport-pcm.h"
+#include "error.h"
 #include "io.h"
 #include "rtp.h"
 #include "shared/a2dp-codecs.h"
@@ -56,7 +53,7 @@ static void a2dp_opus_caps_intersect(
 	a2dp_caps_bitwise_intersect(capabilities, mask, sizeof(a2dp_opus_t));
 }
 
-static int a2dp_opus_caps_foreach_channel_mode(
+static error_code_t a2dp_opus_caps_foreach_channel_mode(
 		const void *capabilities,
 		enum a2dp_stream stream,
 		a2dp_bit_mapping_foreach_func func,
@@ -64,10 +61,10 @@ static int a2dp_opus_caps_foreach_channel_mode(
 	const a2dp_opus_t *caps = capabilities;
 	if (stream == A2DP_MAIN)
 		return a2dp_bit_mapping_foreach(a2dp_opus_channels, caps->channel_mode, func, userdata);
-	return -1;
+	return ERROR_CODE_INVALID_STREAM;
 }
 
-static int a2dp_opus_caps_foreach_sample_rate(
+static error_code_t a2dp_opus_caps_foreach_sample_rate(
 		const void *capabilities,
 		enum a2dp_stream stream,
 		a2dp_bit_mapping_foreach_func func,
@@ -75,7 +72,7 @@ static int a2dp_opus_caps_foreach_sample_rate(
 	const a2dp_opus_t *caps = capabilities;
 	if (stream == A2DP_MAIN)
 		return a2dp_bit_mapping_foreach(a2dp_opus_rates, caps->sampling_freq, func, userdata);
-	return -1;
+	return ERROR_CODE_INVALID_STREAM;
 }
 
 static void a2dp_opus_caps_select_channel_mode(
@@ -133,7 +130,7 @@ void *a2dp_opus_enc_thread(struct ba_transport_pcm *t_pcm) {
 	OpusEncoder *opus = NULL;
 	pthread_cleanup_push(PTHREAD_CLEANUP(opus_encoder_destroy_ptr), &opus);
 
-	const a2dp_opus_t *configuration = &t->a2dp.configuration.opus;
+	const a2dp_opus_t * configuration = &t->media.a2dp.configuration.opus;
 	const unsigned int channels = t_pcm->channels;
 	const unsigned int rate = t_pcm->rate;
 	const unsigned int opus_frame_dms = a2dp_opus_get_frame_dms(configuration);
@@ -168,10 +165,10 @@ void *a2dp_opus_enc_thread(struct ba_transport_pcm *t_pcm) {
 		goto fail_ffb;
 	}
 
-	int32_t opus_delay_frames = 0;
+	int32_t opus_delay_pcm_frames = 0;
 	/* Get the delay introduced by the encoder. */
-	opus_encoder_ctl(opus, OPUS_GET_LOOKAHEAD(&opus_delay_frames));
-	t_pcm->codec_delay_dms = opus_delay_frames * 10000 / rate;
+	opus_encoder_ctl(opus, OPUS_GET_LOOKAHEAD(&opus_delay_pcm_frames));
+	t_pcm->codec_delay_dms = opus_delay_pcm_frames * 10000 / rate;
 	// ba_transport_pcm_delay_sync(t_pcm, BA_DBUS_PCM_UPDATE_DELAY);
 
 	rtp_header_t *rtp_header;
@@ -206,7 +203,7 @@ void *a2dp_opus_enc_thread(struct ba_transport_pcm *t_pcm) {
 		const int16_t *input = pcm.data;
 		size_t input_samples = ffb_len_out(&pcm);
 
-		/* encode and transfer obtained data */
+		/* Encode and transfer obtained data. */
 		while (input_samples >= opus_frame_pcm_samples) {
 
 			ssize_t len;
@@ -279,7 +276,7 @@ void *a2dp_opus_dec_thread(struct ba_transport_pcm *t_pcm) {
 	OpusDecoder *opus = NULL;
 	pthread_cleanup_push(PTHREAD_CLEANUP(opus_decoder_destroy_ptr), &opus);
 
-	const a2dp_opus_t *configuration = &t->a2dp.configuration.opus;
+	const a2dp_opus_t * configuration = &t->media.a2dp.configuration.opus;
 	const unsigned int channels = t_pcm->channels;
 	const unsigned int rate = t_pcm->rate;
 	const unsigned int opus_frame_dms = a2dp_opus_get_frame_dms(configuration);
@@ -303,10 +300,10 @@ void *a2dp_opus_dec_thread(struct ba_transport_pcm *t_pcm) {
 		goto fail_ffb;
 	}
 
-	int32_t opus_delay_frames = 0;
+	int32_t opus_delay_pcm_frames = 0;
 	/* Get the delay introduced by the decoder. */
-	opus_decoder_ctl(opus, OPUS_GET_LOOKAHEAD(&opus_delay_frames));
-	t_pcm->codec_delay_dms = opus_delay_frames * 10000 / rate;
+	opus_decoder_ctl(opus, OPUS_GET_LOOKAHEAD(&opus_delay_pcm_frames));
+	t_pcm->codec_delay_dms = opus_delay_pcm_frames * 10000 / rate;
 	// ba_transport_pcm_delay_sync(t_pcm, BA_DBUS_PCM_UPDATE_DELAY);
 
 	struct rtp_state rtp = { .synced = false };
@@ -367,7 +364,7 @@ fail_init:
 	return NULL;
 }
 
-static int a2dp_opus_configuration_select(
+static error_code_t a2dp_opus_configuration_select(
 		const struct a2dp_sep *sep,
 		void *capabilities) {
 
@@ -379,11 +376,11 @@ static int a2dp_opus_configuration_select(
 
 	unsigned int sampling_freq = 0;
 	if (a2dp_opus_caps_foreach_sample_rate(caps, A2DP_MAIN,
-				a2dp_bit_mapping_foreach_get_best_sample_rate, &sampling_freq) != -1)
+				a2dp_bit_mapping_foreach_get_best_sample_rate, &sampling_freq) == ERROR_CODE_OK)
 		caps->sampling_freq = sampling_freq;
 	else {
 		error("Opus: No supported sample rates: %#x", saved.sampling_freq);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_SAMPLE_RATE;
 	}
 
 	if (caps->frame_duration & OPUS_FRAME_DURATION_200)
@@ -392,22 +389,22 @@ static int a2dp_opus_configuration_select(
 		caps->frame_duration = OPUS_FRAME_DURATION_100;
 	else {
 		error("Opus: No supported frame durations: %#x", saved.frame_duration);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_FRAME_DURATION;
 	}
 
 	unsigned int channel_mode = 0;
 	if (a2dp_opus_caps_foreach_channel_mode(caps, A2DP_MAIN,
-				a2dp_bit_mapping_foreach_get_best_channel_mode, &channel_mode) != -1)
+				a2dp_bit_mapping_foreach_get_best_channel_mode, &channel_mode) == ERROR_CODE_OK)
 		caps->channel_mode = channel_mode;
 	else {
 		error("Opus: No supported channel modes: %#x", saved.channel_mode);
-		return errno = ENOTSUP, -1;
+		return ERROR_CODE_A2DP_NOT_SUPPORTED_CHANNEL_MODE;
 	}
 
-	return 0;
+	return ERROR_CODE_OK;
 }
 
-static int a2dp_opus_configuration_check(
+static error_code_t a2dp_opus_configuration_check(
 		const struct a2dp_sep *sep,
 		const void *configuration) {
 
@@ -419,7 +416,7 @@ static int a2dp_opus_configuration_check(
 
 	if (a2dp_bit_mapping_lookup(a2dp_opus_rates, conf_v.sampling_freq) == -1) {
 		debug("Opus: Invalid sample rate: %#x", conf->sampling_freq);
-		return A2DP_CHECK_ERR_RATE;
+		return ERROR_CODE_A2DP_INVALID_SAMPLE_RATE;
 	}
 
 	switch (conf_v.frame_duration) {
@@ -428,47 +425,47 @@ static int a2dp_opus_configuration_check(
 		break;
 	default:
 		debug("Opus: Invalid frame duration: %#x", conf->frame_duration);
-		return A2DP_CHECK_ERR_FRAME_DURATION;
+		return ERROR_CODE_A2DP_INVALID_FRAME_DURATION;
 	}
 
 	if (a2dp_bit_mapping_lookup(a2dp_opus_channels, conf_v.channel_mode) == -1) {
 		debug("Opus: Invalid channel mode: %#x", conf->channel_mode);
-		return A2DP_CHECK_ERR_CHANNEL_MODE;
+		return ERROR_CODE_A2DP_INVALID_CHANNEL_MODE;
 	}
 
-	return A2DP_CHECK_OK;
+	return ERROR_CODE_OK;
 }
 
 static int a2dp_opus_transport_init(struct ba_transport *t) {
 
 	ssize_t channels_i;
 	if ((channels_i = a2dp_bit_mapping_lookup(a2dp_opus_channels,
-					t->a2dp.configuration.opus.channel_mode)) == -1)
+					t->media.a2dp.configuration.opus.channel_mode)) == -1)
 		return -1;
 
 	ssize_t rate_i;
 	if ((rate_i = a2dp_bit_mapping_lookup(a2dp_opus_rates,
-					t->a2dp.configuration.opus.sampling_freq)) == -1)
+					t->media.a2dp.configuration.opus.sampling_freq)) == -1)
 		return -1;
 
-	t->a2dp.pcm.format = BA_TRANSPORT_PCM_FORMAT_S16_2LE;
-	t->a2dp.pcm.channels = a2dp_opus_channels[channels_i].value;
-	t->a2dp.pcm.rate = a2dp_opus_rates[rate_i].value;
+	t->media.pcm.format = BA_TRANSPORT_PCM_FORMAT_S16_2LE;
+	t->media.pcm.channels = a2dp_opus_channels[channels_i].value;
+	t->media.pcm.rate = a2dp_opus_rates[rate_i].value;
 
-	memcpy(t->a2dp.pcm.channel_map, a2dp_opus_channels[channels_i].ch.map,
-			t->a2dp.pcm.channels * sizeof(*t->a2dp.pcm.channel_map));
+	memcpy(t->media.pcm.channel_map, a2dp_opus_channels[channels_i].ch.map,
+			t->media.pcm.channels * sizeof(*t->media.pcm.channel_map));
 
 	return 0;
 }
 
-static int a2dp_opus_source_init(struct a2dp_sep *sep) {
+static error_code_t a2dp_opus_source_init(struct a2dp_sep *sep) {
 	if (config.a2dp.force_mono)
 		sep->config.capabilities.opus.channel_mode = OPUS_CHANNEL_MODE_MONO;
-	return 0;
+	return ERROR_CODE_OK;
 }
 
 static int a2dp_opus_source_transport_start(struct ba_transport *t) {
-	return ba_transport_pcm_start(&t->a2dp.pcm, a2dp_opus_enc_thread, "ba-a2dp-opus");
+	return ba_transport_pcm_start(&t->media.pcm, a2dp_opus_enc_thread, "ba-a2dp-opus");
 }
 
 struct a2dp_sep a2dp_opus_source = {
@@ -500,7 +497,7 @@ struct a2dp_sep a2dp_opus_source = {
 };
 
 static int a2dp_opus_sink_transport_start(struct ba_transport *t) {
-	return ba_transport_pcm_start(&t->a2dp.pcm, a2dp_opus_dec_thread, "ba-a2dp-opus");
+	return ba_transport_pcm_start(&t->media.pcm, a2dp_opus_dec_thread, "ba-a2dp-opus");
 }
 
 struct a2dp_sep a2dp_opus_sink = {

@@ -1,11 +1,7 @@
 /*
  * BlueALSA - main.c
- * Copyright (c) 2016-2024 Arkadiusz Bokowy
- *
- * This file is a part of bluez-alsa.
- *
- * This project is licensed under the terms of the MIT license.
- *
+ * SPDX-FileCopyrightText: 2016-2025 BlueALSA developers
+ * SPDX-License-Identifier: MIT
  */
 
 #if HAVE_CONFIG_H
@@ -20,6 +16,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <strings.h>
 #include <syslog.h>
 #include <time.h>
@@ -29,16 +26,19 @@
 #include <glib-unix.h>
 #include <glib.h>
 
+#if ENABLE_LDAC
+#include <ldacBT.h>
+#endif
+
 #include "a2dp.h"
 #include "a2dp-sbc.h"
-#include "a2dp-aac.h"
-#include "a2dp-aptx.h"
-#include "a2dp-opus.h"
 #include "audio.h"
 #include "ba-config.h"
 #include "bluez.h"
 #include "codec-sbc.h"
+#include "error.h"
 #include "hfp.h"
+#include "storage.h"
 #include "shared/a2dp-codecs.h"
 #include "shared/defs.h"
 #include "shared/log.h"
@@ -49,32 +49,35 @@
  * fall back to a default behavior - enter waiting queue. */
 #ifndef G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE
 #define G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE \
-    G_BUS_NAME_OWNER_FLAGS_NONE
+	G_BUS_NAME_OWNER_FLAGS_NONE
 #endif
 
 void bluez_alsa_start(GDBusConnection *conn)
 {
-    log_open("bluez-alsa", false);
+	ba_config_init();
 
-    ba_config_init();
+	srandom(time(NULL));
 
-    config.profile.a2dp_sink = true;
+	a2dp_sbc_sink.enabled = true;
+	config.hfp.codecs.cvsd = true;
+	config.profile.a2dp_sink = true;
+	config.profile.hfp_hf = true;
+	config.dbus = conn;
 
-    config.dbus = conn;
+	if (a2dp_seps_init() != ERROR_CODE_OK)
+	{
+		error("Couldn't initialize ad2p");
+		return;
+	}
 
-    a2dp_opus_sink.enabled = true;
-    a2dp_aptx_sink.enabled = true;
-    a2dp_aac_sink.enabled = true;
-    a2dp_sbc_sink.enabled = true;
+	storage_init(BLUEALSA_STORAGE_DIR);
 
-    if (a2dp_seps_init() == -1)
-        return;
-
-    bluez_init();
+	bluez_init();
 }
 
 void bluez_alsa_close()
 {
-    bluez_destroy();
-    g_dbus_connection_close_sync(config.dbus, NULL, NULL);
+	bluez_destroy();
+
+	storage_destroy();
 }
