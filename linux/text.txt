@@ -91,8 +91,8 @@ beacon_int=100
 
 sudo hostapd hostapd.conf
 
-sudo apt-get install git automake build-essential libtool pkg-config python3-docutils -y
-sudo apt-get install libasound2-dev libbluetooth-dev libdbus-1-dev libglib2.0-dev libsbc-dev libfdk-aac-dev libfreeaptx-dev liblc3-dev libspandsp-dev libopus-dev libreadline-dev -y
+sudo apt-get install git automake build-essential cmake libtool pkg-config python3-docutils g++-arm-linux-gnueabihf gcc-arm-linux-gnueabihf -y
+sudo apt-get install libasound2-dev libbluetooth-dev libdbus-1-dev libglib2.0-dev libsbc-dev libfdk-aac-dev libfreeaptx-dev liblc3-dev libspandsp-dev libopus-dev libdrm-dev libreadline-dev libpng-dev libmad0-dev libboost1.83-dev libflac++-dev libudev-dev libturbojpeg0-dev libwpa-client-dev -y
 
 git clone https://github.com/arkq/bluez-alsa.git
 cd bluez-alsa
