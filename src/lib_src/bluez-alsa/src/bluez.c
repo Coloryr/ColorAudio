@@ -47,6 +47,8 @@
 #include "shared/defs.h"
 #include "shared/log.h"
 
+#include "../../../wireless/alsa-transport.h"
+
 /* Compatibility patch for glib < 2.68. */
 #if !GLIB_CHECK_VERSION(2, 68, 0)
 #define g_memdup2 g_memdup
