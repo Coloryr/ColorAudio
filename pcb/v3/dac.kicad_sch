@@ -11110,10 +11110,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "989bd6a9-f193-4e07-8e54-7ffa02a0cf13")
-		(property "Reference" "PJ1"
-			(at 278.13 52.7049 0)
+		(property "Reference" "PJ2"
+			(at 268.732 43.18 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11121,8 +11120,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "~"
-			(at 278.13 54.61 0)
+		(property "Value" "PJ-327A"
+			(at 266.7 45.72 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11130,7 +11129,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "coloryr:AUDIO-IN-SMD_PJ-327A_C22355751"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x05_P2.54mm_Vertical"
 			(at 270.51 53.34 0)
 			(effects
 				(font
@@ -11220,7 +11219,7 @@
 		(instances
 			(project ""
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/8a8efada-1d6d-4bcc-828e-939af60bb626"
-					(reference "PJ1")
+					(reference "PJ2")
 					(unit 1)
 				)
 			)
@@ -12445,8 +12444,8 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "be8ed8aa-33ab-47b3-92b1-8a168b97f30e")
-		(property "Reference" "CN1"
-			(at 276.86 33.6549 0)
+		(property "Reference" "PJ1"
+			(at 269.24 22.606 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12454,8 +12453,8 @@
 				(justify right)
 			)
 		)
-		(property "Value" "~"
-			(at 276.86 35.56 0)
+		(property "Value" "PJ-265G"
+			(at 267.208 25.0191 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12463,7 +12462,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "coloryr:AUDIO-TH_PJ-625G"
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical"
 			(at 268.986 42.418 0)
 			(effects
 				(font
@@ -12511,7 +12510,7 @@
 		(instances
 			(project "coloryr"
 				(path "/9e6d55f4-a9e8-48fa-bb52-b4e4e3117f8b/8a8efada-1d6d-4bcc-828e-939af60bb626"
-					(reference "CN1")
+					(reference "PJ1")
 					(unit 1)
 				)
 			)
